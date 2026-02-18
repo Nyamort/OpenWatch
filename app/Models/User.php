@@ -4,6 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -19,6 +22,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'active_organization_id',
         'name',
         'email',
         'password',
@@ -44,9 +48,52 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'active_organization_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the active organization for the user.
+     */
+    public function activeOrganization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'active_organization_id');
+    }
+
+    /**
+     * Get organization memberships for the user.
+     */
+    public function organizationMemberships(): HasMany
+    {
+        return $this->hasMany(OrganizationMember::class);
+    }
+
+    /**
+     * Get invitations created by this user.
+     */
+    public function sentOrganizationInvitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class, 'invited_by_user_id');
+    }
+
+    /**
+     * Get invitations accepted by this user.
+     */
+    public function acceptedOrganizationInvitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class, 'accepted_by_user_id');
+    }
+
+    /**
+     * Get organizations attached to the user.
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_members')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 }

@@ -12,6 +12,13 @@ export type User = {
 
 export type Auth = {
     user: User;
+    activeOrganization?: {
+        id: number;
+        name: string;
+        slug: string;
+        timezone: string;
+        default_locale: string;
+    } | null;
 };
 
 export type TwoFactorSetupData = {
