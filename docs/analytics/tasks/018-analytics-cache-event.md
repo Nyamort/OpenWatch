@@ -2,26 +2,38 @@
 - Domain: `analytics`
 - Status: `not started`
 - Priority: `P1`
-- Checked on: `2026-02-18`
-- Already done in codebase? `No`
+- Dependencies: `T-015`
 
 ## Description
-Implement aggregated cache-event dashboard without per-row drilldown, focused on key aggregates and failure breakdown.
+Implement the aggregated cache-event dashboard: group by `(store, key, type)`, compute hit rate, miss rate, and operation counts. List-only — no row-level detail drilldown. Hit rate color mapping is returned from the backend.
 
-## How to execute
-1. Implement list queries for operation-by-key aggregates.
-2. Add failure-rate and counts, plus default sorting and explicit empty state.
-3. Ensure no row-level detail action exposed.
-4. Reuse shared period/context controls from analytics shell.
+## How to implement
+1. Implement `BuildCacheEventIndexData` action: aggregate from `extraction_cache_events` grouped by `(store, key, type)`. Compute:
+   - `hit_rate_pct = COUNT(type='hit') * 100.0 / COUNT(*)`
+   - Operation counts per type (hit, miss, write, forget, flush)
+   - Return color mapping: `hit_rate >= 80` → `green`, `>= 50` → `yellow`, `< 50` → `red`
+2. Add store filter (populated from distinct store values in the period).
+3. Add key search (prefix match or contains).
+4. Default sort: by total operations desc. Explicit secondary sort by key asc.
+5. Add `GET /analytics/{org}/{project}/{env}/cache-events` route.
+6. Build Inertia page with the shared table, hit-rate badge using backend color, store selector, no row click action.
+7. Write feature tests: aggregation is correct, hit rate computation, color mapping values, store filter works.
 
-## Architecture implications
-- **Context**: analytics read model for cache events.
-- **Schema**: event-level payload to aggregate table for repeated key access.
-- **UI**: list-only pattern with compact KPI summary.
+## Key files to create or modify
+- `app/Actions/Analytics/CacheEvent/BuildCacheEventIndexData.php`
+- `app/Http/Controllers/Analytics/CacheEventController.php`
+- `resources/js/pages/analytics/cache-events/index.tsx`
+- `resources/js/components/analytics/hit-rate-badge.tsx`
+- `tests/Feature/Analytics/CacheEventAnalyticsTest.php`
 
-## Acceptance checkpoints
-- Default ordering and sorting are explicit and deterministic.
-- No detail action appears in list rows.
+## Acceptance criteria
+- [ ] Cache events are grouped by store, key, and type
+- [ ] Hit rate percentage is computed correctly from hit vs total counts
+- [ ] Color mapping (green/yellow/red) is returned from the backend, not computed on the frontend
+- [ ] Store filter updates the list to show only events for the selected store
+- [ ] No row-level detail action is available (list-only view)
+- [ ] Default sort is by total operations descending
 
-## Done criteria
-- `docs/analytics/cache-event/cache-event*.md` covered.
+## Related specs
+- [Functional spec](../cache-event/specs.md)
+- [Technical spec](../cache-event/cache-event-technical.md)

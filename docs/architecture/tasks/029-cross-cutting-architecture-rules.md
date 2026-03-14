@@ -1,28 +1,39 @@
-# Task T-029: Cross-Cutting Tenant/Policy Enforcement and API Error Contract
-- Domain: Cross-cutting
+# Task T-029: Cross-Cutting Tenant Resolution, Policy Gates, and API Error Contract
+- Domain: `cross-cutting`
 - Status: `not started`
 - Priority: `P0`
-- Checked on: `2026-02-18`
-- Already done in codebase? `No`
+- Dependencies: `T-001`
 
 ## Description
-Standardize tenant resolution, policy gates, and error contract across auth, API, analytics, issues, alerts, and dashboard routes.
+Standardize the middleware pipeline for tenant resolution (org → project → environment), shared policy base class, and consistent error response shape across all Inertia web routes and JSON API routes. This task should be completed before any domain feature that needs org-scoped access control.
 
-## How to execute
-1. Build middleware/request pipeline to resolve organization/project/environment scope consistently.
-2. Add shared policy base and forbidden/unauthorized response format.
-3. Add integration tests proving cross-org and wrong-scope requests are rejected.
-4. Add middleware ordering docs and registration review.
+## How to implement
+1. Create `SetOrganizationContext` middleware: resolve organization from route parameter (`{organization}`) or session (`current_organization_id`); bind it to the request; abort 403 if user is not a member.
+2. Create `SetProjectContext` middleware: resolve project from route parameter, verify it belongs to the active org; abort 404 (scoped, not 403) to avoid leaking existence.
+3. Create `SetEnvironmentContext` middleware: same pattern for environment under project.
+4. Register middleware in `bootstrap/app.php` in the correct order after auth middleware.
+5. Create `ApiErrorResponse` helper and `HandlesApiErrors` trait: map exceptions (`AuthorizationException` → 403, `ModelNotFoundException` → 404, `ValidationException` → 422) to a consistent JSON shape `{ message, errors? }`.
+6. Extend Inertia's error handling to use the same shape for XHR/Inertia requests.
+7. Write integration tests: missing org param → 403, org exists but user not a member → 403, project belongs to different org → 404, JSON client gets correct error shape, Inertia client gets correct shape.
 
-## Architecture implications
-- **Context**: API gateway-like shared request boundary.
-- **Security**: no route leaves with implicit scope.
-- **Maintainability**: centralized context and error mapping reduces drift.
-- **Compatibility**: ensure Inertia and JSON clients receive compatible responses.
+## Key files to create or modify
+- `app/Http/Middleware/SetOrganizationContext.php`
+- `app/Http/Middleware/SetProjectContext.php`
+- `app/Http/Middleware/SetEnvironmentContext.php`
+- `app/Http/Traits/HandlesApiErrors.php`
+- `app/Exceptions/Handler.php` — register exception rendering
+- `bootstrap/app.php` — middleware registration and ordering
+- `tests/Feature/TenantIsolationTest.php`
 
-## Acceptance checkpoints
-- Missing/invalid context yields consistent denied flow.
-- Tenant checks executed before sensitive business logic.
+## Acceptance criteria
+- [ ] Every request to an org-scoped route resolves org context before any controller logic runs
+- [ ] A user not a member of the org receives `403` — not a `404` that would leak existence
+- [ ] A project route with a project from a different org returns `404` (scoped, not 403)
+- [ ] Removing a user's membership takes effect on their immediately next request
+- [ ] JSON API clients receive `{ message, errors? }` for all error types
+- [ ] Inertia/XHR clients receive the same error shape
+- [ ] No route can bypass tenant resolution middleware
 
-## Done criteria
-- FR cross-cutting from `FR-AUTH-030`, `FR-AN-122`, `FR-ORG-007`, and related route isolation specs.
+## Related specs
+- [Functional spec](../specs.md)
+- [Technical spec](../specs-technical.md)

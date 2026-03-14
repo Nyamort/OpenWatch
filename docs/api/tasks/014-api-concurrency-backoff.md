@@ -1,28 +1,32 @@
-# Task T-014: Concurrency Limits, Quotas and Backoff
+# Task T-014: Concurrency Limits and Backoff Contract
 - Domain: `api`
 - Status: `not started`
 - Priority: `P0`
-- Checked on: `2026-02-18`
-- Already done in codebase? `No`
+- Dependencies: `T-011`, `T-012`
 
 ## Description
-Enforce maximum 2 concurrent ingest requests per agent/environment; reject overload with retry contract (`429` and stop semantics).
+Enforce a maximum of 2 concurrent ingest requests per agent identity (session token + environment). A third concurrent request is rejected immediately with `429` and the stop contract. Implement a Redis distributed semaphore with TTL for safe recovery on worker crash or timeout.
 
-## How to execute
-1. Add per-identity/environment concurrency counters in Redis keyed by session token.
-2. Reject the 3rd concurrent request with standardized backoff payload.
-3. On stop state, return explicit `stop: true` and `refresh_in` value.
-4. Add idempotent decrement/release paths for worker crashes and timeouts.
+## How to implement
+1. Implement `ConcurrencyLimiter` service backed by Redis: `acquire(string $key, int $max, int $ttl): bool` and `release(string $key): void`.
+2. Semaphore key: `ingest:concurrency:{environment_id}:{session_token_id}`.
+3. In `IngestController` (T-012): call `acquire` before processing; if false → `429` + `{ stop: true, message, refresh_in }`.
+4. On successful response (200 or 403 stop): always call `release` in a `finally` block.
+5. Set semaphore TTL slightly above the max expected request duration to auto-release on worker crash.
+6. Write feature tests: two concurrent requests proceed, third is rejected with `429` and correct body, semaphore is released after response, TTL causes auto-release after timeout.
 
-## Architecture implications
-- **Context**: API + Redis control plane.
-- **Pattern**: distributed semaphore with TTL and safe recovery.
-- **Resilience**: degrade gracefully with consistent payload shape.
-- **Metrics**: alert on repeated limit hits.
+## Key files to create or modify
+- `app/Services/Ingestion/ConcurrencyLimiter.php`
+- `app/Http/Controllers/Api/IngestController.php` — integrate limiter
+- `tests/Feature/Api/ConcurrencyLimitTest.php`
 
-## Acceptance checkpoints
-- 3rd in-flight request is rejected immediately.
-- Retry must respect refresh delay.
+## Acceptance criteria
+- [ ] Two simultaneous ingest requests from the same agent are both accepted
+- [ ] A third concurrent request returns `429` immediately with `{ stop: true, message, refresh_in }`
+- [ ] The semaphore is released after every response, including error paths
+- [ ] If a worker crashes mid-request, the semaphore auto-releases after TTL (no deadlock)
+- [ ] Retry must wait at least `refresh_in` seconds before the next attempt
 
-## Done criteria
-- `FR-API-024` to `FR-API-027` implemented.
+## Related specs
+- [Functional spec](../specs.md) — `FR-API-024` to `FR-API-027`
+- [Technical spec](../specs-technical.md)

@@ -1,28 +1,40 @@
-# Task T-012: Ingestion Endpoint `POST {ingest_url}`
+# Task T-012: Ingestion Endpoint — `POST {ingest_url}`
 - Domain: `api`
 - Status: `not started`
 - Priority: `P0`
-- Checked on: `2026-02-18`
-- Already done in codebase? `No`
+- Dependencies: `T-011`, `T-030`
 
 ## Description
-Implement compressed payload ingestion endpoint with gzip contract, structural validation, transport errors, and success semantics (`{}`).
+Implement the compressed telemetry ingestion endpoint. It validates the session token (from T-011), enforces `Content-Encoding: gzip`, decompresses and parses the JSON payload, and hands off valid records to the async processing pipeline. Returns `{}` on success.
 
-## How to execute
-1. Validate `Content-Encoding: gzip` and fail with `415` where contract is broken.
-2. Inflate and validate JSON shape before parse stage.
-3. Map ingest errors to 400/403/429/5xx contracts as specified.
-4. Keep a minimal response on success and enforce stop/backoff fields.
+## How to implement
+1. Register `POST /ingest` (or the configured `ingest_url` path) in the api-ingest route group.
+2. Authenticate via session token from `Authorization: Bearer <session_token>`: lookup from Redis, check TTL, bind environment context.
+3. Reject missing/invalid session token with `401`.
+4. Validate `Content-Encoding: gzip` header; reject non-gzip payloads with `415`.
+5. Decompress payload (streaming where possible); reject non-JSON or malformed JSON with `400`.
+6. Dispatch `ProcessTelemetryBatch` job with the raw records array and environment context.
+7. Return `200` + `{}` synchronously after successful dispatch.
+8. On quota stop (checked via `QuotaService` from T-007): return `403` + `{ stop: true, message, refresh_in: 900 }`.
+9. Write feature tests: valid gzip JSON → 200 + `{}`, non-gzip → 415, invalid JSON → 400, missing session token → 401, quota stop → 403 with stop contract.
 
-## Architecture implications
-- **Context**: ingestion API + backpressure.
-- **Parsing service**: separated streaming decompressor and schema validator.
-- **Limits**: enforce payload size and record size bounds.
-- **Queueing**: hand off valid payload to async jobs.
+## Key files to create or modify
+- `app/Http/Controllers/Api/IngestController.php`
+- `app/Http/Middleware/ValidateGzipEncoding.php`
+- `app/Http/Middleware/AuthenticateSessionToken.php`
+- `app/Jobs/ProcessTelemetryBatch.php`
+- `routes/api.php` — ingest route
+- `tests/Feature/Api/IngestEndpointTest.php`
 
-## Acceptance checkpoints
-- Valid payload returns 200 + `{}`.
-- Non-gzip payload returns 415.
+## Acceptance criteria
+- [ ] Valid gzip-compressed JSON payload returns `200` + `{}`
+- [ ] Request without `Content-Encoding: gzip` returns `415`
+- [ ] Malformed or non-JSON payload after decompression returns `400`
+- [ ] Invalid or expired session token returns `401`
+- [ ] Quota stop returns `403` with `{ stop: true, message, refresh_in }` body
+- [ ] Valid payloads are handed to the async job and not processed synchronously in the HTTP cycle
+- [ ] Response time under normal load stays within SLA (< 200ms p95)
 
-## Done criteria
-- `FR-API-020` to `FR-API-031` in production.
+## Related specs
+- [Functional spec](../specs.md) — `FR-API-020` to `FR-API-031`
+- [Technical spec](../specs-technical.md)

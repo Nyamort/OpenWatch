@@ -2,27 +2,36 @@
 - Domain: `auth`, shared with `organisation`
 - Status: `not started`
 - Priority: `P0`
-- Checked on: `2026-02-18`
-- Already done in codebase? `No`
+- Dependencies: `T-001`, `T-005`, `T-006`, `T-029`
 
 ## Description
-Ensure all protected actions consume org/role/permission definitions from Organization context before allow/deny decisions.
+Ensure every protected route resolves the active organization context before any policy check runs. Policies must delegate permission resolution to the organization role/permission system — no hardcoded role checks in controllers.
 
 ## How to implement
-1. Introduce active organization context middleware that resolves organization scope prior to policy checks.
-2. Normalize policies to call organization-scoped permission resolvers.
-3. Add guards for routes requiring `verified` and org context.
-4. Add explicit forbidden/error shape consistency middleware for web + JSON clients.
+1. Apply `SetOrganizationContext` middleware (from T-029) on all authenticated web and API routes.
+2. Create a base `OrganizationPolicy` that resolves permissions from the organization member's role via a `PermissionResolver` service (use Redis cache with TTL + invalidation on role change).
+3. Register specific policies (`ProjectPolicy`, `EnvironmentPolicy`, etc.) extending the base.
+4. Add a `verified` + org-context guard to routes that require both email verification and an active org.
+5. Return consistent `403` JSON/Inertia responses for forbidden access (no information leakage about resource existence).
+6. Write integration tests proving: cross-org access is blocked, role-downgrade takes effect on next request, Viewer cannot perform write actions.
 
-## Architecture implications
-- **Context**: cross-cutting authz layer.
-- **Pattern**: domain policies become pure decision points; do not replicate role logic in controllers.
-- **Data model**: every policy-aware query constrained by tenant/global scopes.
-- **Reliability**: no long-lived permission cache for critical checks.
+## Key files to create or modify
+- `app/Http/Middleware/SetOrganizationContext.php` — resolves org from route binding
+- `app/Services/Authorization/PermissionResolver.php` — role → permission lookup with cache
+- `app/Policies/OrganizationPolicy.php` — base policy
+- `app/Policies/ProjectPolicy.php` — project-scoped policy
+- `bootstrap/app.php` — middleware registration order
+- `app/Providers/AuthServiceProvider.php` — policy registration
+- `tests/Feature/Auth/OrganizationAuthorizationTest.php`
 
-## Acceptance checkpoints
-- Authorization decisions reflect immediate membership/role changes.
-- No cross-organization access possible in protected requests.
+## Acceptance criteria
+- [ ] A request without an active organization context is rejected before any business logic runs
+- [ ] A user belonging to Org A cannot access any resource of Org B
+- [ ] Role change for a member takes effect on the immediately following request (no stale cache)
+- [ ] A `Viewer` role member receives `403` attempting any write operation
+- [ ] Forbidden responses have the same shape for both Inertia and JSON API clients
+- [ ] `PermissionResolver` hits Redis on warm requests and falls back to DB on cache miss
 
-## Done criteria
-- `FR-AUTH-030` to `FR-AUTH-035` implemented with integration tests.
+## Related specs
+- [Functional spec](../specs.md) — `FR-AUTH-030` to `FR-AUTH-035`
+- [Technical spec](../specs-technical.md)
