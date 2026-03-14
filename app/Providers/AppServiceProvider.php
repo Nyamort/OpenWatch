@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\Ingestion\ConcurrencyLimiter;
+use App\Services\Ingestion\RecordValidatorRegistry;
+use App\Services\Ingestion\SessionTokenService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(SessionTokenService::class);
+        $this->app->singleton(ConcurrencyLimiter::class);
+        $this->app->singleton(RecordValidatorRegistry::class);
     }
 
     /**

@@ -26,6 +26,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'timezone',
+        'locale',
+        'display_preferences',
     ];
 
     /**
@@ -52,6 +55,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'display_preferences' => 'array',
         ];
     }
 
@@ -92,8 +96,14 @@ class User extends Authenticatable
      */
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, 'organization_members')
-            ->withPivot('role')
-            ->withTimestamps();
+        return $this->belongsToMany(Organization::class, 'organization_members')->withTimestamps();
+    }
+
+    /**
+     * Get notification preferences for the user.
+     */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class);
     }
 }

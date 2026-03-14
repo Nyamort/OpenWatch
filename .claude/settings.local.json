@@ -1,6 +1,9 @@
 {
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "laravel-boost"
   ],
-  "enableAllProjectMcpServers": true
+  "permissions": {
+    "allow": ["Bash(*)", "Write(*)", "Edit(*)"]
+  }
 }

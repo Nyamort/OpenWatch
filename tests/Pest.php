@@ -45,3 +45,18 @@ function something()
 {
     // ..
 }
+
+/**
+ * Insert a minimal telemetry_records row and return its auto-generated ID.
+ * Use this to satisfy the unique FK constraint on extraction tables in tests.
+ */
+function nextTelemetryId(array $ctx = []): int
+{
+    return \Illuminate\Support\Facades\DB::table('telemetry_records')->insertGetId([
+        'organization_id' => $ctx['org']->id ?? 1,
+        'project_id' => $ctx['project']->id ?? 1,
+        'environment_id' => $ctx['env']->id ?? 1,
+        'record_type' => 'request',
+        'recorded_at' => now(),
+    ]);
+}

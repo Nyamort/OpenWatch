@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers\Analytics;
+
+use App\Actions\Analytics\Notification\BuildNotificationDetailData;
+use App\Actions\Analytics\Notification\BuildNotificationIndexData;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class NotificationController extends AnalyticsController
+{
+    public function __construct(
+        private readonly BuildNotificationIndexData $buildIndex,
+        private readonly BuildNotificationDetailData $buildDetail,
+    ) {}
+
+    /**
+     * Display aggregated notification analytics.
+     */
+    public function index(Request $request, string $organization, string $project, string $environment): Response
+    {
+        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $period = $this->buildPeriod($request);
+
+        $data = $this->buildIndex->handle($ctx, $period);
+
+        return Inertia::render('analytics/notifications/index', [
+            'analytics' => $data,
+            'period' => $request->query('period', '24h'),
+        ]);
+    }
+
+    /**
+     * Display a single notification record.
+     */
+    public function show(Request $request, string $organization, string $project, string $environment, int $notification): Response
+    {
+        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+
+        $data = $this->buildDetail->handle($ctx, $notification);
+
+        return Inertia::render('analytics/notifications/show', [
+            'analytics' => $data,
+        ]);
+    }
+}
