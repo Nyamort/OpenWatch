@@ -23,6 +23,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'active_organization_id',
+        'active_project_id',
+        'active_environment_id',
         'name',
         'email',
         'password',
@@ -52,6 +54,8 @@ class User extends Authenticatable
     {
         return [
             'active_organization_id' => 'integer',
+            'active_project_id' => 'integer',
+            'active_environment_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
@@ -65,6 +69,22 @@ class User extends Authenticatable
     public function activeOrganization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'active_organization_id');
+    }
+
+    /**
+     * Get the active project for the user.
+     */
+    public function activeProject(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'active_project_id');
+    }
+
+    /**
+     * Get the active environment for the user.
+     */
+    public function activeEnvironment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class, 'active_environment_id');
     }
 
     /**

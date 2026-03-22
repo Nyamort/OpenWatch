@@ -10,6 +10,8 @@ use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationInvitationController;
 use App\Http\Controllers\Organization\OrganizationMemberController;
 use App\Http\Controllers\Organization\OrganizationSwitcherController;
+use App\Http\Controllers\Project\EnvironmentSwitcherController;
+use App\Http\Controllers\Project\ProjectSwitcherController;
 use App\Http\Controllers\Projects\EnvironmentController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTokenController;
@@ -31,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
     Route::post('organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::post('organizations/switch', [OrganizationSwitcherController::class, 'store'])->name('organizations.switch');
+    Route::post('projects/switch', [ProjectSwitcherController::class, 'store'])->name('projects.switch');
+    Route::post('environments/switch', [EnvironmentSwitcherController::class, 'store'])->name('environments.switch');
 
     // Organization-scoped routes (require membership)
     Route::middleware(['organization.member'])->prefix('organizations/{organization}')->name('organizations.')->group(function () {

@@ -37,7 +37,11 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $activeOrg = null;
+        $activeProject = null;
+        $activeEnvironment = null;
         $organizations = [];
+        $projects = [];
+        $environments = [];
 
         if ($user) {
             $organizations = $user->organizations()
@@ -49,6 +53,30 @@ class HandleInertiaRequests extends Middleware
             if ($user->active_organization_id) {
                 $activeOrg = collect($organizations)->firstWhere('id', $user->active_organization_id)
                     ?? $user->activeOrganization()->select(['id', 'name', 'slug'])->first()?->toArray();
+
+                $projects = \App\Models\Project::query()
+                    ->where('organization_id', $user->active_organization_id)
+                    ->select(['id', 'name', 'slug'])
+                    ->orderBy('name')
+                    ->get()
+                    ->toArray();
+            }
+
+            if ($user->active_project_id) {
+                $activeProject = collect($projects)->firstWhere('id', $user->active_project_id)
+                    ?? $user->activeProject()->select(['id', 'name', 'slug'])->first()?->toArray();
+
+                $environments = \App\Models\Environment::query()
+                    ->where('project_id', $user->active_project_id)
+                    ->select(['id', 'name', 'slug'])
+                    ->orderBy('name')
+                    ->get()
+                    ->toArray();
+            }
+
+            if ($user->active_environment_id) {
+                $activeEnvironment = collect($environments)->firstWhere('id', $user->active_environment_id)
+                    ?? $user->activeEnvironment()->select(['id', 'name', 'slug'])->first()?->toArray();
             }
         }
 
@@ -61,7 +89,11 @@ class HandleInertiaRequests extends Middleware
                 'locale' => $user?->locale,
             ],
             'activeOrganization' => $activeOrg,
+            'activeProject' => $activeProject,
+            'activeEnvironment' => $activeEnvironment,
             'organizations' => $organizations,
+            'projects' => $projects,
+            'environments' => $environments,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

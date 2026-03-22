@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { OrgSwitcher } from '@/components/org-switcher';
+import { ContextSelector } from '@/components/context-selector';
 import {
     Sidebar,
     SidebarContent,
@@ -65,7 +65,7 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <OrgSwitcher />
+                <ContextSelector />
             </SidebarHeader>
 
             <SidebarContent>
