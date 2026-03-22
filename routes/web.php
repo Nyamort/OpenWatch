@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Alerts\AlertRuleController;
+use App\Http\Controllers\Issues\IssueCommentController;
+use App\Http\Controllers\Issues\IssueController;
+use App\Http\Controllers\Issues\IssueDetailController;
 use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationInvitationController;
 use App\Http\Controllers\Organization\OrganizationMemberController;
@@ -55,6 +59,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Tokens
         Route::post('projects/{project}/environments/{environment}/tokens', [ProjectTokenController::class, 'store'])->name('projects.environments.tokens.store');
         Route::delete('projects/{project}/environments/{environment}/tokens/{token}', [ProjectTokenController::class, 'destroy'])->name('projects.environments.tokens.destroy');
+
+        // Issues
+        Route::prefix('projects/{project}/environments/{environment}/issues')
+            ->name('issues.')
+            ->group(function () {
+                Route::get('/', [IssueController::class, 'index'])->name('index');
+                Route::post('/', [IssueController::class, 'store'])->name('store');
+                Route::post('/bulk', [IssueController::class, 'bulkUpdate'])->name('bulk-update');
+                Route::patch('/{issue}', [IssueController::class, 'update'])->name('update');
+                Route::get('/{issue}', [IssueDetailController::class, 'show'])->name('show');
+                Route::post('/{issue}/comments', [IssueCommentController::class, 'store'])->name('comments.store');
+                Route::patch('/{issue}/comments/{comment}', [IssueCommentController::class, 'update'])->name('comments.update');
+                Route::delete('/{issue}/comments/{comment}', [IssueCommentController::class, 'destroy'])->name('comments.destroy');
+            });
+
+        // Alert Rules
+        Route::prefix('projects/{project}/environments/{environment}/alert-rules')
+            ->name('alert-rules.')
+            ->group(function () {
+                Route::get('/', [AlertRuleController::class, 'index'])->name('index');
+                Route::get('/create', [AlertRuleController::class, 'create'])->name('create');
+                Route::post('/', [AlertRuleController::class, 'store'])->name('store');
+                Route::get('/{alertRule}', [AlertRuleController::class, 'edit'])->name('edit');
+                Route::patch('/{alertRule}', [AlertRuleController::class, 'update'])->name('update');
+                Route::delete('/{alertRule}', [AlertRuleController::class, 'destroy'])->name('destroy');
+                Route::patch('/{alertRule}/toggle', [AlertRuleController::class, 'toggle'])->name('toggle');
+            });
     });
 
     // Accept invitation (no org membership required)

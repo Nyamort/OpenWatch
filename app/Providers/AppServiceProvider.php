@@ -2,12 +2,19 @@
 
 namespace App\Providers;
 
+use App\Models\AlertRule;
+use App\Models\Organization;
+use App\Models\Project;
+use App\Policies\AlertRulePolicy;
+use App\Policies\OrganizationPolicy;
+use App\Policies\ProjectPolicy;
 use App\Services\Ingestion\ConcurrencyLimiter;
 use App\Services\Ingestion\RecordValidatorRegistry;
 use App\Services\Ingestion\SessionTokenService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -28,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Organization::class, OrganizationPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
+        Gate::policy(AlertRule::class, AlertRulePolicy::class);
+
         $this->configureDefaults();
     }
 

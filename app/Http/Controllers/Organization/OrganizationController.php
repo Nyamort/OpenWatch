@@ -80,6 +80,8 @@ class OrganizationController extends Controller
      */
     public function update(Request $request, Organization $organization, UpdateOrganization $action): RedirectResponse
     {
+        $this->authorize('update', $organization);
+
         $data = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['sometimes', 'required', 'string', 'max:255', 'alpha_dash'],

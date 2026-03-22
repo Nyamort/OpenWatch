@@ -2,6 +2,7 @@
 
 use App\Actions\Observability\RefreshOrganizationDashboardSnapshot;
 use App\Actions\Project\RecalculateProjectHealth;
+use App\Jobs\EvaluateAlertRules;
 use App\Models\AuditLog;
 use App\Models\Organization;
 use App\Models\Project;
@@ -133,3 +134,4 @@ Schedule::command('observability:prune')->dailyAt('02:00');
 Schedule::command('observability:anonymize-audit')->dailyAt('02:10');
 Schedule::command('observability:refresh-dashboard-snapshots')->everyFiveMinutes();
 Schedule::command('projects:refresh-health')->everyMinute();
+Schedule::job(new EvaluateAlertRules)->everyMinute();
