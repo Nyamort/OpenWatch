@@ -201,11 +201,14 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         setErrors({});
 
         try {
+            const xsrfToken = decodeURIComponent(
+                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+            );
             const res = await fetch('/wizard/app', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
+                    'X-XSRF-TOKEN': xsrfToken,
                     Accept: 'application/json',
                 },
                 body: JSON.stringify({
@@ -262,7 +265,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
 
     const orgName = activeOrganization?.name ?? '—';
-    const projectName = created?.project.name ?? (appName || '—');
+    const projectName = created?.project.name ?? (appName || 'New Application');
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>

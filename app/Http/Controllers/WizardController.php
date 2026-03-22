@@ -39,6 +39,7 @@ class WizardController extends Controller
             'name' => $data['env_name'],
             'slug' => $data['env_slug'],
             'type' => $data['env_type'],
+            'color' => $data['env_color'] ?? null,
             'status' => 'active',
             'health_status' => 'inactive',
         ]);
