@@ -154,8 +154,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
     // Step 1 form
     const [appName, setAppName] = useState('');
-    const [appSlug, setAppSlug] = useState(false as unknown as string);
-    const [appSlugManual, setAppSlugManual] = useState(false);
     const [envName, setEnvName] = useState('Production');
     const [envSlug, setEnvSlug] = useState('production');
     const [envColor, setEnvColor] = useState('green');
@@ -172,8 +170,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         setLoading(false);
         setErrors({});
         setAppName('');
-        setAppSlug('' as unknown as string);
-        setAppSlugManual(false);
         setEnvName('Production');
         setEnvSlug('production');
         setEnvColor('green');
@@ -188,9 +184,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
     function handleAppNameChange(value: string) {
         setAppName(value);
-        if (!appSlugManual) {
-            setAppSlug(slugify(value) as unknown as string);
-        }
     }
 
     function handleEnvNameChange(value: string) {
@@ -218,7 +211,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                 body: JSON.stringify({
                     organization_id: activeOrganization.id,
                     app_name: appName,
-                    app_slug: appSlug as unknown as string,
+                    app_slug: slugify(appName),
                     env_name: envName,
                     env_slug: envSlug,
                     env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
@@ -266,8 +259,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         };
     }, [step, created]);
 
-    const appSlugStr = appSlug as unknown as string;
-
     const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
 
     const orgName = activeOrganization?.name ?? '—';
@@ -313,17 +304,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         placeholder="My Application"
                                         className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                                     />
-                                    {appSlugStr && (
-                                        <Input
-                                            value={appSlugStr}
-                                            onChange={(e) => {
-                                                setAppSlugManual(true);
-                                                setAppSlug(e.target.value as unknown as string);
-                                            }}
-                                            placeholder="slug"
-                                            className="bg-zinc-900 border-zinc-700 text-zinc-500 text-xs placeholder:text-zinc-600 focus-visible:ring-zinc-600"
-                                        />
-                                    )}
                                     {errors.app_name && <p className="text-xs text-rose-400">{errors.app_name}</p>}
                                 </div>
 
