@@ -39,8 +39,8 @@ export default function OrganizationsShow({ organization }: Props) {
                         href={`${baseUrl}/projects`}
                         className="block rounded-lg border bg-card p-5 hover:shadow-sm transition-all"
                     >
-                        <p className="font-medium text-foreground">Projects</p>
-                        <p className="text-sm text-muted-foreground mt-1">View and manage projects</p>
+                        <p className="font-medium text-foreground">Applications</p>
+                        <p className="text-sm text-muted-foreground mt-1">View and manage applications</p>
                     </Link>
 
                     <Link

@@ -49,7 +49,7 @@ export default function EnvironmentsShow({ organization, project, environment }:
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: organization.name, href: orgUrl },
-        { title: project.name, href: projectUrl },
+        { title: project.name, href: projectUrl, },
         { title: 'Environments', href: environmentsUrl },
         { title: environment.name, href: environmentUrl },
     ];

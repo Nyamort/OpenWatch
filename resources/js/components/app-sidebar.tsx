@@ -40,7 +40,7 @@ export function AppSidebar() {
     const orgNavItems: NavItem[] = activeOrganization
         ? [
               {
-                  title: 'Projects',
+                  title: 'Applications',
                   href: projectsIndex({ organization: activeOrganization }),
                   icon: FolderOpen,
               },

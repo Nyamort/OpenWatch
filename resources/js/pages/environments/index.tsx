@@ -55,7 +55,7 @@ export default function EnvironmentsIndex({ organization, project, environments 
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: organization.name, href: orgUrl },
-        { title: project.name, href: projectUrl },
+        { title: project.name, href: projectUrl, },
         { title: 'Environments', href: environmentsUrl },
     ];
 

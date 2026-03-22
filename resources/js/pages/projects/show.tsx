@@ -41,7 +41,7 @@ export default function ProjectsShow({ organization, project }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: organization.name, href: orgUrl },
-        { title: 'Projects', href: `${orgUrl}/projects` },
+        { title: 'Applications', href: `${orgUrl}/projects` },
         { title: project.name, href: projectUrl },
     ];
 

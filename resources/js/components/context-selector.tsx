@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { Check, ChevronRight, ChevronsUpDown, Network, Plus, Search } from 'lucide-react';
+import { Check, ChevronRight, ChevronsUpDown, Network, Plus, Search, Settings } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
     DropdownMenu,
@@ -9,7 +9,7 @@ import {
 import { store as switchOrg } from '@/actions/App/Http/Controllers/Organization/OrganizationSwitcherController';
 import { store as switchProject } from '@/actions/App/Http/Controllers/Project/ProjectSwitcherController';
 import { store as switchEnvironment } from '@/actions/App/Http/Controllers/Project/EnvironmentSwitcherController';
-import { create as createOrgRoute } from '@/routes/organizations';
+import { index as projectsIndex } from '@/routes/organizations/projects';
 
 interface Environment {
     id: number;
@@ -52,15 +52,13 @@ function avatarColor(name: string): string {
 }
 
 export function ContextSelector() {
-    const { activeProject, activeEnvironment, projectGroups } = usePage().props as unknown as SharedProps;
+    const { activeOrganization, activeProject, activeEnvironment, projectGroups } =
+        usePage().props as unknown as SharedProps;
 
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [previewProject, setPreviewProject] = useState<Project | null>(null);
     const searchRef = useRef<HTMLInputElement>(null);
-
-    const displayProject = activeProject ?? null;
-    const displayEnvironment = activeEnvironment ?? null;
 
     const currentPreview = previewProject ?? activeProject ?? null;
 
@@ -76,18 +74,14 @@ export function ContextSelector() {
               .filter((g) => g.projects.length > 0)
         : allGroups;
 
-    function handleSelectProject(group: ProjectGroup, project: Project) {
+    function handleSelectProject(project: Project) {
         setPreviewProject(project);
     }
 
     function handleSelectEnvironment(env: Environment) {
         const targetProject = previewProject ?? activeProject;
+        if (!targetProject) return;
 
-        if (!targetProject) {
-            return;
-        }
-
-        // Find which org this project belongs to
         const group = allGroups.find((g) => g.projects.some((p) => p.id === targetProject.id));
         const targetOrg = group?.organization;
 
@@ -97,22 +91,13 @@ export function ContextSelector() {
             setSearch('');
         };
 
-        // Chain: switch org (if needed) → switch project (if needed) → switch env
         const switchEnvFn = () =>
-            router.post(
-                switchEnvironment().url,
-                { environment_id: env.id },
-                { onFinish: finish },
-            );
+            router.post(switchEnvironment().url, { environment_id: env.id }, { onFinish: finish });
 
         const switchProjectFn = () =>
-            router.post(
-                switchProject().url,
-                { project_id: targetProject.id },
-                { onSuccess: switchEnvFn },
-            );
+            router.post(switchProject().url, { project_id: targetProject.id }, { onSuccess: switchEnvFn });
 
-        const needsOrgSwitch = targetOrg && targetOrg.id !== (usePage().props as unknown as SharedProps).activeOrganization?.id;
+        const needsOrgSwitch = targetOrg && targetOrg.id !== activeOrganization?.id;
         const needsProjectSwitch = targetProject.id !== activeProject?.id;
 
         if (needsOrgSwitch) {
@@ -134,29 +119,32 @@ export function ContextSelector() {
         }
     }
 
+    function handleNewApplication() {
+        setOpen(false);
+        if (activeOrganization) {
+            router.visit(projectsIndex({ organization: activeOrganization }).url);
+        }
+    }
+
     return (
         <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
                 <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring">
-                    {/* Avatar */}
                     <div
                         className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${
-                            displayProject ? avatarColor(displayProject.name) : 'bg-muted'
+                            activeProject ? avatarColor(activeProject.name) : 'bg-muted'
                         }`}
                     >
-                        {displayProject ? displayProject.name.charAt(0).toUpperCase() : '?'}
+                        {activeProject ? activeProject.name.charAt(0).toUpperCase() : '?'}
                     </div>
-
-                    {/* Labels */}
                     <div className="grid flex-1 leading-tight">
                         <span className="truncate text-sm font-semibold text-sidebar-foreground">
-                            {displayProject ? displayProject.name : 'Select project'}
+                            {activeProject ? activeProject.name : 'Select application'}
                         </span>
                         <span className="truncate text-xs text-sidebar-foreground/50">
-                            {displayEnvironment ? displayEnvironment.name : 'No environment'}
+                            {activeEnvironment ? activeEnvironment.name : 'No environment'}
                         </span>
                     </div>
-
                     <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/40" />
                 </button>
             </DropdownMenuTrigger>
@@ -169,7 +157,7 @@ export function ContextSelector() {
                 style={{ width: 'auto', minWidth: 0 }}
                 onCloseAutoFocus={(e) => e.preventDefault()}
             >
-                {/* Left panel — Project selector */}
+                {/* Left panel — Application selector */}
                 <div className="flex w-56 flex-col border-r border-border">
                     {/* Search */}
                     <div className="flex items-center gap-2 border-b border-border px-3 py-2">
@@ -178,24 +166,34 @@ export function ContextSelector() {
                             ref={searchRef}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Find project..."
+                            placeholder="Find application..."
                             className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
                         />
                     </div>
 
-                    {/* Project groups */}
+                    {/* Application groups */}
                     <div className="flex-1 overflow-y-auto py-1">
                         {filteredGroups.map((group) => (
                             <div key={group.organization.id}>
                                 {/* Org header */}
-                                <div className="flex items-center gap-1.5 px-3 py-1.5">
-                                    <Network className="size-3 text-muted-foreground" />
-                                    <span className="truncate text-xs font-medium text-muted-foreground">
-                                        {group.organization.name}
-                                    </span>
+                                <div className="flex items-center justify-between px-3 py-1.5">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <Network className="size-3 shrink-0 text-muted-foreground" />
+                                        <span className="truncate text-xs font-medium text-muted-foreground">
+                                            {group.organization.name}
+                                        </span>
+                                    </div>
+                                    <a
+                                        href={`/organizations/${group.organization.slug}/edit`}
+                                        onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+                                        className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
+                                        title="Organization settings"
+                                    >
+                                        <Settings className="size-3" />
+                                    </a>
                                 </div>
 
-                                {/* Projects */}
+                                {/* Applications */}
                                 {group.projects.map((project) => {
                                     const isActive = project.id === activeProject?.id;
                                     const isPreviewed = project.id === currentPreview?.id;
@@ -203,7 +201,7 @@ export function ContextSelector() {
                                     return (
                                         <button
                                             key={project.id}
-                                            onClick={() => handleSelectProject(group, project)}
+                                            onClick={() => handleSelectProject(project)}
                                             className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent ${
                                                 isPreviewed ? 'bg-accent' : ''
                                             }`}
@@ -223,7 +221,7 @@ export function ContextSelector() {
                                 })}
 
                                 {group.projects.length === 0 && (
-                                    <p className="px-3 py-2 text-xs text-muted-foreground">No projects</p>
+                                    <p className="px-3 py-2 text-xs text-muted-foreground">No applications</p>
                                 )}
                             </div>
                         ))}
@@ -236,10 +234,7 @@ export function ContextSelector() {
                     {/* New application */}
                     <div className="border-t border-border p-1">
                         <button
-                            onClick={() => {
-                                setOpen(false);
-                                router.visit(createOrgRoute().url);
-                            }}
+                            onClick={handleNewApplication}
                             className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
                             <Plus className="size-3.5" />
@@ -280,7 +275,7 @@ export function ContextSelector() {
                             )
                         ) : (
                             <p className="px-3 py-3 text-center text-xs text-muted-foreground">
-                                Select a project
+                                Select an application
                             </p>
                         )}
                     </div>

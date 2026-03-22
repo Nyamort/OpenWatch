@@ -34,7 +34,7 @@ export default function ProjectsIndex({ organization, projects }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: organization.name, href: baseUrl },
-        { title: 'Projects', href: `${baseUrl}/projects` },
+        { title: 'Applications', href: `${baseUrl}/projects` },
     ];
 
     const form = useForm({
@@ -70,19 +70,19 @@ export default function ProjectsIndex({ organization, projects }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Projects" />
+            <Head title="Applications" />
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">Applications</h1>
                     <Button onClick={() => setShowCreateForm((v) => !v)}>
-                        {showCreateForm ? 'Cancel' : 'Create Project'}
+                        {showCreateForm ? 'Cancel' : 'Create Application'}
                     </Button>
                 </div>
 
                 {/* Create form */}
                 {showCreateForm && (
                     <div className="rounded-lg border bg-card p-6">
-                        <h2 className="text-base font-semibold mb-4 text-foreground">New Project</h2>
+                        <h2 className="text-base font-semibold mb-4 text-foreground">New Application</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="project-name">Name</Label>
@@ -91,7 +91,7 @@ export default function ProjectsIndex({ organization, projects }: Props) {
                                     type="text"
                                     value={form.data.name}
                                     onChange={handleNameChange}
-                                    placeholder="My Project"
+                                    placeholder="My Application"
                                     required
                                 />
                                 <InputError message={form.errors.name} />
@@ -104,7 +104,7 @@ export default function ProjectsIndex({ organization, projects }: Props) {
                                     type="text"
                                     value={form.data.slug}
                                     onChange={(e) => form.setData('slug', e.target.value)}
-                                    placeholder="my-project"
+                                    placeholder="my-application"
                                     required
                                 />
                                 <InputError message={form.errors.slug} />
@@ -124,7 +124,7 @@ export default function ProjectsIndex({ organization, projects }: Props) {
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={form.processing}>
-                                    Create Project
+                                    Create Application
                                 </Button>
                                 <Button
                                     type="button"
@@ -144,8 +144,8 @@ export default function ProjectsIndex({ organization, projects }: Props) {
                 {/* Project list */}
                 {projects.length === 0 ? (
                     <div className="rounded-lg border border-dashed border  p-12 text-center">
-                        <p className="text-muted-foreground">No projects yet.</p>
-                        <p className="text-sm text-muted-foreground mt-1">Create your first project to get started.</p>
+                        <p className="text-muted-foreground">No applications yet.</p>
+                        <p className="text-sm text-muted-foreground mt-1">Create your first application to get started.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
