@@ -1,6 +1,6 @@
 # Task T-013: Payload Record Type Validation
 - Domain: `api`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-012`, `T-030`
 

@@ -1,6 +1,6 @@
 # Task T-011: Agent Auth Bootstrap — `POST /api/agent-auth`
 - Domain: `api`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-010`, `T-029`
 

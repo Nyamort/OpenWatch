@@ -1,6 +1,6 @@
 # Task T-009: Project and Environment Lifecycle
 - Domain: `projects`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-005`, `T-006`, `T-029`
 

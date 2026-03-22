@@ -1,6 +1,6 @@
 # Task T-032: User Security and Notification Settings
 - Domain: `user-settings`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-028`, `T-001`
 

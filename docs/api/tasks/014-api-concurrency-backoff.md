@@ -1,6 +1,6 @@
 # Task T-014: Concurrency Limits and Backoff Contract
 - Domain: `api`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-011`, `T-012`
 

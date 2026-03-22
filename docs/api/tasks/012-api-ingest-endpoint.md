@@ -1,6 +1,6 @@
 # Task T-012: Ingestion Endpoint — `POST {ingest_url}`
 - Domain: `api`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-011`, `T-030`
 

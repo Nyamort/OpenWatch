@@ -1,6 +1,6 @@
 # Task T-023: Issue List and Lifecycle Actions
 - Domain: `issues`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-022`
 

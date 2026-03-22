@@ -1,6 +1,6 @@
 # Task T-029: Cross-Cutting Tenant Resolution, Policy Gates, and API Error Contract
 - Domain: `cross-cutting`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-001`
 

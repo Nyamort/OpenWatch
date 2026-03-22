@@ -1,6 +1,6 @@
 # Task T-004: Organization-Scoped Authorization Integration
 - Domain: `auth`, shared with `organisation`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-001`, `T-005`, `T-006`, `T-029`
 

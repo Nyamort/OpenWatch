@@ -1,6 +1,6 @@
 # Task T-028: User Settings — Profile and Preferences
 - Domain: `user-settings`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-001`
 

@@ -1,6 +1,6 @@
 # Task T-020: Outgoing Request, Notification, and Scheduled-Task Analytics
 - Domain: `analytics`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-015`
 

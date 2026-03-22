@@ -1,6 +1,6 @@
 # Task T-024: Issue Detail, Occurrences, Activity, and Comments
 - Domain: `issues`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-023`
 

@@ -1,6 +1,6 @@
 # Task T-027: Dashboard Core Experience
 - Domain: `dashboard`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-015`, `T-022`, `T-025`
 

@@ -1,6 +1,6 @@
 # Task T-002: Email Verification, Password Reset and Step-Up Confirmation
 - Domain: `auth`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-001`
 

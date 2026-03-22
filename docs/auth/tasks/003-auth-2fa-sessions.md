@@ -1,6 +1,6 @@
 # Task T-003: Two-Factor Authentication and Session Controls
 - Domain: `auth`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-001`, `T-002`
 

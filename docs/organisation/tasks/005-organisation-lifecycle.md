@@ -1,6 +1,6 @@
 # Task T-005: Organization Lifecycle and Tenant Boundaries
 - Domain: `organisation`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-001`
 

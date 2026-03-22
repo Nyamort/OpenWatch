@@ -1,6 +1,6 @@
 # Task T-006: Memberships, Invitations, and Roles
 - Domain: `organisation`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-005`
 

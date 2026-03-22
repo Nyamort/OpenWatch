@@ -1,6 +1,6 @@
 # Task T-007: Organization Limits, Plan Gates, and Org Switching
 - Domain: `organisation`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-005`, `T-006`
 

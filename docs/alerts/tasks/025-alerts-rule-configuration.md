@@ -1,6 +1,6 @@
 # Task T-025: Threshold Alert Rule Configuration and Management
 - Domain: `alerts`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-009`, `T-006`, `T-029`
 

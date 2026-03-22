@@ -1,6 +1,6 @@
 # Task T-001: Foundation Authentication Flows (Registration / Login / Logout)
 - Domain: `auth`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: none
 

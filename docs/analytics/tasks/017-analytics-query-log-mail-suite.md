@@ -1,6 +1,6 @@
 # Task T-017: Query, Log, and Mail Analytics
 - Domain: `analytics`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-015`
 

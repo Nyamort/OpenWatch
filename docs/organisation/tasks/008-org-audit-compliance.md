@@ -1,6 +1,6 @@
 # Task T-008: Organization Audit Log and Compliance Controls
 - Domain: `organisation`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P1`
 - Dependencies: `T-005`, `T-006`
 

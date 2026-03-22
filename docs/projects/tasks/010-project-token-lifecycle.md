@@ -1,6 +1,6 @@
 # Task T-010: Environment Ingestion Token Lifecycle
 - Domain: `projects`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-009`
 

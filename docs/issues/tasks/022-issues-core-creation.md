@@ -1,6 +1,6 @@
 # Task T-022: Issue Creation and Deduplication
 - Domain: `issues`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-015`, `T-021`, `T-029`
 

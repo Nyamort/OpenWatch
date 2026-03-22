@@ -1,6 +1,6 @@
 # Task T-030: Persistence, Partitioning, and Observability Infrastructure
 - Domain: `cross-cutting`
-- Status: `not started`
+- Status: `completed`
 - Priority: `P0`
 - Dependencies: `T-029`
 
