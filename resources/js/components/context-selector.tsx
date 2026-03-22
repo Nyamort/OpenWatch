@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Check, ChevronRight, ChevronsUpDown, Network, Plus, Search, Settings } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
@@ -180,14 +180,14 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                             {group.organization.name}
                                         </span>
                                     </div>
-                                    <a
+                                    <Link
                                         href={`/organizations/${group.organization.slug}/edit`}
-                                        onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+                                        onClick={() => setOpen(false)}
                                         className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
                                         title="Organization settings"
                                     >
                                         <Settings className="size-3" />
-                                    </a>
+                                    </Link>
                                 </div>
 
                                 {/* Applications */}
