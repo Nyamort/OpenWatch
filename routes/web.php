@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Issues\IssueCommentController;
 use App\Http\Controllers\Issues\IssueController;
 use App\Http\Controllers\Issues\IssueDetailController;
+use App\Http\Controllers\Organization\AuditController;
 use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationInvitationController;
 use App\Http\Controllers\Organization\OrganizationMemberController;
@@ -72,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::patch('/{issue}/comments/{comment}', [IssueCommentController::class, 'update'])->name('comments.update');
                 Route::delete('/{issue}/comments/{comment}', [IssueCommentController::class, 'destroy'])->name('comments.destroy');
             });
+
+        // Audit Log
+        Route::get('audit', [AuditController::class, 'index'])->name('audit');
 
         // Alert Rules
         Route::prefix('projects/{project}/environments/{environment}/alert-rules')
