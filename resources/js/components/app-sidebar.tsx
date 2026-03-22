@@ -4,11 +4,9 @@ import {
     Building2,
     FolderOpen,
     LayoutGrid,
-    Settings,
     Shield,
     Users,
 } from 'lucide-react';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -20,27 +18,16 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { dashboard } from '@/routes';
 import { index as orgsIndex, audit } from '@/routes/organizations';
 import { index as membersIndex } from '@/routes/organizations/members';
 import { index as projectsIndex } from '@/routes/organizations/projects';
-import { edit as editProfile } from '@/routes/profile';
-
 interface ActiveOrg {
     id: number;
     name: string;
     slug: string;
 }
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Settings',
-        href: editProfile(),
-        icon: Settings,
-    },
-];
 
 export function AppSidebar() {
     const { activeOrganization } = usePage<{ activeOrganization?: ActiveOrg | null }>().props;
@@ -105,7 +92,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
