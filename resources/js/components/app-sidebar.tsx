@@ -1,14 +1,10 @@
 import { usePage } from '@inertiajs/react';
-import {
-    Bell,
-    FolderOpen,
-    LayoutGrid,
-    Shield,
-    Users,
-} from 'lucide-react';
+import { Bell, LayoutGrid, Shield, Users } from 'lucide-react';
+import { useState } from 'react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { ContextSelector } from '@/components/context-selector';
+import { SetupWizardDialog } from '@/components/setup-wizard-dialog';
 import {
     Sidebar,
     SidebarContent,
@@ -18,7 +14,6 @@ import {
 import { dashboard } from '@/routes';
 import { audit } from '@/routes/organizations';
 import { index as membersIndex } from '@/routes/organizations/members';
-import { index as projectsIndex } from '@/routes/organizations/projects';
 
 interface ActiveOrg {
     id: number;
@@ -28,6 +23,7 @@ interface ActiveOrg {
 
 export function AppSidebar() {
     const { activeOrganization } = usePage<{ activeOrganization?: ActiveOrg | null }>().props;
+    const [wizardOpen, setWizardOpen] = useState(false);
 
     const mainNavItems: NavItem[] = [
         {
@@ -39,11 +35,6 @@ export function AppSidebar() {
 
     const orgNavItems: NavItem[] = activeOrganization
         ? [
-              {
-                  title: 'Applications',
-                  href: projectsIndex({ organization: activeOrganization }),
-                  icon: FolderOpen,
-              },
               {
                   title: 'Members',
                   href: membersIndex({ organization: activeOrganization }),
@@ -65,8 +56,9 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <ContextSelector />
+                <ContextSelector onNewApplication={() => setWizardOpen(true)} />
             </SidebarHeader>
+            <SetupWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />

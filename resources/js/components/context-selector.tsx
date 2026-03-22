@@ -9,7 +9,6 @@ import {
 import { store as switchOrg } from '@/actions/App/Http/Controllers/Organization/OrganizationSwitcherController';
 import { store as switchProject } from '@/actions/App/Http/Controllers/Project/ProjectSwitcherController';
 import { store as switchEnvironment } from '@/actions/App/Http/Controllers/Project/EnvironmentSwitcherController';
-import { index as projectsIndex } from '@/routes/organizations/projects';
 
 interface Environment {
     id: number;
@@ -51,7 +50,7 @@ function avatarColor(name: string): string {
     return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
-export function ContextSelector() {
+export function ContextSelector({ onNewApplication }: { onNewApplication?: () => void }) {
     const { activeOrganization, activeProject, activeEnvironment, projectGroups } =
         usePage().props as unknown as SharedProps;
 
@@ -121,9 +120,7 @@ export function ContextSelector() {
 
     function handleNewApplication() {
         setOpen(false);
-        if (activeOrganization) {
-            router.visit(projectsIndex({ organization: activeOrganization }).url);
-        }
+        onNewApplication?.();
     }
 
     return (

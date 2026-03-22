@@ -15,6 +15,7 @@ use App\Http\Controllers\Project\ProjectSwitcherController;
 use App\Http\Controllers\Projects\EnvironmentController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTokenController;
+use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('organizations/switch', [OrganizationSwitcherController::class, 'store'])->name('organizations.switch');
     Route::post('projects/switch', [ProjectSwitcherController::class, 'store'])->name('projects.switch');
     Route::post('environments/switch', [EnvironmentSwitcherController::class, 'store'])->name('environments.switch');
+    Route::post('wizard/app', [WizardController::class, 'store'])->name('wizard.app');
 
     // Organization-scoped routes (require membership)
     Route::middleware(['organization.member'])->prefix('organizations/{organization}')->name('organizations.')->group(function () {
@@ -50,7 +52,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('invitations/{invitation}', [OrganizationInvitationController::class, 'destroy'])->name('invitations.destroy');
 
         // Projects
-        Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
         Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
         Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
         Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
