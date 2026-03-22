@@ -95,7 +95,7 @@ export function OrgSwitcher() {
                         <DropdownMenuSeparator />
 
                         <DropdownMenuItem asChild className="gap-2 p-2 cursor-pointer">
-                            <a href={createOrg()}>
+                            <a href={createOrg().url}>
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-card">
                                     <Plus className="size-4" />
                                 </div>
