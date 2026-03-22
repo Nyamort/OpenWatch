@@ -1,4 +1,4 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Building2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import {
     DropdownMenu,
@@ -31,14 +31,11 @@ export function OrgSwitcher() {
 
     const { state } = useSidebar();
 
-    const form = useForm<{ organization_id: number | null }>({ organization_id: null });
-
     function handleSwitch(org: Org) {
         if (org.id === activeOrganization?.id) {
             return;
         }
-        form.setData('organization_id', org.id);
-        form.submit(switchOrg());
+        router.post(switchOrg().url, { organization_id: org.id });
     }
 
     const active = activeOrganization ?? null;
