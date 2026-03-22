@@ -7,31 +7,23 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editPreferences } from '@/routes/preferences';
+import { edit as editNotifications } from '@/routes/notifications';
+import { index as sessionsIndex } from '@/routes/sessions';
+import { show as showAccount } from '@/routes/account';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 
 const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Password',
-        href: editPassword(),
-        icon: null,
-    },
-    {
-        title: 'Two-Factor Auth',
-        href: show(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
+    { title: 'Profile', href: edit(), icon: null },
+    { title: 'Preferences', href: editPreferences(), icon: null },
+    { title: 'Password', href: editPassword(), icon: null },
+    { title: 'Two-Factor Auth', href: show(), icon: null },
+    { title: 'Notifications', href: editNotifications(), icon: null },
+    { title: 'Sessions', href: sessionsIndex(), icon: null },
+    { title: 'Account', href: showAccount(), icon: null },
+    { title: 'Appearance', href: editAppearance(), icon: null },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
