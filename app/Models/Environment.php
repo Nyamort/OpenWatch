@@ -34,6 +34,11 @@ class Environment extends Model
      *
      * @return array<string, string>
      */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected function casts(): array
     {
         return [

@@ -34,7 +34,7 @@ function validRulePayload(array $ctx): array
 
 function alertRuleUrl(array $ctx, string $suffix = ''): string
 {
-    return "/organizations/{$ctx['org']->id}/projects/{$ctx['project']->id}/environments/{$ctx['env']->id}/alert-rules{$suffix}";
+    return "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/alert-rules{$suffix}";
 }
 
 test('owner can create alert rule', function () {

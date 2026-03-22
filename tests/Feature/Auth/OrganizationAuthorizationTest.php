@@ -38,7 +38,7 @@ test('viewer cannot update organization', function () {
         'organization_role_id' => $viewerRole->id,
     ]);
 
-    $response = $this->actingAs($viewer)->patch("/organizations/{$org->id}", ['name' => 'Hacked']);
+    $response = $this->actingAs($viewer)->patch("/organizations/{$org->slug}", ['name' => 'Hacked']);
     $response->assertStatus(403);
 });
 
@@ -46,7 +46,7 @@ test('owner can update organization', function () {
     $owner = User::factory()->create();
     $org = (new CreateOrganization)->handle($owner, ['name' => 'My Org', 'slug' => 'my-org-'.uniqid()]);
 
-    $response = $this->actingAs($owner)->patch("/organizations/{$org->id}", [
+    $response = $this->actingAs($owner)->patch("/organizations/{$org->slug}", [
         'name' => 'Updated Org',
         'slug' => $org->slug,
     ]);
