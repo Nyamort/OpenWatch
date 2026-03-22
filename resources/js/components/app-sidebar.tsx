@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import {
     Bell,
     FolderOpen,
@@ -14,12 +14,7 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarSeparator,
 } from '@/components/ui/sidebar';
-import AppLogo from './app-logo';
 import { dashboard } from '@/routes';
 import { audit } from '@/routes/organizations';
 import { index as membersIndex } from '@/routes/organizations/members';
@@ -70,21 +65,11 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <OrgSwitcher />
             </SidebarHeader>
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                <SidebarSeparator />
-                <OrgSwitcher />
                 {activeOrganization && orgNavItems.length > 0 && (
                     <NavMain items={orgNavItems} />
                 )}
