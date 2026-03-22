@@ -53,7 +53,7 @@ test('issue list is filtered by status', function () {
 
     (new UpdateIssueStatus)->handle($resolvedIssue, 'resolved', $ctx['user']);
 
-    $baseUrl = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/issues";
+    $baseUrl = "/organizations/{$ctx['org']->id}/projects/{$ctx['project']->id}/environments/{$ctx['env']->id}/issues";
 
     $response = $this->actingAs($ctx['user'])->get("{$baseUrl}?status=open");
     $response->assertInertia(fn ($page) => $page
@@ -123,7 +123,7 @@ test('viewer cannot bulk update issues', function () {
     $viewer = User::factory()->create();
     addMemberWithRole($ctx, $viewer, 'viewer');
 
-    $baseUrl = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/issues";
+    $baseUrl = "/organizations/{$ctx['org']->id}/projects/{$ctx['project']->id}/environments/{$ctx['env']->id}/issues";
 
     $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Viewer Test Issue',

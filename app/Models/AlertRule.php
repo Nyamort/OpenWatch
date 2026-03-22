@@ -25,6 +25,7 @@ class AlertRule extends Model
         'threshold',
         'window_minutes',
         'enabled',
+        'create_issue_on_trigger',
     ];
 
     /**
@@ -37,6 +38,7 @@ class AlertRule extends Model
         return [
             'threshold' => 'float',
             'enabled' => 'boolean',
+            'create_issue_on_trigger' => 'boolean',
         ];
     }
 

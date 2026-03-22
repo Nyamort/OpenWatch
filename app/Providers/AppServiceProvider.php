@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\AlertRule;
+use App\Models\Issue;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Policies\AlertRulePolicy;
+use App\Policies\IssuePolicy;
 use App\Policies\OrganizationPolicy;
 use App\Policies\ProjectPolicy;
 use App\Services\Ingestion\ConcurrencyLimiter;
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Organization::class, OrganizationPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(AlertRule::class, AlertRulePolicy::class);
+        Gate::policy(Issue::class, IssuePolicy::class);
 
         $this->configureDefaults();
     }
