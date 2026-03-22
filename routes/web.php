@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Alerts\AlertRuleController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Issues\IssueCommentController;
 use App\Http\Controllers\Issues\IssueController;
 use App\Http\Controllers\Issues\IssueDetailController;
@@ -21,9 +22,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Organizations
