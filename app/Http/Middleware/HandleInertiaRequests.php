@@ -37,9 +37,19 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $activeOrg = null;
+        $organizations = [];
 
-        if ($user?->active_organization_id) {
-            $activeOrg = $user->activeOrganization()->select(['id', 'name', 'slug'])->first();
+        if ($user) {
+            $organizations = $user->organizations()
+                ->select(['organizations.id', 'organizations.name', 'organizations.slug'])
+                ->orderBy('organizations.name')
+                ->get()
+                ->toArray();
+
+            if ($user->active_organization_id) {
+                $activeOrg = collect($organizations)->firstWhere('id', $user->active_organization_id)
+                    ?? $user->activeOrganization()->select(['id', 'name', 'slug'])->first()?->toArray();
+            }
         }
 
         return [
@@ -51,6 +61,7 @@ class HandleInertiaRequests extends Middleware
                 'locale' => $user?->locale,
             ],
             'activeOrganization' => $activeOrg,
+            'organizations' => $organizations,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

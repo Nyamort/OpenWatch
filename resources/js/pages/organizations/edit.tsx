@@ -11,7 +11,6 @@ interface Organization {
     name: string;
     slug: string;
     timezone: string;
-    locale: string;
     logo_url?: string | null;
 }
 
@@ -32,7 +31,6 @@ export default function OrganizationsEdit({ organization }: Props) {
         name: organization.name,
         slug: organization.slug,
         timezone: organization.timezone ?? '',
-        locale: organization.locale ?? '',
         logo_url: organization.logo_url ?? '',
     });
 
@@ -82,18 +80,6 @@ export default function OrganizationsEdit({ organization }: Props) {
                             placeholder="UTC"
                         />
                         <InputError message={form.errors.timezone} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="locale">Locale</Label>
-                        <Input
-                            id="locale"
-                            type="text"
-                            value={form.data.locale}
-                            onChange={(e) => form.setData('locale', e.target.value)}
-                            placeholder="en"
-                        />
-                        <InputError message={form.errors.locale} />
                     </div>
 
                     <div className="grid gap-2">

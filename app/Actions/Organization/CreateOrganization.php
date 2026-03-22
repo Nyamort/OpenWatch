@@ -30,7 +30,6 @@ class CreateOrganization
                 'slug' => $data['slug'],
                 'logo_url' => $data['logo_url'] ?? null,
                 'timezone' => $data['timezone'] ?? 'UTC',
-                'locale' => $data['locale'] ?? 'en',
             ]);
 
             $roles = $this->createDefaultRoles($organization);

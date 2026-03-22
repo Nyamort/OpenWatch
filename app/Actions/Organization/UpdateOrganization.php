@@ -29,7 +29,6 @@ class UpdateOrganization
             'slug' => $data['slug'] ?? $org->slug,
             'logo_url' => array_key_exists('logo_url', $data) ? $data['logo_url'] : $org->logo_url,
             'timezone' => $data['timezone'] ?? $org->timezone,
-            'locale' => $data['locale'] ?? $org->locale,
         ], fn (mixed $v): bool => $v !== null));
 
         return $org->fresh();

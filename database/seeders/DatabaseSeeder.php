@@ -45,7 +45,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Acme Corp',
             'slug' => 'acme',
             'timezone' => 'UTC',
-            'locale' => 'en',
         ]);
 
         // Add developer and viewer members

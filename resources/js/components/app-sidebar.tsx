@@ -1,7 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     Bell,
-    Building2,
     FolderOpen,
     LayoutGrid,
     Shield,
@@ -9,6 +8,7 @@ import {
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { OrgSwitcher } from '@/components/org-switcher';
 import {
     Sidebar,
     SidebarContent,
@@ -17,12 +17,14 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarSeparator,
 } from '@/components/ui/sidebar';
 import AppLogo from './app-logo';
 import { dashboard } from '@/routes';
-import { index as orgsIndex, audit } from '@/routes/organizations';
+import { audit } from '@/routes/organizations';
 import { index as membersIndex } from '@/routes/organizations/members';
 import { index as projectsIndex } from '@/routes/organizations/projects';
+
 interface ActiveOrg {
     id: number;
     name: string;
@@ -37,11 +39,6 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
-        },
-        {
-            title: 'Organizations',
-            href: orgsIndex(),
-            icon: Building2,
         },
     ];
 
@@ -59,7 +56,7 @@ export function AppSidebar() {
               },
               {
                   title: 'Alerts',
-                  href: `/organizations/${activeOrganization.slug}/projects`,
+                  href: `/organizations/${activeOrganization.slug}/alerts`,
                   icon: Bell,
               },
               {
@@ -86,8 +83,10 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {activeOrganization && (
-                    <OrgSection label={activeOrganization.name} items={orgNavItems} />
+                <SidebarSeparator />
+                <OrgSwitcher />
+                {activeOrganization && orgNavItems.length > 0 && (
+                    <NavMain items={orgNavItems} />
                 )}
             </SidebarContent>
 
@@ -95,18 +94,5 @@ export function AppSidebar() {
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
-    );
-}
-
-function OrgSection({ label, items }: { label: string; items: NavItem[] }) {
-    return (
-        <div>
-            <div className="px-4 pt-4 pb-1">
-                <p className="truncate text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-                    {label}
-                </p>
-            </div>
-            <NavMain items={items} />
-        </div>
     );
 }

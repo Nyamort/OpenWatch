@@ -16,7 +16,6 @@ export default function OrganizationsCreate() {
         name: '',
         slug: '',
         timezone: '',
-        locale: '',
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -82,18 +81,6 @@ export default function OrganizationsCreate() {
                             placeholder="UTC"
                         />
                         <InputError message={form.errors.timezone} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="locale">Locale <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                        <Input
-                            id="locale"
-                            type="text"
-                            value={form.data.locale}
-                            onChange={(e) => form.setData('locale', e.target.value)}
-                            placeholder="en"
-                        />
-                        <InputError message={form.errors.locale} />
                     </div>
 
                     <div className="flex gap-3">

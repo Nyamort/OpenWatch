@@ -47,7 +47,6 @@ class OrganizationController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'alpha_dash'],
             'timezone' => ['nullable', 'string', 'max:64'],
-            'locale' => ['nullable', 'string', 'max:10'],
         ]);
 
         $organization = $action->handle($request->user(), $data);
@@ -87,7 +86,6 @@ class OrganizationController extends Controller
             'slug' => ['sometimes', 'required', 'string', 'max:255', 'alpha_dash'],
             'logo_url' => ['nullable', 'string', 'url', 'max:2048'],
             'timezone' => ['nullable', 'string', 'max:64'],
-            'locale' => ['nullable', 'string', 'max:10'],
         ]);
 
         $action->handle($organization, $data);

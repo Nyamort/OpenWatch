@@ -9,7 +9,6 @@ interface Organization {
     slug: string;
     logo_url: string | null;
     timezone: string;
-    locale: string;
 }
 
 interface Props {

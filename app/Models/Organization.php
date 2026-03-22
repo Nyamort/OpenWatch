@@ -24,7 +24,6 @@ class Organization extends Model
         'slug',
         'logo_url',
         'timezone',
-        'locale',
     ];
 
     /**
