@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import {
     Check,
     CheckCircle2,
+    ChevronDown,
     ClipboardCopy,
     Info,
     Loader2,
@@ -16,9 +17,79 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+
+const RATE_OPTIONS = [
+    { label: '100%', value: '1.0' },
+    { label: '50%', value: '0.5' },
+    { label: '25%', value: '0.25' },
+    { label: '10%', value: '0.1' },
+    { label: '5%', value: '0.05' },
+    { label: '1%', value: '0.01' },
+    { label: 'Excluded', value: '0' },
+];
+
+const EVENT_TYPES = [
+    { key: 'exceptions', label: 'Exceptions', envVar: 'NIGHTWATCH_EXCEPTION_SAMPLE_RATE' },
+    { key: 'requests', label: 'Requests', envVar: 'NIGHTWATCH_REQUEST_SAMPLE_RATE' },
+    { key: 'commands', label: 'Commands', envVar: 'NIGHTWATCH_COMMAND_SAMPLE_RATE' },
+    { key: 'queries', label: 'Queries', envVar: 'NIGHTWATCH_QUERY_SAMPLE_RATE' },
+    { key: 'jobs', label: 'Jobs', envVar: 'NIGHTWATCH_JOB_SAMPLE_RATE' },
+];
+
+function DarkSelect({
+    value,
+    onChange,
+    options,
+    className,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+    options: { label: string; value: string }[];
+    className?: string;
+}) {
+    const label = options.find((o) => o.value === value)?.label ?? value;
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    className={cn(
+                        'flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none',
+                        className,
+                    )}
+                >
+                    <span>{label}</span>
+                    <ChevronDown className="size-3 shrink-0 text-zinc-400" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                className="min-w-[8rem] bg-zinc-800 border-zinc-700 text-zinc-100"
+                align="start"
+            >
+                {options.map((opt) => (
+                    <DropdownMenuItem
+                        key={opt.value}
+                        onSelect={() => onChange(opt.value)}
+                        className={cn(
+                            'cursor-pointer text-xs focus:bg-zinc-700 focus:text-zinc-100',
+                            opt.value === value && 'text-emerald-400',
+                        )}
+                    >
+                        {opt.label}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
 
 interface Props {
     open: boolean;
@@ -159,6 +230,13 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
     // Step 2 tab
     const [logTab, setLogTab] = useState<'single' | 'stack'>('single');
+
+    // Step 3 sampling
+    const [globalRate, setGlobalRate] = useState('0.1');
+    const [perEvent, setPerEvent] = useState(false);
+    const [eventRates, setEventRates] = useState<Record<string, string>>(
+        Object.fromEntries(EVENT_TYPES.map((e) => [e.key, '0.1'])),
+    );
 
     function resetWizard() {
         setStep(1);
@@ -480,19 +558,82 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                     based on your traffic.
                                 </p>
 
-                                {/* Config */}
-                                <div>
-                                    <div className="flex gap-2 mb-2">
-                                        <select className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none">
-                                            <option>Global sampling rates</option>
-                                        </select>
-                                        <select className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none">
-                                            <option>All events included</option>
-                                        </select>
+                                {/* Config box */}
+                                <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-3 space-y-3">
+                                    {/* Controls row */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <DarkSelect
+                                            value={globalRate}
+                                            onChange={(v) => {
+                                                setGlobalRate(v);
+                                                if (!perEvent) {
+                                                    setEventRates(Object.fromEntries(EVENT_TYPES.map((e) => [e.key, v])));
+                                                }
+                                            }}
+                                            options={[
+                                                { label: 'Global sampling rates', value: 'global-label', },
+                                                ...RATE_OPTIONS,
+                                            ].filter((o) => o.value !== 'global-label' || globalRate === 'global-label')}
+                                        />
+                                        <DarkSelect
+                                            value={perEvent ? 'per-event' : 'all'}
+                                            onChange={(v) => {
+                                                const enabling = v === 'per-event';
+                                                setPerEvent(enabling);
+                                                if (enabling) {
+                                                    setEventRates(Object.fromEntries(EVENT_TYPES.map((e) => [e.key, globalRate])));
+                                                }
+                                            }}
+                                            options={[
+                                                { label: (() => {
+                                                    if (!perEvent) return 'All events included';
+                                                    const excluded = EVENT_TYPES.filter((e) => eventRates[e.key] === '0').length;
+                                                    return excluded === 0
+                                                        ? 'All events included'
+                                                        : `${excluded} of ${EVENT_TYPES.length} events excluded`;
+                                                })(), value: 'all' },
+                                                { label: 'Configure per event', value: 'per-event' },
+                                            ]}
+                                        />
                                     </div>
-                                    <CodeBlock onCopy="NIGHTWATCH_REQUEST_SAMPLE_RATE=0.1">
-                                        <EnvVar name="NIGHTWATCH_REQUEST_SAMPLE_RATE" value="0.1" />
-                                    </CodeBlock>
+
+                                    {/* Per-event rows */}
+                                    {perEvent && (
+                                        <div className="space-y-1.5 border-t border-zinc-800 pt-2">
+                                            {EVENT_TYPES.map((evt) => (
+                                                <div key={evt.key} className="flex items-center justify-between gap-2">
+                                                    <span className="text-xs text-zinc-400 min-w-0 truncate">{evt.label}</span>
+                                                    <DarkSelect
+                                                        value={eventRates[evt.key]}
+                                                        onChange={(v) =>
+                                                            setEventRates((prev) => ({ ...prev, [evt.key]: v }))
+                                                        }
+                                                        options={RATE_OPTIONS}
+                                                        className="shrink-0"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Generated code block */}
+                                    <div className="space-y-1">
+                                        {perEvent
+                                            ? EVENT_TYPES.filter((e) => eventRates[e.key] !== '0').map((evt) => (
+                                                <CodeBlock
+                                                    key={evt.key}
+                                                    onCopy={`${evt.envVar}=${eventRates[evt.key]}`}
+                                                >
+                                                    <EnvVar name={evt.envVar} value={eventRates[evt.key]} />
+                                                </CodeBlock>
+                                            ))
+                                            : (
+                                                <CodeBlock onCopy={`NIGHTWATCH_SAMPLE_RATE=${globalRate}`}>
+                                                    <EnvVar name="NIGHTWATCH_SAMPLE_RATE" value={globalRate} />
+                                                </CodeBlock>
+                                            )
+                                        }
+                                    </div>
                                 </div>
 
                                 {/* Info banner */}
