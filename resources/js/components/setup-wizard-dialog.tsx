@@ -1,9 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import {
-    ArrowLeft,
     Check,
     CheckCircle2,
-    Circle,
     ClipboardCopy,
     Info,
     Loader2,
@@ -72,11 +70,11 @@ function CodeBlock({
     }
 
     return (
-        <div className="relative flex items-center rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm">
-            <span className="flex-1">{children}</span>
+        <div className="relative flex items-center rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm min-w-0">
+            <span className="flex-1 overflow-x-auto whitespace-nowrap scrollbar-none min-w-0 pr-2">{children}</span>
             <button
                 onClick={handleCopy}
-                className="ml-3 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
+                className="ml-1 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
                 title="Copy"
             >
                 {copied ? <Check className="size-4 text-emerald-400" /> : <ClipboardCopy className="size-4" />}
@@ -271,19 +269,21 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl bg-zinc-950 text-zinc-100 border-zinc-800 p-0 gap-0 overflow-hidden">
                 {/* Persistent header */}
-                <DialogHeader className="flex flex-row items-center justify-between border-b border-zinc-800 px-6 py-4">
-                    <DialogTitle asChild>
-                        <div className="flex items-center gap-1.5 text-sm">
-                            <span className="text-zinc-500">{orgName}</span>
-                            <span className="text-zinc-600">/</span>
-                            <span className="font-semibold text-zinc-100">{projectName}</span>
-                        </div>
-                    </DialogTitle>
-                    {completedSteps.has(step - 1) && (
-                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-400">
-                            <CheckCircle2 className="size-3.5" /> DONE
-                        </span>
-                    )}
+                <DialogHeader className="border-b border-zinc-800 px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle asChild>
+                            <div className="flex items-center gap-1.5 text-sm">
+                                <span className="text-zinc-500">{orgName}</span>
+                                <span className="text-zinc-600">/</span>
+                                <span className="font-semibold text-zinc-100">{projectName}</span>
+                            </div>
+                        </DialogTitle>
+                        {completedSteps.has(step - 1) && (
+                            <span className="flex items-center gap-1 text-xs font-bold text-emerald-400 mr-8">
+                                <CheckCircle2 className="size-3.5" /> DONE
+                            </span>
+                        )}
+                    </div>
                 </DialogHeader>
 
                 <div className="flex flex-col divide-y divide-zinc-800 overflow-y-auto max-h-[70vh]">
@@ -389,7 +389,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                             <div className="mt-4 space-y-5">
                                 {/* Install package */}
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
                                         Install the Nightwatch package
                                     </p>
                                     <CodeBlock onCopy="composer require laravel/nightwatch">
@@ -399,7 +399,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
                                 {/* Token */}
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
                                         Add the token to your environment variables
                                     </p>
                                     <CodeBlock onCopy={`NIGHTWATCH_TOKEN=${created?.token ?? ''}`}>
@@ -410,24 +410,22 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                 {/* Log channel */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                                        <p className="text-xs font-semibold text-zinc-400">
                                             Configure Nightwatch to capture logs
                                         </p>
-                                        <span className="rounded border border-zinc-700 px-1.5 py-0.5 text-xs text-zinc-500">
-                                            Optional
-                                        </span>
+                                        <span className="text-xs text-zinc-600">Optional</span>
                                     </div>
                                     {/* Tab switcher */}
-                                    <div className="flex gap-1 mb-2 rounded-md border border-zinc-700 bg-zinc-900 p-1 w-fit">
+                                    <div className="flex gap-4 mb-2 border-b border-zinc-800">
                                         {(['single', 'stack'] as const).map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => setLogTab(tab)}
                                                 className={cn(
-                                                    'rounded px-3 py-1 text-xs font-medium transition-colors',
+                                                    'pb-1.5 text-xs font-medium transition-colors border-b-2 -mb-px',
                                                     logTab === tab
-                                                        ? 'bg-zinc-700 text-zinc-100'
-                                                        : 'text-zinc-500 hover:text-zinc-300',
+                                                        ? 'border-zinc-300 text-zinc-100'
+                                                        : 'border-transparent text-zinc-500 hover:text-zinc-300',
                                                 )}
                                             >
                                                 {tab === 'single' ? 'Single Channel' : 'Log Stack'}
@@ -451,7 +449,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         onClick={() => setStep(1)}
                                         className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                                     >
-                                        <ArrowLeft className="mr-2 size-4" /> Back
+                                        Back
                                     </Button>
                                     <Button
                                         onClick={() => { complete(2); setStep(3); }}
@@ -511,7 +509,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         onClick={() => setStep(2)}
                                         className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                                     >
-                                        <ArrowLeft className="mr-2 size-4" /> Back
+                                        Back
                                     </Button>
                                     <Button
                                         onClick={() => { complete(3); setStep(4); }}
@@ -536,7 +534,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                         {step === 4 && (
                             <div className="mt-4 space-y-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
                                         Run the Nightwatch Agent
                                     </p>
                                     <CodeBlock onCopy="php artisan nightwatch:agent">
@@ -585,7 +583,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         onClick={() => setStep(3)}
                                         className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                                     >
-                                        <ArrowLeft className="mr-2 size-4" /> Back
+                                        Back
                                     </Button>
                                     <div className="flex gap-2">
                                         <Button
