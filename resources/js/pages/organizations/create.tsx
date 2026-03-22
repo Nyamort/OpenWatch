@@ -43,7 +43,7 @@ export default function OrganizationsCreate() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Organization" />
             <div className="flex flex-col gap-6 p-6 max-w-lg">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Create Organization</h1>
+                <h1 className="text-2xl font-semibold text-foreground">Create Organization</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid gap-2">
@@ -73,7 +73,7 @@ export default function OrganizationsCreate() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="timezone">Timezone <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Label htmlFor="timezone">Timezone <span className="text-muted-foreground font-normal">(optional)</span></Label>
                         <Input
                             id="timezone"
                             type="text"
@@ -85,7 +85,7 @@ export default function OrganizationsCreate() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="locale">Locale <span className="text-gray-400 font-normal">(optional)</span></Label>
+                        <Label htmlFor="locale">Locale <span className="text-muted-foreground font-normal">(optional)</span></Label>
                         <Input
                             id="locale"
                             type="text"

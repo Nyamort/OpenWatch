@@ -85,7 +85,7 @@ export default function CreateAlertRule({ organization, project, environment, me
                         </select>
                         {errors.recipient_ids && <p className="text-red-500 text-sm mt-1">{errors.recipient_ids}</p>}
                     </div>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Create Rule</button>
+                    <button type="submit" className="px-4 py-2 bg-primary text-white rounded">Create Rule</button>
                 </form>
             </div>
         </AppLayout>

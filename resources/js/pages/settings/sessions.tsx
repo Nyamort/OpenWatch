@@ -70,11 +70,11 @@ export default function Sessions({ sessions, currentSessionId }: Props) {
                             {sessions.map((session) => (
                                 <div
                                     key={session.id}
-                                    className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                    className="flex items-center justify-between gap-4 rounded-lg border border p-4"
                                 >
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                            <p className="text-sm font-medium text-foreground">
                                                 {parseUserAgent(session.user_agent)}
                                             </p>
                                             {session.is_current && (

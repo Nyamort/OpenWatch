@@ -51,10 +51,10 @@ export default function ProjectsShow({ organization, project }: Props) {
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{project.name}</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{project.slug}</p>
+                        <h1 className="text-2xl font-semibold text-foreground">{project.name}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">{project.slug}</p>
                         {project.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{project.description}</p>
+                            <p className="text-sm text-muted-foreground mt-2">{project.description}</p>
                         )}
                     </div>
                     {project.health_status && (
@@ -68,18 +68,18 @@ export default function ProjectsShow({ organization, project }: Props) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link
                         href={`${projectUrl}/environments`}
-                        className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                        className="block rounded-lg border bg-card p-5 hover:border  hover:shadow-sm transition-all"
                     >
-                        <p className="font-medium text-gray-900 dark:text-white">Environments</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage deployment environments</p>
+                        <p className="font-medium text-foreground">Environments</p>
+                        <p className="text-sm text-muted-foreground mt-1">Manage deployment environments</p>
                     </Link>
 
                     <Link
                         href={`${projectUrl}/environments`}
-                        className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                        className="block rounded-lg border bg-card p-5 hover:border  hover:shadow-sm transition-all"
                     >
-                        <p className="font-medium text-gray-900 dark:text-white">Analytics</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">View metrics and performance</p>
+                        <p className="font-medium text-foreground">Analytics</p>
+                        <p className="text-sm text-muted-foreground mt-1">View metrics and performance</p>
                     </Link>
                 </div>
             </div>

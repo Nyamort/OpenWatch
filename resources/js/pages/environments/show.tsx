@@ -64,8 +64,8 @@ export default function EnvironmentsShow({ organization, project, environment }:
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{environment.name}</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{environment.slug}</p>
+                        <h1 className="text-2xl font-semibold text-foreground">{environment.name}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">{environment.slug}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Badge variant="outline" className="capitalize">{environment.type}</Badge>
@@ -77,26 +77,26 @@ export default function EnvironmentsShow({ organization, project, environment }:
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link
                         href={`${environmentUrl}/issues`}
-                        className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                        className="block rounded-lg border bg-card p-5 hover:border  hover:shadow-sm transition-all"
                     >
-                        <p className="font-medium text-gray-900 dark:text-white">Issues</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">View errors and exceptions</p>
+                        <p className="font-medium text-foreground">Issues</p>
+                        <p className="text-sm text-muted-foreground mt-1">View errors and exceptions</p>
                     </Link>
 
                     <Link
                         href={`${environmentUrl}/alert-rules`}
-                        className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                        className="block rounded-lg border bg-card p-5 hover:border  hover:shadow-sm transition-all"
                     >
-                        <p className="font-medium text-gray-900 dark:text-white">Alert Rules</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure threshold alerts</p>
+                        <p className="font-medium text-foreground">Alert Rules</p>
+                        <p className="text-sm text-muted-foreground mt-1">Configure threshold alerts</p>
                     </Link>
                 </div>
 
                 {/* Token management */}
-                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                        <h2 className="text-base font-semibold text-gray-900 dark:text-white">API Token</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                <div className="rounded-lg border bg-card">
+                    <div className="px-6 py-4 border-b border ">
+                        <h2 className="text-base font-semibold text-foreground">API Token</h2>
+                        <p className="text-sm text-muted-foreground mt-0.5">
                             Use this token to send data from your application.
                         </p>
                     </div>
@@ -108,7 +108,7 @@ export default function EnvironmentsShow({ organization, project, environment }:
                         >
                             Rotate Token
                         </Button>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                             Rotating will invalidate the existing token immediately.
                         </p>
                     </div>

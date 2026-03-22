@@ -36,19 +36,19 @@ export default function Account({ user }: Props) {
                         description="Your account information and status"
                     />
 
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+                    <div className="rounded-lg border divide-y divide-border">
                         <div className="px-4 py-3 flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</span>
-                            <span className="text-sm text-gray-900 dark:text-white">{user.name}</span>
+                            <span className="text-sm font-medium text-muted-foreground">Name</span>
+                            <span className="text-sm text-foreground">{user.name}</span>
                         </div>
 
                         <div className="px-4 py-3 flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</span>
-                            <span className="text-sm text-gray-900 dark:text-white">{user.email}</span>
+                            <span className="text-sm font-medium text-muted-foreground">Email</span>
+                            <span className="text-sm text-foreground">{user.email}</span>
                         </div>
 
                         <div className="px-4 py-3 flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Email verified</span>
+                            <span className="text-sm font-medium text-muted-foreground">Email verified</span>
                             <span className="text-sm">
                                 {user.email_verified_at ? (
                                     <Badge variant="secondary">Verified</Badge>
@@ -59,8 +59,8 @@ export default function Account({ user }: Props) {
                         </div>
 
                         <div className="px-4 py-3 flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Account created</span>
-                            <span className="text-sm text-gray-900 dark:text-white">
+                            <span className="text-sm font-medium text-muted-foreground">Account created</span>
+                            <span className="text-sm text-foreground">
                                 {new Date(user.created_at).toLocaleDateString(undefined, {
                                     year: 'numeric',
                                     month: 'long',

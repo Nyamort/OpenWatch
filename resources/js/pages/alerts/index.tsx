@@ -27,10 +27,10 @@ export default function AlertsIndex({ alertRules, organization, project, environ
             <div className="p-6">
                 <div className="flex justify-between mb-4">
                     <h1 className="text-xl font-semibold">Alert Rules</h1>
-                    <a href={createUrl} className="px-4 py-2 bg-blue-600 text-white rounded">Create Rule</a>
+                    <a href={createUrl} className="px-4 py-2 bg-primary text-white rounded">Create Rule</a>
                 </div>
                 {alertRules.length === 0 ? (
-                    <p className="text-gray-500">No alert rules configured.</p>
+                    <p className="text-muted-foreground">No alert rules configured.</p>
                 ) : (
                     <table className="w-full border-collapse">
                         <thead>
@@ -50,7 +50,7 @@ export default function AlertsIndex({ alertRules, organization, project, environ
                                     <td className="py-2">{rule.operator} {rule.threshold}</td>
                                     <td className="py-2">{rule.window_minutes}m</td>
                                     <td className="py-2">
-                                        <span className={`px-2 py-1 rounded text-sm ${rule.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                        <span className={`px-2 py-1 rounded text-sm ${rule.enabled ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'}`}>
                                             {rule.enabled ? 'Enabled' : 'Disabled'}
                                         </span>
                                     </td>

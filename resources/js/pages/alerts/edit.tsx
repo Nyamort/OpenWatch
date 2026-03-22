@@ -104,7 +104,7 @@ export default function EditAlertRule({ organization, project, environment, aler
                         </select>
                         {errors.recipient_ids && <p className="text-red-500 text-sm mt-1">{errors.recipient_ids}</p>}
                     </div>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Save Changes</button>
+                    <button type="submit" className="px-4 py-2 bg-primary text-white rounded">Save Changes</button>
                 </form>
             </div>
         </AppLayout>

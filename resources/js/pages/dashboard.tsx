@@ -58,16 +58,16 @@ function MetricCard({
     color?: string;
 }) {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <div className="bg-card rounded-lg border border p-6">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
             <p className={`text-3xl font-bold mt-1 text-${color}-600 dark:text-${color}-400`}>{value}</p>
-            {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
     );
 }
 
 function SectionSkeleton() {
-    return <div className="animate-pulse bg-gray-100 dark:bg-gray-700 rounded-lg h-24" />;
+    return <div className="animate-pulse bg-muted rounded-lg h-24" />;
 }
 
 export default function Dashboard({ hasContext, period, context, metrics, alerts, recentIssues }: Props) {
@@ -92,23 +92,23 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
                         {context && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-muted-foreground mt-1">
                                 {context.org} / {context.project} / {context.env}
                             </p>
                         )}
                     </div>
                     {/* Period selector */}
-                    <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    <div className="flex gap-1 bg-muted rounded-lg p-1">
                         {periods.map((p) => (
                             <button
                                 key={p.value}
                                 onClick={() => changePeriod(p.value)}
                                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                                     period === p.value
-                                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground '
                                 }`}
                             >
                                 {p.label}
@@ -118,7 +118,7 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                 </div>
 
                 {!hasContext ? (
-                    <div className="text-center py-20 text-gray-500">
+                    <div className="text-center py-20 text-muted-foreground">
                         <p className="text-lg">No project configured yet.</p>
                         <p className="text-sm mt-2">Create an organization and project to start monitoring.</p>
                     </div>
@@ -181,38 +181,38 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                         )}
 
                         {/* Recent Issues */}
-                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Recent Issues</h2>
+                        <div className="bg-card rounded-lg border border">
+                            <div className="px-6 py-4 border-b border flex justify-between items-center">
+                                <h2 className="text-base font-semibold text-foreground">Recent Issues</h2>
                                 {context && (
                                     <a
                                         href={`/organizations/${context.org}/projects/${context.project}/environments/${context.env}/issues`}
-                                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                                        className="text-sm text-primary  hover:underline"
                                     >
                                         View all →
                                     </a>
                                 )}
                             </div>
-                            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                            <div className="divide-y divide-border">
                                 {recentIssues === null || recentIssues === undefined ? (
                                     <div className="p-6">
                                         <SectionSkeleton />
                                     </div>
                                 ) : recentIssues.count === 0 ? (
-                                    <div className="px-6 py-8 text-center text-gray-500 text-sm">No open issues. 🎉</div>
+                                    <div className="px-6 py-8 text-center text-muted-foreground text-sm">No open issues. 🎉</div>
                                 ) : (
                                     recentIssues.issues.map((issue) => (
                                         <div key={issue.id} className="px-6 py-3 flex items-center justify-between">
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{issue.title}</p>
-                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                <p className="text-sm font-medium text-foreground">{issue.title}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
                                                     <span
                                                         className={`inline-block px-1.5 py-0.5 rounded text-xs mr-2 ${
                                                             issue.priority === 'critical'
                                                                 ? 'bg-red-100 text-red-700'
                                                                 : issue.priority === 'high'
                                                                   ? 'bg-orange-100 text-orange-700'
-                                                                  : 'bg-gray-100 text-gray-700'
+                                                                  : 'bg-muted text-foreground'
                                                         }`}
                                                     >
                                                         {issue.priority}
@@ -220,7 +220,7 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                                                     {issue.occurrence_count} occurrence{issue.occurrence_count !== 1 ? 's' : ''}
                                                 </p>
                                             </div>
-                                            <span className="text-xs text-gray-400">
+                                            <span className="text-xs text-muted-foreground">
                                                 {new Date(issue.last_seen_at).toLocaleDateString()}
                                             </span>
                                         </div>

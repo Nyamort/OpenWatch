@@ -95,7 +95,7 @@ export default function EnvironmentsIndex({ organization, project, environments 
             <Head title="Environments" />
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Environments</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">Environments</h1>
                     <Button onClick={() => setShowCreateForm((v) => !v)}>
                         {showCreateForm ? 'Cancel' : 'Create Environment'}
                     </Button>
@@ -103,8 +103,8 @@ export default function EnvironmentsIndex({ organization, project, environments 
 
                 {/* Create form */}
                 {showCreateForm && (
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-                        <h2 className="text-base font-semibold mb-4 text-gray-900 dark:text-white">New Environment</h2>
+                    <div className="rounded-lg border bg-card p-6">
+                        <h2 className="text-base font-semibold mb-4 text-foreground">New Environment</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="env-name">Name</Label>
@@ -170,12 +170,12 @@ export default function EnvironmentsIndex({ organization, project, environments 
 
                 {/* Environment list */}
                 {environments.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
-                        <p className="text-gray-500 dark:text-gray-400">No environments yet.</p>
-                        <p className="text-sm text-gray-400 mt-1">Create an environment to start collecting data.</p>
+                    <div className="rounded-lg border border-dashed border  p-12 text-center">
+                        <p className="text-muted-foreground">No environments yet.</p>
+                        <p className="text-sm text-muted-foreground mt-1">Create an environment to start collecting data.</p>
                     </div>
                 ) : (
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="rounded-lg border border">
                         <table className="w-full text-sm">
                             <thead className="border-b bg-muted/40">
                                 <tr>

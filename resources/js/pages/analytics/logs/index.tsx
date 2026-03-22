@@ -23,7 +23,7 @@ const LEVEL_COLORS: Record<string, string> = {
     warning: 'text-yellow-500',
     notice: 'text-blue-500',
     info: 'text-green-500',
-    debug: 'text-gray-400',
+    debug: 'text-muted-foreground',
 };
 
 const columns = [

@@ -73,7 +73,7 @@ export default function ProjectsIndex({ organization, projects }: Props) {
             <Head title="Projects" />
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Projects</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
                     <Button onClick={() => setShowCreateForm((v) => !v)}>
                         {showCreateForm ? 'Cancel' : 'Create Project'}
                     </Button>
@@ -81,8 +81,8 @@ export default function ProjectsIndex({ organization, projects }: Props) {
 
                 {/* Create form */}
                 {showCreateForm && (
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-                        <h2 className="text-base font-semibold mb-4 text-gray-900 dark:text-white">New Project</h2>
+                    <div className="rounded-lg border bg-card p-6">
+                        <h2 className="text-base font-semibold mb-4 text-foreground">New Project</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="project-name">Name</Label>
@@ -143,9 +143,9 @@ export default function ProjectsIndex({ organization, projects }: Props) {
 
                 {/* Project list */}
                 {projects.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
-                        <p className="text-gray-500 dark:text-gray-400">No projects yet.</p>
-                        <p className="text-sm text-gray-400 mt-1">Create your first project to get started.</p>
+                    <div className="rounded-lg border border-dashed border  p-12 text-center">
+                        <p className="text-muted-foreground">No projects yet.</p>
+                        <p className="text-sm text-muted-foreground mt-1">Create your first project to get started.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -153,19 +153,19 @@ export default function ProjectsIndex({ organization, projects }: Props) {
                             <Link
                                 key={project.id}
                                 href={`${baseUrl}/projects/${project.slug}`}
-                                className="block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                                className="block rounded-lg border bg-card p-5 hover:border  hover:shadow-sm transition-all"
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="min-w-0">
-                                        <p className="font-medium text-gray-900 dark:text-white truncate">{project.name}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{project.slug}</p>
+                                        <p className="font-medium text-foreground truncate">{project.name}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{project.slug}</p>
                                     </div>
                                     {project.archived_at && (
                                         <Badge variant="outline" className="shrink-0">Archived</Badge>
                                     )}
                                 </div>
                                 {project.description && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">
+                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                                         {project.description}
                                     </p>
                                 )}

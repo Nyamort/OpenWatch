@@ -94,8 +94,8 @@ export default function AuditLog({ organization, events, filters }: Props) {
             <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Audit Log</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <h1 className="text-2xl font-bold text-foreground">Audit Log</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
                             Immutable record of all critical actions in {organization.name}.
                         </p>
                     </div>
@@ -105,7 +105,7 @@ export default function AuditLog({ organization, events, filters }: Props) {
                 </div>
 
                 {/* Filters */}
-                <form onSubmit={applyFilters} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <form onSubmit={applyFilters} className="bg-card border rounded-lg p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <Label htmlFor="event_type">Event type</Label>
@@ -152,42 +152,42 @@ export default function AuditLog({ organization, events, filters }: Props) {
                 </form>
 
                 {/* Event list */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-card border rounded-lg overflow-hidden">
                     {events.data.length === 0 ? (
-                        <div className="text-center py-16 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-16 text-muted-foreground">
                             No audit events found.
                         </div>
                     ) : (
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-900">
+                        <table className="min-w-full divide-y divide-border">
+                            <thead className="bg-muted/40">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Event</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actor</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Target</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">IP</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Time</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody className="divide-y divide-border">
                                 {events.data.map((event) => (
-                                    <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
+                                    <tr key={event.id} className="hover:bg-muted/40 dark:hover:bg-muted/20">
                                         <td className="px-4 py-3">
                                             <Badge variant={EVENT_TYPE_COLORS[event.event_type] ?? 'outline'}>
                                                 {event.event_type.replace(/_/g, ' ')}
                                             </Badge>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                                            {event.actor_id ?? <span className="text-gray-400 italic">anonymized</span>}
+                                        <td className="px-4 py-3 text-sm text-foreground">
+                                            {event.actor_id ?? <span className="text-muted-foreground italic">anonymized</span>}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                                        <td className="px-4 py-3 text-sm text-foreground">
                                             {event.target_type && event.target_id
                                                 ? `${event.target_type} #${event.target_id}`
                                                 : '—'}
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-mono text-gray-500">
+                                        <td className="px-4 py-3 text-sm font-mono text-muted-foreground">
                                             {event.ip ?? '—'}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500">
+                                        <td className="px-4 py-3 text-sm text-muted-foreground">
                                             {new Date(event.created_at).toLocaleString()}
                                         </td>
                                     </tr>
@@ -199,7 +199,7 @@ export default function AuditLog({ organization, events, filters }: Props) {
 
                 {/* Pagination */}
                 {events.last_page > 1 && (
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>
                             Page {events.current_page} of {events.last_page} — {events.total} events total
                         </span>
@@ -212,8 +212,8 @@ export default function AuditLog({ organization, events, filters }: Props) {
                                     className={[
                                         'px-3 py-1 rounded border text-xs',
                                         link.active
-                                            ? 'bg-blue-600 text-white border-blue-600'
-                                            : 'border-gray-300 hover:bg-gray-50 disabled:opacity-40',
+                                            ? 'bg-primary text-primary-foreground border-primary'
+                                            : 'border hover:bg-muted/40 disabled:opacity-40',
                                     ].join(' ')}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />

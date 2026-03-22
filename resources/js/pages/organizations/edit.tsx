@@ -45,7 +45,7 @@ export default function OrganizationsEdit({ organization }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit ${organization.name}`} />
             <div className="flex flex-col gap-6 p-6 max-w-lg">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Edit Organization</h1>
+                <h1 className="text-2xl font-semibold text-foreground">Edit Organization</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid gap-2">
