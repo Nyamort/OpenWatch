@@ -39,44 +39,45 @@ class HandleInertiaRequests extends Middleware
         $activeOrg = null;
         $activeProject = null;
         $activeEnvironment = null;
-        $organizations = [];
-        $projects = [];
-        $environments = [];
+        $organizations = collect();
+        $projectGroups = [];
 
         if ($user) {
             $organizations = $user->organizations()
                 ->select(['organizations.id', 'organizations.name', 'organizations.slug'])
                 ->orderBy('organizations.name')
-                ->get()
-                ->toArray();
+                ->get();
 
-            if ($user->active_organization_id) {
-                $activeOrg = collect($organizations)->firstWhere('id', $user->active_organization_id)
-                    ?? $user->activeOrganization()->select(['id', 'name', 'slug'])->first()?->toArray();
-
+            foreach ($organizations as $org) {
                 $projects = \App\Models\Project::query()
-                    ->where('organization_id', $user->active_organization_id)
-                    ->select(['id', 'name', 'slug'])
+                    ->where('organization_id', $org->id)
+                    ->with(['environments' => fn ($q) => $q->select(['id', 'project_id', 'name', 'slug'])->orderBy('name')])
+                    ->select(['id', 'organization_id', 'name', 'slug'])
                     ->orderBy('name')
                     ->get()
+                    ->map(fn ($p) => [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'slug' => $p->slug,
+                        'environments' => $p->environments->map(fn ($e) => ['id' => $e->id, 'name' => $e->name, 'slug' => $e->slug])->values()->toArray(),
+                    ])
+                    ->values()
                     ->toArray();
-            }
 
-            if ($user->active_project_id) {
-                $activeProject = collect($projects)->firstWhere('id', $user->active_project_id)
-                    ?? $user->activeProject()->select(['id', 'name', 'slug'])->first()?->toArray();
+                $projectGroups[] = [
+                    'organization' => ['id' => $org->id, 'name' => $org->name, 'slug' => $org->slug],
+                    'projects' => $projects,
+                ];
 
-                $environments = \App\Models\Environment::query()
-                    ->where('project_id', $user->active_project_id)
-                    ->select(['id', 'name', 'slug'])
-                    ->orderBy('name')
-                    ->get()
-                    ->toArray();
-            }
+                if ($org->id === $user->active_organization_id) {
+                    $activeOrg = ['id' => $org->id, 'name' => $org->name, 'slug' => $org->slug];
 
-            if ($user->active_environment_id) {
-                $activeEnvironment = collect($environments)->firstWhere('id', $user->active_environment_id)
-                    ?? $user->activeEnvironment()->select(['id', 'name', 'slug'])->first()?->toArray();
+                    $activeProjectData = collect($projects)->firstWhere('id', $user->active_project_id);
+                    if ($activeProjectData) {
+                        $activeProject = $activeProjectData;
+                        $activeEnvironment = collect($activeProjectData['environments'])->firstWhere('id', $user->active_environment_id);
+                    }
+                }
             }
         }
 
@@ -91,9 +92,8 @@ class HandleInertiaRequests extends Middleware
             'activeOrganization' => $activeOrg,
             'activeProject' => $activeProject,
             'activeEnvironment' => $activeEnvironment,
-            'organizations' => $organizations,
-            'projects' => $projects,
-            'environments' => $environments,
+            'organizations' => $organizations->map(fn ($o) => ['id' => $o->id, 'name' => $o->name, 'slug' => $o->slug])->values()->toArray(),
+            'projectGroups' => $projectGroups,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
