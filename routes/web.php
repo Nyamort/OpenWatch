@@ -59,7 +59,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Environments
         Route::get('projects/{project}/environments', [EnvironmentController::class, 'index'])->name('projects.environments.index');
-        Route::post('projects/{project}/environments', [EnvironmentController::class, 'store'])->name('projects.environments.store');
         Route::get('projects/{project}/environments/{environment}', [EnvironmentController::class, 'show'])->name('projects.environments.show');
 
         // Tokens
