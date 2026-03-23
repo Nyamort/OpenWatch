@@ -20,6 +20,7 @@ interface Project {
     id: number;
     name: string;
     slug: string;
+    logo_url: string;
     environments: Environment[];
 }
 
@@ -128,11 +129,15 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
             <DropdownMenuTrigger asChild>
                 <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring">
                     <div
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${
-                            activeProject ? avatarColor(activeProject.name) : 'bg-muted'
+                        className={`flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-bold text-white ${
+                            activeProject && !activeProject.logo_url ? avatarColor(activeProject.name) : 'bg-muted'
                         }`}
                     >
-                        {activeProject ? activeProject.name.charAt(0).toUpperCase() : '?'}
+                        {activeProject?.logo_url ? (
+                            <img src={activeProject.logo_url} alt={activeProject.name} className="size-full object-cover" />
+                        ) : (
+                            activeProject ? activeProject.name.charAt(0).toUpperCase() : '?'
+                        )}
                     </div>
                     <div className="grid flex-1 leading-tight">
                         <span className="truncate text-sm font-semibold text-sidebar-foreground">
@@ -204,9 +209,13 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                             }`}
                                         >
                                             <div
-                                                className={`flex size-5 shrink-0 items-center justify-center rounded text-xs font-bold text-white ${avatarColor(project.name)}`}
+                                                className={`flex size-5 shrink-0 items-center justify-center overflow-hidden rounded text-xs font-bold text-white ${!project.logo_url ? avatarColor(project.name) : 'bg-muted'}`}
                                             >
-                                                {project.name.charAt(0).toUpperCase()}
+                                                {project.logo_url ? (
+                                                    <img src={project.logo_url} alt={project.name} className="size-full object-cover" />
+                                                ) : (
+                                                    project.name.charAt(0).toUpperCase()
+                                                )}
                                             </div>
                                             <span className="flex-1 truncate">{project.name}</span>
                                             {isActive && !isPreviewed && (

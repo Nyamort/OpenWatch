@@ -51,7 +51,10 @@ class HandleInertiaRequests extends Middleware
             foreach ($organizations as $org) {
                 $projects = \App\Models\Project::query()
                     ->where('organization_id', $org->id)
-                    ->with(['environments' => fn ($q) => $q->select(['id', 'project_id', 'name', 'slug'])->orderBy('name')])
+                    ->with([
+                        'environments' => fn ($q) => $q->select(['id', 'project_id', 'name', 'slug'])->orderBy('name'),
+                        'media',
+                    ])
                     ->select(['id', 'organization_id', 'name', 'slug'])
                     ->orderBy('name')
                     ->get()
@@ -59,6 +62,7 @@ class HandleInertiaRequests extends Middleware
                         'id' => $p->id,
                         'name' => $p->name,
                         'slug' => $p->slug,
+                        'logo_url' => $p->getFirstMediaUrl('logo'),
                         'environments' => $p->environments->map(fn ($e) => ['id' => $e->id, 'name' => $e->name, 'slug' => $e->slug])->values()->toArray(),
                     ])
                     ->values()
