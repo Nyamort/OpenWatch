@@ -40,7 +40,7 @@ class WizardController extends Controller
         $user->save();
 
         return response()->json([
-            'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug],
+            'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug, 'logo_url' => $project->getFirstMediaUrl('logo')],
             'environment' => ['id' => $result->environment->id, 'name' => $result->environment->name, 'slug' => $result->environment->slug],
             'token' => $result->token,
         ]);
@@ -65,7 +65,7 @@ class WizardController extends Controller
         ]);
 
         return response()->json([
-            'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug],
+            'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug, 'logo_url' => $project->getFirstMediaUrl('logo')],
             'environment' => ['id' => $environment->id, 'name' => $environment->name, 'slug' => $environment->slug],
         ]);
     }

@@ -201,14 +201,22 @@ class OrganizationSettingsController extends Controller
 
         return Inertia::render('settings/organizations/application', [
             'organization' => $organization,
-            'project' => $project->only('id', 'name', 'slug', 'description'),
+            'project' => array_merge($project->only('id', 'name', 'slug', 'description'), [
+                'logo_url' => $project->getFirstMediaUrl('logo'),
+            ]),
             'environments' => $environments,
         ]);
     }
 
     public function updateApplication(UpdateApplicationRequest $request, Organization $organization, Project $project): RedirectResponse
     {
-        $project->update($request->validated());
+        $project->update($request->safe()->only('name', 'description'));
+
+        if ($request->hasFile('logo')) {
+            $project->addMediaFromRequest('logo')->toMediaCollection('logo');
+        } elseif ($request->boolean('remove_logo')) {
+            $project->clearMediaCollection('logo');
+        }
 
         return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
