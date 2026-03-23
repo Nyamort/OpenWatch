@@ -17,77 +17,160 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 const RATE_OPTIONS = [
-    { label: '100%', value: '1.0' },
-    { label: '50%', value: '0.5' },
-    { label: '25%', value: '0.25' },
-    { label: '10%', value: '0.1' },
-    { label: '5%', value: '0.05' },
+    { label: '0%', value: '0' },
     { label: '1%', value: '0.01' },
-    { label: 'Excluded', value: '0' },
+    { label: '5%', value: '0.05' },
+    { label: '10%', value: '0.1' },
+    { label: '25%', value: '0.25' },
+    { label: '50%', value: '0.5' },
+    { label: '75%', value: '0.75' },
+    { label: '100%', value: '1.0' },
 ];
 
-const EVENT_TYPES = [
+const SAMPLING_EVENTS = [
     { key: 'exceptions', label: 'Exceptions', envVar: 'NIGHTWATCH_EXCEPTION_SAMPLE_RATE' },
     { key: 'requests', label: 'Requests', envVar: 'NIGHTWATCH_REQUEST_SAMPLE_RATE' },
     { key: 'commands', label: 'Commands', envVar: 'NIGHTWATCH_COMMAND_SAMPLE_RATE' },
-    { key: 'queries', label: 'Queries', envVar: 'NIGHTWATCH_QUERY_SAMPLE_RATE' },
-    { key: 'jobs', label: 'Jobs', envVar: 'NIGHTWATCH_JOB_SAMPLE_RATE' },
 ];
 
-function DarkSelect({
-    value,
+const IGNORE_EVENTS = [
+    { key: 'cache', label: 'Cache Events', envVar: 'NIGHTWATCH_IGNORE_CACHE_EVENTS' },
+    { key: 'mail', label: 'Mail Events', envVar: 'NIGHTWATCH_IGNORE_MAIL' },
+    { key: 'notifications', label: 'Notifications', envVar: 'NIGHTWATCH_IGNORE_NOTIFICATIONS' },
+    { key: 'outgoing', label: 'Outgoing requests', envVar: 'NIGHTWATCH_IGNORE_OUTGOING_REQUESTS' },
+    { key: 'queries', label: 'Database Queries', envVar: 'NIGHTWATCH_IGNORE_QUERIES' },
+];
+
+function SamplingRatesDropdown({
+    rates,
     onChange,
-    options,
-    className,
 }: {
-    value: string;
-    onChange: (v: string) => void;
-    options: { label: string; value: string }[];
-    className?: string;
+    rates: Record<string, string>;
+    onChange: (key: string, value: string) => void;
 }) {
-    const label = options.find((o) => o.value === value)?.label ?? value;
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        function handler(e: MouseEvent) {
+            const target = e.target as Element;
+            if (ref.current && !ref.current.contains(target)) {
+                if (!target.closest?.('[data-radix-popper-content-wrapper]')) {
+                    setOpen(false);
+                }
+            }
+        }
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open]);
+
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        'flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none',
-                        className,
-                    )}
-                >
-                    <span>{label}</span>
-                    <ChevronDown className="size-3 shrink-0 text-zinc-400" />
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-                className="min-w-[8rem] bg-zinc-800 border-zinc-700 text-zinc-100"
-                align="start"
+        <div ref={ref} className="relative">
+            <button
+                onClick={() => setOpen((v) => !v)}
+                className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none"
             >
-                {options.map((opt) => (
-                    <DropdownMenuItem
-                        key={opt.value}
-                        onSelect={() => onChange(opt.value)}
-                        className={cn(
-                            'cursor-pointer text-xs focus:bg-zinc-700 focus:text-zinc-100',
-                            opt.value === value && 'text-emerald-400',
-                        )}
-                    >
-                        {opt.label}
-                    </DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                Global sampling rates
+                <ChevronDown className="size-3 shrink-0 text-zinc-400" />
+            </button>
+            {open && (
+                <div className="absolute left-0 top-full z-50 mt-1 min-w-[220px] rounded-md border border-zinc-700 bg-zinc-800 p-3 shadow-lg">
+                    <div className="space-y-2">
+                        {SAMPLING_EVENTS.map(({ key, label }) => (
+                            <div key={key} className="flex items-center justify-between gap-6">
+                                <span className="text-xs text-zinc-300">{label}</span>
+                                <Select value={rates[key]} onValueChange={(v) => onChange(key, v)}>
+                                    <SelectTrigger className="h-7 w-24 border-zinc-600 bg-zinc-900 text-xs text-zinc-100 focus:ring-zinc-500">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {RATE_OPTIONS.map((opt) => (
+                                            <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                                {opt.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+
+function EventFilterDropdown({
+    included,
+    onChange,
+}: {
+    included: Record<string, boolean>;
+    onChange: (key: string, value: boolean) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        function handler(e: MouseEvent) {
+            const target = e.target as Element;
+            if (ref.current && !ref.current.contains(target)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open]);
+
+    const excludedCount = IGNORE_EVENTS.filter((e) => !included[e.key]).length;
+    const triggerLabel =
+        excludedCount === 0
+            ? 'All events included'
+            : excludedCount === IGNORE_EVENTS.length
+              ? 'All events excluded'
+              : `${excludedCount} of ${IGNORE_EVENTS.length} events excluded`;
+
+    return (
+        <div ref={ref} className="relative">
+            <button
+                onClick={() => setOpen((v) => !v)}
+                className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none"
+            >
+                {triggerLabel}
+                <ChevronDown className="size-3 shrink-0 text-zinc-400" />
+            </button>
+            {open && (
+                <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-md border border-zinc-700 bg-zinc-800 p-3 shadow-lg">
+                    <div className="space-y-2">
+                        {IGNORE_EVENTS.map(({ key, label: eventLabel }) => (
+                            <label key={key} className="flex cursor-pointer items-center gap-2">
+                                <Checkbox
+                                    checked={included[key]}
+                                    onCheckedChange={(checked) => onChange(key, !!checked)}
+                                    className="size-3.5 border-zinc-500"
+                                />
+                                <span className="text-xs text-zinc-300">{eventLabel}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -141,8 +224,8 @@ function CodeBlock({
     }
 
     return (
-        <div className="relative flex items-center rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm min-w-0">
-            <span className="flex-1 overflow-x-auto whitespace-nowrap scrollbar-none min-w-0 pr-2">{children}</span>
+        <div className="relative flex items-start rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm min-w-0">
+            <span className="flex-1 overflow-x-auto whitespace-pre scrollbar-none min-w-0 pr-2">{children}</span>
             <button
                 onClick={handleCopy}
                 className="ml-1 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
@@ -232,11 +315,22 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     const [logTab, setLogTab] = useState<'single' | 'stack'>('single');
 
     // Step 3 sampling
-    const [globalRate, setGlobalRate] = useState('0.1');
-    const [perEvent, setPerEvent] = useState(false);
-    const [eventRates, setEventRates] = useState<Record<string, string>>(
-        Object.fromEntries(EVENT_TYPES.map((e) => [e.key, '0.1'])),
-    );
+    const [samplingRates, setSamplingRates] = useState<Record<string, string>>({
+        exceptions: '1.0',
+        requests: '0.1',
+        commands: '1.0',
+    });
+
+    function handleSamplingRateChange(key: string, value: string) {
+        setSamplingRates((prev) => ({ ...prev, [key]: value }));
+    }
+
+    const defaultIncludedEvents = Object.fromEntries(IGNORE_EVENTS.map((e) => [e.key, true]));
+    const [includedEvents, setIncludedEvents] = useState<Record<string, boolean>>(defaultIncludedEvents);
+
+    function handleIncludedEventChange(key: string, value: boolean) {
+        setIncludedEvents((prev) => ({ ...prev, [key]: value }));
+    }
 
     function resetWizard() {
         setStep(1);
@@ -250,6 +344,8 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         setEnvSlug('production');
         setEnvColor('green');
         setEnvUrl('');
+        setSamplingRates({ exceptions: '1.0', requests: '0.1', commands: '1.0' });
+        setIncludedEvents(defaultIncludedEvents);
         if (pollRef.current) clearInterval(pollRef.current);
     }
 
@@ -413,15 +509,18 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         <Label className="text-zinc-400 text-xs">Environment color</Label>
                                         <div className="flex items-center gap-2">
                                             <div className={cn('size-4 rounded-full shrink-0', colorClass)} />
-                                            <select
-                                                value={envColor}
-                                                onChange={(e) => setEnvColor(e.target.value)}
-                                                className="flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-600"
-                                            >
-                                                {ENV_COLORS.map((c) => (
-                                                    <option key={c.value} value={c.value}>{c.label}</option>
-                                                ))}
-                                            </select>
+                                            <Select value={envColor} onValueChange={setEnvColor}>
+                                                <SelectTrigger className="flex-1 border-zinc-700 bg-zinc-900 text-zinc-100 focus:ring-zinc-600">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {ENV_COLORS.map((c) => (
+                                                        <SelectItem key={c.value} value={c.value}>
+                                                            {c.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
 
@@ -554,87 +653,45 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                 <p className="text-sm text-zinc-400">
                                     Sampling reduces the number of events Nightwatch records, helping control
                                     storage and performance costs. We recommend starting at{' '}
-                                    <span className="text-zinc-200 font-medium">10%</span> and adjusting
-                                    based on your traffic.
+                                    <span className="text-zinc-200 font-medium">10%</span> for requests and
+                                    adjusting based on your traffic.
                                 </p>
 
-                                {/* Config box */}
-                                <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-3 space-y-3">
-                                    {/* Controls row */}
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <DarkSelect
-                                            value={globalRate}
-                                            onChange={(v) => {
-                                                setGlobalRate(v);
-                                                if (!perEvent) {
-                                                    setEventRates(Object.fromEntries(EVENT_TYPES.map((e) => [e.key, v])));
-                                                }
-                                            }}
-                                            options={[
-                                                { label: 'Global sampling rates', value: 'global-label', },
-                                                ...RATE_OPTIONS,
-                                            ].filter((o) => o.value !== 'global-label' || globalRate === 'global-label')}
-                                        />
-                                        <DarkSelect
-                                            value={perEvent ? 'per-event' : 'all'}
-                                            onChange={(v) => {
-                                                const enabling = v === 'per-event';
-                                                setPerEvent(enabling);
-                                                if (enabling) {
-                                                    setEventRates(Object.fromEntries(EVENT_TYPES.map((e) => [e.key, globalRate])));
-                                                }
-                                            }}
-                                            options={[
-                                                { label: (() => {
-                                                    if (!perEvent) return 'All events included';
-                                                    const excluded = EVENT_TYPES.filter((e) => eventRates[e.key] === '0').length;
-                                                    return excluded === 0
-                                                        ? 'All events included'
-                                                        : `${excluded} of ${EVENT_TYPES.length} events excluded`;
-                                                })(), value: 'all' },
-                                                { label: 'Configure per event', value: 'per-event' },
-                                            ]}
-                                        />
-                                    </div>
-
-                                    {/* Per-event rows */}
-                                    {perEvent && (
-                                        <div className="space-y-1.5 border-t border-zinc-800 pt-2">
-                                            {EVENT_TYPES.map((evt) => (
-                                                <div key={evt.key} className="flex items-center justify-between gap-2">
-                                                    <span className="text-xs text-zinc-400 min-w-0 truncate">{evt.label}</span>
-                                                    <DarkSelect
-                                                        value={eventRates[evt.key]}
-                                                        onChange={(v) =>
-                                                            setEventRates((prev) => ({ ...prev, [evt.key]: v }))
-                                                        }
-                                                        options={RATE_OPTIONS}
-                                                        className="shrink-0"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Generated code block */}
-                                    <div className="space-y-1">
-                                        {perEvent
-                                            ? EVENT_TYPES.filter((e) => eventRates[e.key] !== '0').map((evt) => (
-                                                <CodeBlock
-                                                    key={evt.key}
-                                                    onCopy={`${evt.envVar}=${eventRates[evt.key]}`}
-                                                >
-                                                    <EnvVar name={evt.envVar} value={eventRates[evt.key]} />
-                                                </CodeBlock>
-                                            ))
-                                            : (
-                                                <CodeBlock onCopy={`NIGHTWATCH_SAMPLE_RATE=${globalRate}`}>
-                                                    <EnvVar name="NIGHTWATCH_SAMPLE_RATE" value={globalRate} />
-                                                </CodeBlock>
-                                            )
-                                        }
-                                    </div>
+                                {/* Controls row */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <SamplingRatesDropdown
+                                        rates={samplingRates}
+                                        onChange={handleSamplingRateChange}
+                                    />
+                                    <EventFilterDropdown
+                                        included={includedEvents}
+                                        onChange={handleIncludedEventChange}
+                                    />
                                 </div>
+
+                                {/* Generated env vars */}
+                                {(() => {
+                                    const samplingLines = SAMPLING_EVENTS.filter(
+                                        (e) => samplingRates[e.key] !== '1.0',
+                                    );
+                                    const ignoreLines = IGNORE_EVENTS.filter((e) => !includedEvents[e.key]);
+                                    const allLines = [
+                                        ...samplingLines.map((e) => ({ envVar: e.envVar, value: samplingRates[e.key] })),
+                                        ...ignoreLines.map((e) => ({ envVar: e.envVar, value: 'true' })),
+                                    ];
+                                    if (allLines.length === 0) return null;
+                                    const copyText = allLines.map((l) => `${l.envVar}=${l.value}`).join('\n');
+                                    return (
+                                        <CodeBlock onCopy={copyText}>
+                                            {allLines.map((line, i) => (
+                                                <span key={line.envVar}>
+                                                    <EnvVar name={line.envVar} value={line.value} />
+                                                    {i < allLines.length - 1 && '\n'}
+                                                </span>
+                                            ))}
+                                        </CodeBlock>
+                                    );
+                                })()}
 
                                 {/* Info banner */}
                                 <div className="flex items-center gap-2 rounded-md border border-blue-800 bg-blue-950/40 px-3 py-2">

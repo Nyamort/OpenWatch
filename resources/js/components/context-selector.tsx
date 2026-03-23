@@ -1,14 +1,14 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { Check, ChevronRight, ChevronsUpDown, Network, Plus, Search, Settings } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { store as switchOrg } from '@/actions/App/Http/Controllers/Organization/OrganizationSwitcherController';
+import { store as switchEnvironment } from '@/actions/App/Http/Controllers/Project/EnvironmentSwitcherController';
+import { store as switchProject } from '@/actions/App/Http/Controllers/Project/ProjectSwitcherController';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { store as switchOrg } from '@/actions/App/Http/Controllers/Organization/OrganizationSwitcherController';
-import { store as switchProject } from '@/actions/App/Http/Controllers/Project/ProjectSwitcherController';
-import { store as switchEnvironment } from '@/actions/App/Http/Controllers/Project/EnvironmentSwitcherController';
 
 interface Environment {
     id: number;
