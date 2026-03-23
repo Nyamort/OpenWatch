@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\Organization;
+use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -56,6 +57,31 @@ class WizardController extends Controller
             'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug],
             'environment' => ['id' => $environment->id, 'name' => $environment->name, 'slug' => $environment->slug],
             'token' => $rawToken,
+        ]);
+    }
+
+    public function update(Request $request, Project $project): JsonResponse
+    {
+        $data = $request->validate([
+            'app_name' => ['required', 'string', 'max:255'],
+            'env_id' => ['required', 'integer', 'exists:environments,id'],
+            'env_name' => ['required', 'string', 'max:255'],
+            'env_type' => ['required', 'string', 'in:production,staging,development,custom'],
+            'env_color' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $project->update(['name' => $data['app_name']]);
+
+        $environment = $project->environments()->findOrFail($data['env_id']);
+        $environment->update([
+            'name' => $data['env_name'],
+            'type' => $data['env_type'],
+            'color' => $data['env_color'] ?? null,
+        ]);
+
+        return response()->json([
+            'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug],
+            'environment' => ['id' => $environment->id, 'name' => $environment->name, 'slug' => $environment->slug],
         ]);
     }
 }

@@ -71,6 +71,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                             <div className={step !== 1 ? 'hidden' : ''}>
                                 <WizardStep1
                                     organizationId={activeOrganization.id}
+                                    created={created}
                                     onCreated={(data) => { setCreated(data); complete(1); setStep(2); }}
                                 />
                             </div>

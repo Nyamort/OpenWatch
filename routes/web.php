@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('projects/switch', [ProjectSwitcherController::class, 'store'])->name('projects.switch');
     Route::post('environments/switch', [EnvironmentSwitcherController::class, 'store'])->name('environments.switch');
     Route::post('wizard/app', [WizardController::class, 'store'])->name('wizard.app');
+    Route::patch('wizard/app/{project}', [WizardController::class, 'update'])->name('wizard.app.update');
 
     // Organization-scoped routes (require membership)
     Route::middleware(['organization.member'])->prefix('organizations/{organization}')->name('organizations.')->group(function () {

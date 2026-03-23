@@ -39,9 +39,11 @@ function slugify(value: string): string {
 
 export function WizardStep1({
     organizationId,
+    created,
     onCreated,
 }: {
     organizationId: number;
+    created: CreatedData | null;
     onCreated: (data: CreatedData) => void;
 }) {
     const [appName, setAppName] = useState('');
@@ -52,9 +54,15 @@ export function WizardStep1({
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    const isEditing = created !== null;
+
     function handleEnvNameChange(value: string) {
         setEnvName(value);
         setEnvSlug(slugify(value));
+    }
+
+    function xsrfToken(): string {
+        return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
     }
 
     async function handleCreate() {
@@ -62,16 +70,9 @@ export function WizardStep1({
         setErrors({});
 
         try {
-            const xsrfToken = decodeURIComponent(
-                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
-            );
             const res = await fetch('/wizard/app', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-XSRF-TOKEN': xsrfToken,
-                    Accept: 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrfToken(), Accept: 'application/json' },
                 body: JSON.stringify({
                     organization_id: organizationId,
                     app_name: appName,
@@ -100,6 +101,40 @@ export function WizardStep1({
         }
     }
 
+    async function handleUpdate() {
+        if (!created) return;
+        setLoading(true);
+        setErrors({});
+
+        try {
+            const res = await fetch(`/wizard/app/${created.project.slug}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrfToken(), Accept: 'application/json' },
+                body: JSON.stringify({
+                    app_name: appName,
+                    env_id: created.environment.id,
+                    env_name: envName,
+                    env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
+                    env_color: envColor,
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                if (data.errors) setErrors(data.errors);
+                return;
+            }
+
+            const data = await res.json();
+            router.reload({ only: ['activeOrganization', 'activeProject', 'activeEnvironment', 'projectGroups', 'organizations'] });
+            onCreated({ ...data, token: created.token });
+        } catch {
+            setErrors({ app_name: 'An unexpected error occurred. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
 
     return (
@@ -117,10 +152,14 @@ export function WizardStep1({
 
             <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
                 <div>
-                    <p className="text-sm font-medium text-zinc-200">Add your first environment</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
-                        You can setup additional environments after your initial setup.
+                    <p className="text-sm font-medium text-zinc-200">
+                        {isEditing ? 'Environment' : 'Add your first environment'}
                     </p>
+                    {!isEditing && (
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                            You can setup additional environments after your initial setup.
+                        </p>
+                    )}
                 </div>
 
                 <div className="grid gap-1.5">
@@ -167,12 +206,12 @@ export function WizardStep1({
 
             <div className="flex justify-end">
                 <Button
-                    onClick={handleCreate}
+                    onClick={isEditing ? handleUpdate : handleCreate}
                     disabled={loading || !appName}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                     {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                    Create
+                    {isEditing ? 'Update' : 'Create'}
                 </Button>
             </div>
         </div>
