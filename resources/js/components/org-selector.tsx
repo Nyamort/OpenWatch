@@ -1,6 +1,6 @@
-import { Link } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus, Search } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { CreateOrganizationDialog } from '@/components/create-organization-dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,6 +22,7 @@ interface OrgSelectorProps {
 export function OrgSelector({ organizations, value, onChange }: OrgSelectorProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
     const selected = organizations.find((o) => o.slug === value);
@@ -92,16 +93,17 @@ export function OrgSelector({ organizations, value, onChange }: OrgSelectorProps
                 </div>
 
                 <div className="border-t border-border p-1">
-                    <Link
-                        href="/organizations/create"
-                        onClick={() => setOpen(false)}
+                    <button
+                        onClick={() => { setOpen(false); setDialogOpen(true); }}
                         className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     >
                         <Plus className="size-3.5" />
                         New Organization
-                    </Link>
+                    </button>
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>
+
+        <CreateOrganizationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     );
 }
