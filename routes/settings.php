@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Settings\NotificationPreferencesController;
 use App\Http\Controllers\Settings\PasswordController;
-use App\Http\Controllers\Settings\PreferencesController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SessionController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
@@ -17,9 +16,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-
-    Route::get('settings/preferences', [PreferencesController::class, 'edit'])->name('preferences.edit');
-    Route::patch('settings/preferences', [PreferencesController::class, 'update'])->name('preferences.update');
 
     Route::get('settings/notifications', [NotificationPreferencesController::class, 'edit'])->name('notifications.edit');
     Route::patch('settings/notifications', [NotificationPreferencesController::class, 'update'])->name('notifications.update');

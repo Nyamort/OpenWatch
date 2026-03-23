@@ -7,7 +7,6 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 import { edit as editAppearance } from '@/routes/appearance';
-import { edit as editPreferences } from '@/routes/preferences';
 import { edit as editNotifications } from '@/routes/notifications';
 import { index as sessionsIndex } from '@/routes/sessions';
 import { edit } from '@/routes/profile';
@@ -16,7 +15,6 @@ import { edit as editPassword } from '@/routes/user-password';
 
 const sidebarNavItems: NavItem[] = [
     { title: 'Profile', href: edit(), icon: null },
-    { title: 'Preferences', href: editPreferences(), icon: null },
     { title: 'Password', href: editPassword(), icon: null },
     { title: 'Two-Factor Auth', href: show(), icon: null },
     { title: 'Notifications', href: editNotifications(), icon: null },
