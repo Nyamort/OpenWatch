@@ -1,285 +1,22 @@
-import { router, usePage } from '@inertiajs/react';
-import {
-    Check,
-    CheckCircle2,
-    ChevronDown,
-    ClipboardCopy,
-    Info,
-    Loader2,
-    Wifi,
-    WifiOff,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { usePage } from '@inertiajs/react';
+import { CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-
-const RATE_OPTIONS = [
-    { label: '0%', value: '0' },
-    { label: '1%', value: '0.01' },
-    { label: '5%', value: '0.05' },
-    { label: '10%', value: '0.1' },
-    { label: '25%', value: '0.25' },
-    { label: '50%', value: '0.5' },
-    { label: '75%', value: '0.75' },
-    { label: '100%', value: '1.0' },
-];
-
-const SAMPLING_EVENTS = [
-    { key: 'exceptions', label: 'Exceptions', envVar: 'NIGHTWATCH_EXCEPTION_SAMPLE_RATE' },
-    { key: 'requests', label: 'Requests', envVar: 'NIGHTWATCH_REQUEST_SAMPLE_RATE' },
-    { key: 'commands', label: 'Commands', envVar: 'NIGHTWATCH_COMMAND_SAMPLE_RATE' },
-];
-
-const IGNORE_EVENTS = [
-    { key: 'cache', label: 'Cache Events', envVar: 'NIGHTWATCH_IGNORE_CACHE_EVENTS' },
-    { key: 'mail', label: 'Mail Events', envVar: 'NIGHTWATCH_IGNORE_MAIL' },
-    { key: 'notifications', label: 'Notifications', envVar: 'NIGHTWATCH_IGNORE_NOTIFICATIONS' },
-    { key: 'outgoing', label: 'Outgoing requests', envVar: 'NIGHTWATCH_IGNORE_OUTGOING_REQUESTS' },
-    { key: 'queries', label: 'Database Queries', envVar: 'NIGHTWATCH_IGNORE_QUERIES' },
-];
-
-const DEFAULT_INCLUDED_EVENTS = Object.fromEntries(IGNORE_EVENTS.map((e) => [e.key, true]));
-
-const DEFAULT_SAMPLING_RATES = { exceptions: '1.0', requests: '0.1', commands: '1.0' };
-
-function useClickOutside(
-    ref: React.RefObject<HTMLElement | null>,
-    onClose: () => void,
-    open: boolean,
-    ignorePortal = false,
-) {
-    useEffect(() => {
-        if (!open) return;
-        function handler(e: MouseEvent) {
-            const target = e.target as Element;
-            if (ref.current && !ref.current.contains(target)) {
-                if (!ignorePortal || !target.closest?.('[data-radix-popper-content-wrapper]')) {
-                    onClose();
-                }
-            }
-        }
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [open]); // ref and onClose are stable refs
-}
-
-function SamplingRatesDropdown({
-    rates,
-    onChange,
-}: {
-    rates: Record<string, string>;
-    onChange: (key: string, value: string) => void;
-}) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-    useClickOutside(ref, () => setOpen(false), open, true);
-
-    return (
-        <div ref={ref} className="relative">
-            <button
-                onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none"
-            >
-                Global sampling rates
-                <ChevronDown className="size-3 shrink-0 text-zinc-400" />
-            </button>
-            {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 min-w-[220px] rounded-md border border-zinc-700 bg-zinc-800 p-3 shadow-lg">
-                    <div className="space-y-2">
-                        {SAMPLING_EVENTS.map(({ key, label }) => (
-                            <div key={key} className="flex items-center justify-between gap-6">
-                                <span className="text-xs text-zinc-300">{label}</span>
-                                <Select value={rates[key]} onValueChange={(v) => onChange(key, v)}>
-                                    <SelectTrigger className="h-7 w-24 border-zinc-600 bg-zinc-900 text-xs text-zinc-100 focus:ring-zinc-500">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {RATE_OPTIONS.map((opt) => (
-                                            <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                                                {opt.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function EventFilterDropdown({
-    included,
-    onChange,
-}: {
-    included: Record<string, boolean>;
-    onChange: (key: string, value: boolean) => void;
-}) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-    useClickOutside(ref, () => setOpen(false), open);
-
-    const excludedCount = IGNORE_EVENTS.filter((e) => !included[e.key]).length;
-    const triggerLabel =
-        excludedCount === 0
-            ? 'All events included'
-            : excludedCount === IGNORE_EVENTS.length
-              ? 'All events excluded'
-              : `${excludedCount} of ${IGNORE_EVENTS.length} events excluded`;
-
-    return (
-        <div ref={ref} className="relative">
-            <button
-                onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-100 transition-colors hover:bg-zinc-700 focus:outline-none"
-            >
-                {triggerLabel}
-                <ChevronDown className="size-3 shrink-0 text-zinc-400" />
-            </button>
-            {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-md border border-zinc-700 bg-zinc-800 p-3 shadow-lg">
-                    <div className="space-y-2">
-                        {IGNORE_EVENTS.map(({ key, label }) => (
-                            <label key={key} className="flex cursor-pointer items-center gap-2">
-                                <Checkbox
-                                    checked={included[key]}
-                                    onCheckedChange={(checked) => onChange(key, !!checked)}
-                                    className="size-3.5 border-zinc-500"
-                                />
-                                <span className="text-xs text-zinc-300">{label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
+import { StepHeader } from './wizard/shared';
+import { WizardStep1 } from './wizard/step-1';
+import { WizardStep2 } from './wizard/step-2';
+import { WizardStep3 } from './wizard/step-3';
+import { WizardStep4 } from './wizard/step-4';
+import type { CreatedData } from './wizard/types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-}
-
-interface CreatedData {
-    project: { id: number; name: string; slug: string };
-    environment: { id: number; name: string; slug: string };
-    token: string;
-}
-
-const ENV_COLORS = [
-    { label: 'Green', value: 'green', class: 'bg-emerald-500' },
-    { label: 'Amber', value: 'amber', class: 'bg-amber-500' },
-    { label: 'Blue', value: 'blue', class: 'bg-blue-500' },
-    { label: 'Purple', value: 'purple', class: 'bg-violet-500' },
-    { label: 'Red', value: 'red', class: 'bg-rose-500' },
-    { label: 'Gray', value: 'gray', class: 'bg-zinc-500' },
-];
-
-const ENV_TYPES = [
-    { label: 'Production', value: 'production', color: 'green' },
-    { label: 'Staging', value: 'staging', color: 'amber' },
-    { label: 'Development', value: 'development', color: 'blue' },
-    { label: 'Custom', value: 'custom', color: 'gray' },
-];
-
-function slugify(value: string): string {
-    return value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-}
-
-function CodeBlock({
-    children,
-    onCopy,
-}: {
-    children: React.ReactNode;
-    onCopy: string;
-}) {
-    const [copied, setCopied] = useState(false);
-
-    function handleCopy() {
-        navigator.clipboard.writeText(onCopy);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
-
-    return (
-        <div className="relative flex items-start rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm min-w-0">
-            <span className="flex-1 overflow-x-auto whitespace-pre scrollbar-none min-w-0 pr-2">{children}</span>
-            <button
-                onClick={handleCopy}
-                className="ml-1 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
-                title="Copy"
-            >
-                {copied ? <Check className="size-4 text-emerald-400" /> : <ClipboardCopy className="size-4" />}
-            </button>
-        </div>
-    );
-}
-
-function EnvVar({ name, value }: { name: string; value: string }) {
-    return (
-        <span>
-            <span className="text-emerald-400">{name}</span>
-            <span className="text-zinc-100">={value}</span>
-        </span>
-    );
-}
-
-function StepHeader({
-    number,
-    title,
-    done,
-    active,
-}: {
-    number: number;
-    title: string;
-    done: boolean;
-    active: boolean;
-}) {
-    return (
-        <div className="flex items-center gap-3">
-            <div
-                className={cn(
-                    'flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold',
-                    active
-                        ? 'border-zinc-300 bg-zinc-300 text-zinc-900'
-                        : 'border-zinc-600 text-zinc-500',
-                )}
-            >
-                {number}
-            </div>
-            <span className={cn('text-sm font-medium', active ? 'text-zinc-100' : 'text-zinc-500')}>
-                {title}
-            </span>
-            {done && (
-                <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                    <CheckCircle2 className="size-3.5" />
-                    DONE
-                </span>
-            )}
-        </div>
-    );
 }
 
 export function SetupWizardDialog({ open, onOpenChange }: Props) {
@@ -289,130 +26,23 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
     const [step, setStep] = useState(1);
     const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
     const [created, setCreated] = useState<CreatedData | null>(null);
-    const [connected, setConnected] = useState(false);
-    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const [appName, setAppName] = useState('');
-    const [envName, setEnvName] = useState('Production');
-    const [envSlug, setEnvSlug] = useState('production');
-    const [envColor, setEnvColor] = useState('green');
-    const [envUrl, setEnvUrl] = useState('');
-
-    const [logTab, setLogTab] = useState<'single' | 'stack'>('single');
-
-    const [samplingRates, setSamplingRates] = useState<Record<string, string>>(DEFAULT_SAMPLING_RATES);
-    const [includedEvents, setIncludedEvents] = useState<Record<string, boolean>>(DEFAULT_INCLUDED_EVENTS);
-
-    function resetWizard() {
-        setStep(1);
-        setCompletedSteps(new Set());
-        setCreated(null);
-        setConnected(false);
-        setLoading(false);
-        setErrors({});
-        setAppName('');
-        setEnvName('Production');
-        setEnvSlug('production');
-        setEnvColor('green');
-        setEnvUrl('');
-        setSamplingRates(DEFAULT_SAMPLING_RATES);
-        setIncludedEvents(DEFAULT_INCLUDED_EVENTS);
-        if (pollRef.current) clearInterval(pollRef.current);
-    }
-
-    function handleOpenChange(value: boolean) {
-        if (!value) resetWizard();
-        onOpenChange(value);
-    }
-
-    function handleEnvNameChange(value: string) {
-        setEnvName(value);
-        setEnvSlug(slugify(value));
-    }
 
     function complete(n: number) {
         setCompletedSteps((prev) => new Set([...prev, n]));
     }
 
-    async function handleCreate() {
-        if (!activeOrganization) return;
-        setLoading(true);
-        setErrors({});
-
-        try {
-            const xsrfToken = decodeURIComponent(
-                document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
-            );
-            const res = await fetch('/wizard/app', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-XSRF-TOKEN': xsrfToken,
-                    Accept: 'application/json',
-                },
-                body: JSON.stringify({
-                    organization_id: activeOrganization.id,
-                    app_name: appName,
-                    app_slug: slugify(appName),
-                    env_name: envName,
-                    env_slug: envSlug,
-                    env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
-                    env_color: envColor,
-                    env_url: envUrl || null,
-                }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                if (data.errors) setErrors(data.errors);
-                return;
-            }
-
-            const data: CreatedData = await res.json();
-            setCreated(data);
-            complete(1);
-            setStep(2);
-            router.reload({ only: ['activeOrganization', 'activeProject', 'activeEnvironment', 'projectGroups', 'organizations'] });
-        } catch {
-            setErrors({ app_name: 'An unexpected error occurred. Please try again.' });
-        } finally {
-            setLoading(false);
+    function handleOpenChange(value: boolean) {
+        if (!value) {
+            setStep(1);
+            setCompletedSteps(new Set());
+            setCreated(null);
         }
+        onOpenChange(value);
     }
 
-    useEffect(() => {
-        if (step !== 4 || !created) return;
-
-        pollRef.current = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/health`);
-                if (res.ok) setConnected(true);
-            } catch {
-                // ignore
-            }
-        }, 3000);
-
-        return () => {
-            if (pollRef.current) clearInterval(pollRef.current);
-        };
-    }, [step, created]);
-
-    const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
     const orgName = activeOrganization?.name ?? '—';
-    const projectName = created?.project.name ?? (appName || 'New Application');
-
-    const samplingEnvLines = SAMPLING_EVENTS.filter((e) => samplingRates[e.key] !== '1.0').map((e) => ({
-        envVar: e.envVar,
-        value: samplingRates[e.key],
-    }));
-    const ignoreEnvLines = IGNORE_EVENTS.filter((e) => !includedEvents[e.key]).map((e) => ({
-        envVar: e.envVar,
-        value: 'true',
-    }));
-    const allEnvLines = [...samplingEnvLines, ...ignoreEnvLines];
+    const projectName = created?.project.name ?? (step === 1 ? 'New Application' : '—');
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -435,300 +65,45 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                 </DialogHeader>
 
                 <div className="flex flex-col divide-y divide-zinc-800 overflow-y-auto max-h-[70vh]">
-                    {/* Step 1 */}
                     <div className="px-6 py-4">
                         <StepHeader number={1} title="Create Application" done={completedSteps.has(1)} active={step >= 1} />
-
-                        {step === 1 && (
-                            <div className="mt-4 space-y-4">
-                                <div className="grid gap-1.5">
-                                    <Label className="text-zinc-300">Application name</Label>
-                                    <Input
-                                        value={appName}
-                                        onChange={(e) => setAppName(e.target.value)}
-                                        placeholder="My Application"
-                                        className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
-                                    />
-                                    {errors.app_name && <p className="text-xs text-rose-400">{errors.app_name}</p>}
-                                </div>
-
-                                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
-                                    <div>
-                                        <p className="text-sm font-medium text-zinc-200">Add your first environment</p>
-                                        <p className="text-xs text-zinc-500 mt-0.5">
-                                            You can setup additional environments after your initial setup.
-                                        </p>
-                                    </div>
-
-                                    <div className="grid gap-1.5">
-                                        <Label className="text-zinc-400 text-xs">Environment name</Label>
-                                        <Input
-                                            value={envName}
-                                            onChange={(e) => handleEnvNameChange(e.target.value)}
-                                            className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
-                                        />
-                                        {errors.env_name && <p className="text-xs text-rose-400">{errors.env_name}</p>}
-                                    </div>
-
-                                    <div className="grid gap-1.5">
-                                        <Label className="text-zinc-400 text-xs">Environment color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <div className={cn('size-4 rounded-full shrink-0', colorClass)} />
-                                            <Select value={envColor} onValueChange={setEnvColor}>
-                                                <SelectTrigger className="flex-1 border-zinc-700 bg-zinc-900 text-zinc-100 focus:ring-zinc-600">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {ENV_COLORS.map((c) => (
-                                                        <SelectItem key={c.value} value={c.value}>
-                                                            {c.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid gap-1.5">
-                                        <Label className="text-zinc-400 text-xs">
-                                            Environment URL{' '}
-                                            <span className="text-zinc-600">(optional)</span>
-                                        </Label>
-                                        <Input
-                                            value={envUrl}
-                                            onChange={(e) => setEnvUrl(e.target.value)}
-                                            placeholder="https://example.com"
-                                            className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end">
-                                    <Button
-                                        onClick={handleCreate}
-                                        disabled={loading || !appName || !activeOrganization}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                                    >
-                                        {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                                        Create
-                                    </Button>
-                                </div>
-                            </div>
+                        {step === 1 && activeOrganization && (
+                            <WizardStep1
+                                organizationId={activeOrganization.id}
+                                onCreated={(data) => { setCreated(data); complete(1); setStep(2); }}
+                            />
                         )}
                     </div>
 
-                    {/* Step 2 */}
                     <div className="px-6 py-4">
                         <StepHeader number={2} title="Install Agent" done={completedSteps.has(2)} active={step >= 2} />
-
                         {step === 2 && (
-                            <div className="mt-4 space-y-5">
-                                <div>
-                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
-                                        Install the Nightwatch package
-                                    </p>
-                                    <CodeBlock onCopy="composer require laravel/nightwatch">
-                                        <span className="text-zinc-100">composer require laravel/nightwatch</span>
-                                    </CodeBlock>
-                                </div>
-
-                                <div>
-                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
-                                        Add the token to your environment variables
-                                    </p>
-                                    <CodeBlock onCopy={`NIGHTWATCH_TOKEN=${created?.token ?? ''}`}>
-                                        <EnvVar name="NIGHTWATCH_TOKEN" value={created?.token ?? '...'} />
-                                    </CodeBlock>
-                                </div>
-
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className="text-xs font-semibold text-zinc-400">
-                                            Configure Nightwatch to capture logs
-                                        </p>
-                                        <span className="text-xs text-zinc-600">Optional</span>
-                                    </div>
-                                    <div className="flex gap-4 mb-2 border-b border-zinc-800">
-                                        {(['single', 'stack'] as const).map((tab) => (
-                                            <button
-                                                key={tab}
-                                                onClick={() => setLogTab(tab)}
-                                                className={cn(
-                                                    'pb-1.5 text-xs font-medium transition-colors border-b-2 -mb-px',
-                                                    logTab === tab
-                                                        ? 'border-zinc-300 text-zinc-100'
-                                                        : 'border-transparent text-zinc-500 hover:text-zinc-300',
-                                                )}
-                                            >
-                                                {tab === 'single' ? 'Single Channel' : 'Log Stack'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {logTab === 'single' ? (
-                                        <CodeBlock onCopy="LOG_CHANNEL=nightwatch">
-                                            <EnvVar name="LOG_CHANNEL" value="nightwatch" />
-                                        </CodeBlock>
-                                    ) : (
-                                        <CodeBlock onCopy="LOG_STACK=nightwatch">
-                                            <EnvVar name="LOG_STACK" value="nightwatch" />
-                                        </CodeBlock>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => setStep(1)}
-                                        className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                    >
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={() => { complete(2); setStep(3); }}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                                    >
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
+                            <WizardStep2
+                                token={created?.token ?? ''}
+                                onNext={() => { complete(2); setStep(3); }}
+                                onBack={() => setStep(1)}
+                            />
                         )}
                     </div>
 
-                    {/* Step 3 */}
                     <div className="px-6 py-4">
                         <StepHeader number={3} title="Sampling" done={completedSteps.has(3)} active={step >= 3} />
-
                         {step === 3 && (
-                            <div className="mt-4 space-y-4">
-                                <p className="text-sm text-zinc-400">
-                                    Sampling reduces the number of events Nightwatch records, helping control
-                                    storage and performance costs. We recommend starting at{' '}
-                                    <span className="text-zinc-200 font-medium">10%</span> for requests and
-                                    adjusting based on your traffic.
-                                </p>
-
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <SamplingRatesDropdown
-                                        rates={samplingRates}
-                                        onChange={(key, value) => setSamplingRates((prev) => ({ ...prev, [key]: value }))}
-                                    />
-                                    <EventFilterDropdown
-                                        included={includedEvents}
-                                        onChange={(key, value) => setIncludedEvents((prev) => ({ ...prev, [key]: value }))}
-                                    />
-                                </div>
-
-                                {allEnvLines.length > 0 && (
-                                    <CodeBlock onCopy={allEnvLines.map((l) => `${l.envVar}=${l.value}`).join('\n')}>
-                                        {allEnvLines.map((line, i) => (
-                                            <span key={line.envVar}>
-                                                <EnvVar name={line.envVar} value={line.value} />
-                                                {i < allEnvLines.length - 1 && '\n'}
-                                            </span>
-                                        ))}
-                                    </CodeBlock>
-                                )}
-
-                                <div className="flex items-center gap-2 rounded-md border border-blue-800 bg-blue-950/40 px-3 py-2">
-                                    <Info className="size-4 shrink-0 text-blue-400" />
-                                    <span className="text-xs text-blue-300">
-                                        Learn more about additional sampling options
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => setStep(2)}
-                                        className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                    >
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={() => { complete(3); setStep(4); }}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                                    >
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
+                            <WizardStep3
+                                onNext={() => { complete(3); setStep(4); }}
+                                onBack={() => setStep(2)}
+                            />
                         )}
                     </div>
 
-                    {/* Step 4 */}
                     <div className="px-6 py-4">
                         <StepHeader number={4} title="Setup Agent" done={completedSteps.has(4)} active={step >= 4} />
-
                         {step === 4 && (
-                            <div className="mt-4 space-y-4">
-                                <div>
-                                    <p className="text-xs font-semibold text-zinc-400 mb-2">
-                                        Run the Nightwatch Agent
-                                    </p>
-                                    <CodeBlock onCopy="php artisan nightwatch:agent">
-                                        <span className="text-zinc-100">php artisan nightwatch:agent</span>
-                                    </CodeBlock>
-                                </div>
-
-                                <div
-                                    className={cn(
-                                        'flex items-center gap-3 rounded-lg border px-4 py-3',
-                                        connected
-                                            ? 'border-emerald-800 bg-emerald-950/40'
-                                            : 'border-zinc-700 bg-zinc-900',
-                                    )}
-                                >
-                                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                                        Connection
-                                    </span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span
-                                            className={cn(
-                                                'size-2 rounded-full animate-pulse',
-                                                connected ? 'bg-emerald-400' : 'bg-amber-400',
-                                            )}
-                                        />
-                                        {connected ? (
-                                            <Wifi className="size-4 text-emerald-400" />
-                                        ) : (
-                                            <WifiOff className="size-4 text-amber-400" />
-                                        )}
-                                        <span
-                                            className={cn(
-                                                'text-xs font-semibold uppercase',
-                                                connected ? 'text-emerald-400' : 'text-amber-400',
-                                            )}
-                                        >
-                                            {connected ? 'Connected' : 'Listening'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => setStep(3)}
-                                        className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                    >
-                                        Back
-                                    </Button>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleOpenChange(false)}
-                                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                        >
-                                            Skip
-                                        </Button>
-                                        <Button
-                                            onClick={() => { complete(4); handleOpenChange(false); }}
-                                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        >
-                                            <Check className="mr-2 size-4" /> Complete
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
+                            <WizardStep4
+                                onComplete={() => { complete(4); handleOpenChange(false); }}
+                                onSkip={() => handleOpenChange(false)}
+                                onBack={() => setStep(3)}
+                            />
                         )}
                     </div>
                 </div>
