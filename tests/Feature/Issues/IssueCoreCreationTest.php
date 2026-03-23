@@ -20,7 +20,7 @@ function issueContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'issue-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

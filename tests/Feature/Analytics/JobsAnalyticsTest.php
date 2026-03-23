@@ -16,7 +16,7 @@ function setupJobsContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'jobs-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

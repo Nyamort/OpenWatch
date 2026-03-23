@@ -16,7 +16,7 @@ function setupCommandContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'cmd-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

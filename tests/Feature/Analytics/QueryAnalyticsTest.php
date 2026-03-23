@@ -16,7 +16,7 @@ function setupQueryContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'query-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

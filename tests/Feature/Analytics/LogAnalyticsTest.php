@@ -16,7 +16,7 @@ function setupLogContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'log-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

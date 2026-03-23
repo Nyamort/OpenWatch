@@ -16,7 +16,7 @@ function setupMailContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'mail-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

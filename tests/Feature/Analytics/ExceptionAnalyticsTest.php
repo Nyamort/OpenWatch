@@ -16,7 +16,7 @@ function setupExceptionContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'exc-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

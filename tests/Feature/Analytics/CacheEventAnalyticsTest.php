@@ -16,7 +16,7 @@ function setupCacheContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'cache-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

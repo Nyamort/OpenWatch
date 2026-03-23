@@ -15,7 +15,7 @@ function setupAlertsContext(string $suffix = ''): array
     $project = (new CreateProject)->handle($org, ['name' => 'App', 'slug' => 'alert-app-'.$suffix]);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Production', 'slug' => 'alert-prod-'.$suffix, 'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('owner', 'org', 'project', 'env');
 }

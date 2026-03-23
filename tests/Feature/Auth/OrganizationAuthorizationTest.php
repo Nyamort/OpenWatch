@@ -17,7 +17,7 @@ test('member of org A cannot access org B resources', function () {
     $projectB = (new CreateProject)->handle($orgB, ['name' => 'App', 'slug' => 'app-b-'.uniqid()]);
     $envB = (new CreateEnvironment(new GenerateToken))->handle($projectB, [
         'name' => 'Prod', 'slug' => 'prod-b-'.uniqid(), 'type' => 'production',
-    ]);
+    ])->environment;
 
     // User A tries to access Org B's analytics
     $response = $this->actingAs($userA)

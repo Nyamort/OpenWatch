@@ -22,7 +22,7 @@ function issueListContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'list-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }

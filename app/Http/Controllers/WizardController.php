@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
-use App\Actions\Projects\GenerateToken;
 use App\Http\Requests\Wizard\StoreWizardAppRequest;
 use App\Http\Requests\Wizard\UpdateWizardAppRequest;
 use App\Models\Organization;
@@ -16,7 +16,7 @@ class WizardController extends Controller
      * Create a new application and its first environment in one step.
      * Returns JSON so the setup wizard dialog can display the generated token.
      */
-    public function store(StoreWizardAppRequest $request, CreateProject $createProject, GenerateToken $generateToken): JsonResponse
+    public function store(StoreWizardAppRequest $request, CreateProject $createProject, CreateEnvironment $createEnvironment): JsonResponse
     {
         $data = $request->validated();
 
@@ -27,24 +27,22 @@ class WizardController extends Controller
             'description' => null,
         ]);
 
-        $environment = $project->environments()->create([
+        $result = $createEnvironment->handle($project, [
             'name' => $data['env_name'],
             'type' => $data['env_type'],
             'color' => $data['env_color'] ?? null,
         ]);
 
-        ['token' => $rawToken] = $generateToken->handle($environment);
-
         $user = $request->user();
         $user->active_organization_id = $org->id;
         $user->active_project_id = $project->id;
-        $user->active_environment_id = $environment->id;
+        $user->active_environment_id = $result->environment->id;
         $user->save();
 
         return response()->json([
             'project' => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug],
-            'environment' => ['id' => $environment->id, 'name' => $environment->name, 'slug' => $environment->slug],
-            'token' => $rawToken,
+            'environment' => ['id' => $result->environment->id, 'name' => $result->environment->name, 'slug' => $result->environment->slug],
+            'token' => $result->token,
         ]);
     }
 

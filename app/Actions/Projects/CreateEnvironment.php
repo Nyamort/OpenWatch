@@ -14,7 +14,7 @@ class CreateEnvironment
      *
      * @param  array<string, mixed>  $data
      */
-    public function handle(Project $project, array $data): Environment
+    public function handle(Project $project, array $data): EnvironmentCreated
     {
         $environment = $project->environments()->create([
             'name' => $data['name'],
@@ -24,8 +24,8 @@ class CreateEnvironment
             'health_status' => $data['health_status'] ?? 'inactive',
         ]);
 
-        $this->generateToken->handle($environment);
+        ['token' => $rawToken] = $this->generateToken->handle($environment);
 
-        return $environment;
+        return new EnvironmentCreated($environment, $rawToken);
     }
 }

@@ -20,7 +20,7 @@ function setupEvalContext(string $suffix = ''): array
     $project = (new CreateProject)->handle($org, ['name' => 'App', 'slug' => 'eval-app-'.$suffix]);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Production', 'slug' => 'eval-prod-'.$suffix, 'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('owner', 'org', 'project', 'env');
 }

@@ -68,7 +68,7 @@ test('it creates an environment under a project', function () {
         'name' => 'Production',
         'slug' => 'production',
         'type' => 'production',
-    ]);
+    ])->environment;
 
     expect($environment->name)->toBe('Production')
         ->and($environment->slug)->toBe('production')
@@ -85,7 +85,7 @@ test('it creates an initial token when environment is created', function () {
         'name' => 'Staging',
         'slug' => 'staging',
         'type' => 'staging',
-    ]);
+    ])->environment;
 
     $tokens = $environment->projectTokens()->where('status', 'active')->get();
     expect($tokens)->toHaveCount(1);

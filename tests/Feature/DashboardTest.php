@@ -37,7 +37,7 @@ test('dashboard resolves context from active org', function () {
     $project = (new CreateProject)->handle($org, ['name' => 'App', 'slug' => 'dash-app-'.uniqid()]);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Prod', 'slug' => 'dash-prod-'.uniqid(), 'type' => 'production',
-    ]);
+    ])->environment;
 
     $response = $this->actingAs($user)->get('/dashboard');
 
@@ -56,7 +56,7 @@ test('dashboard accepts explicit context via query params', function () {
     $project = (new CreateProject)->handle($org, ['name' => 'App', 'slug' => 'qp-app-'.uniqid()]);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Prod', 'slug' => 'qp-prod-'.uniqid(), 'type' => 'production',
-    ]);
+    ])->environment;
 
     $url = "/dashboard?org={$org->slug}&project={$project->slug}&env={$env->slug}&period=7d";
     $response = $this->actingAs($user)->get($url);
@@ -73,7 +73,7 @@ test('dashboard data is scoped to org', function () {
     $project = (new CreateProject)->handle($org, ['name' => 'App', 'slug' => 'scoped-app-'.uniqid()]);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Prod', 'slug' => 'scoped-prod-'.uniqid(), 'type' => 'production',
-    ]);
+    ])->environment;
 
     // Insert a request for this org
     DB::table('telemetry_records')->insert(['organization_id' => $org->id, 'project_id' => $project->id, 'environment_id' => $env->id, 'record_type' => 'request', 'recorded_at' => now()]);

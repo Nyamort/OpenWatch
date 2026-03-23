@@ -14,7 +14,7 @@ test('it resolves analytics context from valid slugs', function () {
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Production',
         'type' => 'production',
-    ]);
+    ])->environment;
 
     $resolver = new AnalyticsContextResolver;
     $ctx = $resolver->resolve('test-org-ctx', $project->slug, $env->slug, $user);

@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use App\Actions\Organization\CreateOrganization;
 use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
-use App\Actions\Projects\GenerateToken;
-use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\OrganizationRole;
 use App\Models\TelemetryRecord;
@@ -74,9 +72,7 @@ class DatabaseSeeder extends Seeder
                     'name' => ucfirst($type),
                     'slug' => $slug,
                     'type' => $type,
-                ]);
-
-                app(GenerateToken::class)->handle($env);
+                ])->environment;
 
                 // Seed some telemetry data for this environment
                 $this->seedTelemetry($org->id, $project->id, $env->id, $type === 'production' ? 200 : 30);

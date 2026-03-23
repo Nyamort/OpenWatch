@@ -16,7 +16,7 @@ function setupUserAnalyticsContext(string $suffix = ''): array
         'name' => 'Production',
         'slug' => 'user-prod-'.$suffix,
         'type' => 'production',
-    ]);
+    ])->environment;
 
     return compact('user', 'org', 'project', 'env');
 }
