@@ -28,6 +28,7 @@ function orgNavItems(slug: string): NavItem[] {
     return [
         { title: 'General', href: `/settings/organizations/${slug}/general`, icon: null },
         { title: 'Members', href: `/settings/organizations/${slug}/members`, icon: null },
+        { title: 'Applications', href: `/settings/organizations/${slug}/applications`, icon: null },
         { title: 'Audit', href: `/settings/organizations/${slug}/audit`, icon: null },
     ];
 }

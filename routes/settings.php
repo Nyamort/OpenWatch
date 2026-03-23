@@ -31,6 +31,10 @@ Route::middleware(['auth', 'verified', 'organization.member'])->prefix('settings
     Route::patch('members/{member}', [OrganizationSettingsController::class, 'updateMemberRole'])->name('members.update-role');
     Route::delete('members/{member}', [OrganizationSettingsController::class, 'destroyMember'])->name('members.destroy');
     Route::get('audit', [OrganizationSettingsController::class, 'audit'])->name('audit');
+    Route::get('applications', [OrganizationSettingsController::class, 'applications'])->name('applications');
+    Route::get('applications/{project}', [OrganizationSettingsController::class, 'editApplication'])->name('applications.edit');
+    Route::patch('applications/{project}', [OrganizationSettingsController::class, 'updateApplication'])->name('applications.update');
+    Route::patch('applications/{project}/environments/{environment}', [OrganizationSettingsController::class, 'updateEnvironment'])->name('applications.environments.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

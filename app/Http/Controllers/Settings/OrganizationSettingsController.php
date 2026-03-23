@@ -7,12 +7,16 @@ use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\InviteMemberRequest;
+use App\Http\Requests\Settings\UpdateApplicationRequest;
+use App\Http\Requests\Settings\UpdateEnvironmentRequest;
 use App\Http\Requests\Settings\UpdateMemberRoleRequest;
 use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
+use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\OrganizationAuditEvent;
 use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
+use App\Models\Project;
 use App\Services\Authorization\PermissionResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -174,5 +178,45 @@ class OrganizationSettingsController extends Controller
             'events' => $events,
             'filters' => $request->only(['event_type', 'actor_id', 'date_from', 'date_to']),
         ]);
+    }
+
+    public function applications(Organization $organization): Response
+    {
+        $projects = $organization->projects()
+            ->withCount('environments')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'description']);
+
+        return Inertia::render('settings/organizations/applications', [
+            'organization' => $organization,
+            'projects' => $projects,
+        ]);
+    }
+
+    public function editApplication(Organization $organization, Project $project): Response
+    {
+        $environments = $project->environments()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'type', 'color']);
+
+        return Inertia::render('settings/organizations/application', [
+            'organization' => $organization,
+            'project' => $project->only('id', 'name', 'slug', 'description'),
+            'environments' => $environments,
+        ]);
+    }
+
+    public function updateApplication(UpdateApplicationRequest $request, Organization $organization, Project $project): RedirectResponse
+    {
+        $project->update($request->validated());
+
+        return to_route('settings.organizations.applications.edit', [$organization, $project]);
+    }
+
+    public function updateEnvironment(UpdateEnvironmentRequest $request, Organization $organization, Project $project, Environment $environment): RedirectResponse
+    {
+        $environment->update($request->validated());
+
+        return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
 }
