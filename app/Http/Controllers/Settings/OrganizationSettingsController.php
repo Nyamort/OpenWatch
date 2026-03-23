@@ -19,7 +19,14 @@ class OrganizationSettingsController extends Controller
     public function general(Organization $organization): Response
     {
         return Inertia::render('settings/organizations/general', [
-            'organization' => $organization,
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'slug' => $organization->slug,
+                'timezone' => $organization->timezone,
+                'logo_url' => $organization->getFirstMediaUrl('logo'),
+            ],
+            'timezones' => timezone_identifiers_list(),
         ]);
     }
 
@@ -28,15 +35,18 @@ class OrganizationSettingsController extends Controller
         $this->authorize('update', $organization);
 
         $data = $request->validate([
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'slug' => ['sometimes', 'required', 'string', 'max:255', 'alpha_dash'],
-            'logo_url' => ['nullable', 'string', 'url', 'max:2048'],
-            'timezone' => ['nullable', 'string', 'max:64'],
+            'name' => ['required', 'string', 'max:255'],
+            'timezone' => ['nullable', 'string', 'timezone:all'],
+            'logo' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $org = $action->handle($organization, $data);
+        $action->handle($organization, $data);
 
-        return to_route('settings.organizations.general', $org);
+        if ($request->hasFile('logo')) {
+            $organization->addMediaFromRequest('logo')->toMediaCollection('logo');
+        }
+
+        return to_route('settings.organizations.general', $organization);
     }
 
     public function members(Organization $organization): Response
