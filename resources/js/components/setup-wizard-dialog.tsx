@@ -43,6 +43,7 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
 
     const orgName = activeOrganization?.name ?? '—';
     const projectName = created?.project.name ?? (step === 1 ? 'New Application' : '—');
+    const projectLogoUrl = created?.project.logo_url || null;
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -53,6 +54,13 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                             <div className="flex items-center gap-1.5 text-sm">
                                 <span className="text-zinc-500">{orgName}</span>
                                 <span className="text-zinc-600">/</span>
+                                {projectLogoUrl && (
+                                    <img
+                                        src={projectLogoUrl}
+                                        alt={projectName}
+                                        className="size-5 rounded object-cover"
+                                    />
+                                )}
                                 <span className="font-semibold text-zinc-100">{projectName}</span>
                             </div>
                         </DialogTitle>
