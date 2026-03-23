@@ -160,7 +160,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                 onCloseAutoFocus={(e) => e.preventDefault()}
             >
                 {/* Left panel — Application selector */}
-                <div className="flex w-56 flex-col border-r border-border">
+                <div className="flex w-56 flex-col border-r border-border max-h-80">
                     {/* Search */}
                     <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                         <Search className="size-3.5 shrink-0 text-muted-foreground" />
@@ -250,7 +250,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                 </div>
 
                 {/* Right panel — Environment selector */}
-                <div className="flex w-44 flex-col">
+                <div className="flex w-44 flex-col max-h-80">
                     <div className="border-b border-border px-3 py-2">
                         <p className="text-xs font-medium text-muted-foreground">Environments</p>
                     </div>
