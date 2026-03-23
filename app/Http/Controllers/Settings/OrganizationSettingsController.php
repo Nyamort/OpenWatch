@@ -39,6 +39,8 @@ class OrganizationSettingsController extends Controller
 
         if ($request->hasFile('logo')) {
             $organization->addMediaFromRequest('logo')->toMediaCollection('logo');
+        } elseif ($request->boolean('remove_logo')) {
+            $organization->clearMediaCollection('logo');
         }
 
         return to_route('settings.organizations.general', $organization);

@@ -18,6 +18,7 @@ class UpdateOrganizationSettingsRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'timezone' => ['nullable', 'string', 'timezone:all'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'remove_logo' => ['boolean'],
         ];
     }
 }

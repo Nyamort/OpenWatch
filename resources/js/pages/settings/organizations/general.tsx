@@ -38,15 +38,18 @@ export default function OrganizationGeneral({
         name: string;
         timezone: string;
         logo: File | null;
+        remove_logo: boolean;
     }>({
         name: organization.name,
         timezone: organization.timezone ?? '',
         logo: null,
+        remove_logo: false,
     });
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0] ?? null;
         form.setData('logo', file);
+        form.setData('remove_logo', false);
         if (file) {
             setPreview(URL.createObjectURL(file));
         }
@@ -54,6 +57,7 @@ export default function OrganizationGeneral({
 
     function removeLogo() {
         form.setData('logo', null);
+        form.setData('remove_logo', true);
         setPreview(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
