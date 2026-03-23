@@ -3,6 +3,13 @@ import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -13,10 +20,17 @@ interface Organization {
     slug: string;
 }
 
+interface Role {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Member {
     id: number;
+    user_id: number;
     user: { id: number; name: string; email: string };
-    role: { id: number; name: string; slug: string } | null;
+    role: Role | null;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,12 +40,26 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function OrganizationMembers({
     organization,
     members,
+    roles,
+    currentMemberId,
 }: {
     organization: Organization;
     members: Member[];
+    roles: Role[];
+    currentMemberId: number;
 }) {
+    const base = `/settings/organizations/${organization.slug}`;
+
+    function updateRole(memberId: number, roleId: string) {
+        router.patch(
+            `${base}/members/${memberId}`,
+            { role_id: Number(roleId) },
+            { onSuccess: () => toast.success('Role updated') },
+        );
+    }
+
     function removeMember(memberId: number) {
-        router.delete(`/organizations/${organization.slug}/members/${memberId}`, {
+        router.delete(`${base}/members/${memberId}`, {
             onSuccess: () => toast.success('Member removed'),
         });
     }
@@ -56,32 +84,70 @@ export default function OrganizationMembers({
                                 No members found.
                             </p>
                         ) : (
-                            members.map((member) => (
-                                <div
-                                    key={member.id}
-                                    className="flex items-center justify-between px-4 py-3"
-                                >
-                                    <div className="space-y-0.5">
-                                        <p className="text-sm font-medium">{member.user.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {member.user.email}
-                                        </p>
-                                    </div>
+                            members.map((member) => {
+                                const isSelf = member.id === currentMemberId;
 
-                                    <div className="flex items-center gap-3">
-                                        {member.role && (
-                                            <Badge variant="secondary">{member.role.name}</Badge>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeMember(member.id)}
-                                        >
-                                            Remove
-                                        </Button>
+                                return (
+                                    <div
+                                        key={member.id}
+                                        className="flex items-center justify-between gap-4 px-4 py-3"
+                                    >
+                                        <div className="min-w-0 space-y-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <p className="truncate text-sm font-medium">
+                                                    {member.user.name}
+                                                </p>
+                                                {isSelf && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        You
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {member.user.email}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex shrink-0 items-center gap-2">
+                                            {isSelf ? (
+                                                <Badge variant="outline">{member.role?.name}</Badge>
+                                            ) : (
+                                                <Select
+                                                    value={String(member.role?.id ?? '')}
+                                                    onValueChange={(value) =>
+                                                        updateRole(member.id, value)
+                                                    }
+                                                >
+                                                    <SelectTrigger className="h-8 w-32 text-xs">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {roles.map((role) => (
+                                                            <SelectItem
+                                                                key={role.id}
+                                                                value={String(role.id)}
+                                                            >
+                                                                {role.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+
+                                            {!isSelf && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                    onClick={() => removeMember(member.id)}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>

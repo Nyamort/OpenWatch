@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateMemberRoleRequest;
 use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
 use App\Models\Organization;
 use App\Models\OrganizationAuditEvent;
+use App\Models\OrganizationMember;
 use App\Services\Authorization\PermissionResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,16 +49,58 @@ class OrganizationSettingsController extends Controller
         return to_route('settings.organizations.general', $organization);
     }
 
-    public function members(Organization $organization): Response
+    public function members(Request $request, Organization $organization): Response
     {
         $members = $organization->members()
-            ->with(['user', 'role'])
+            ->with(['user:id,name,email', 'role:id,name,slug'])
             ->get();
+
+        $roles = $organization->roles()->select('id', 'name', 'slug')->get();
+
+        $currentMemberId = $organization->members()
+            ->where('user_id', $request->user()->id)
+            ->value('id');
 
         return Inertia::render('settings/organizations/members', [
             'organization' => $organization,
             'members' => $members,
+            'roles' => $roles,
+            'currentMemberId' => $currentMemberId,
         ]);
+    }
+
+    public function updateMemberRole(UpdateMemberRoleRequest $request, Organization $organization, OrganizationMember $member, UpdateMemberRole $action): RedirectResponse
+    {
+        $requestingUserId = $request->user()->id;
+        $requesterRole = $this->permissionResolver->getRole($requestingUserId, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $newRole = $organization->roles()->findOrFail($request->validated()['role_id']);
+
+        $action->handle($organization, $member, $newRole);
+
+        return to_route('settings.organizations.members', $organization);
+    }
+
+    public function destroyMember(Request $request, Organization $organization, OrganizationMember $member): RedirectResponse
+    {
+        $requestingUserId = $request->user()->id;
+        $requesterRole = $this->permissionResolver->getRole($requestingUserId, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        if ($member->user_id === $requestingUserId) {
+            abort(403, 'You cannot remove yourself from the organization.');
+        }
+
+        app(\App\Actions\Organization\RemoveMember::class)->handle($organization, $member);
+
+        return to_route('settings.organizations.members', $organization);
     }
 
     public function audit(Request $request, Organization $organization): Response
