@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
+use App\Http\Requests\Wizard\StoreWizardAppRequest;
+use App\Http\Requests\Wizard\UpdateWizardAppRequest;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class WizardController extends Controller
 {
@@ -15,18 +16,9 @@ class WizardController extends Controller
      * Create a new application and its first environment in one step.
      * Returns JSON so the setup wizard dialog can display the generated token.
      */
-    public function store(Request $request, CreateProject $createProject, GenerateToken $generateToken): JsonResponse
+    public function store(StoreWizardAppRequest $request, CreateProject $createProject, GenerateToken $generateToken): JsonResponse
     {
-        $data = $request->validate([
-            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
-            'app_name' => ['required', 'string', 'max:255'],
-            'app_slug' => ['required', 'string', 'max:255', 'alpha_dash'],
-            'env_name' => ['required', 'string', 'max:255'],
-            'env_slug' => ['required', 'string', 'max:255', 'alpha_dash'],
-            'env_type' => ['required', 'string', 'in:production,staging,development,custom'],
-            'env_color' => ['nullable', 'string', 'max:20'],
-            'env_url' => ['nullable', 'url', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $org = Organization::findOrFail($data['organization_id']);
 
@@ -60,15 +52,9 @@ class WizardController extends Controller
         ]);
     }
 
-    public function update(Request $request, Project $project): JsonResponse
+    public function update(UpdateWizardAppRequest $request, Project $project): JsonResponse
     {
-        $data = $request->validate([
-            'app_name' => ['required', 'string', 'max:255'],
-            'env_id' => ['required', 'integer', 'exists:environments,id'],
-            'env_name' => ['required', 'string', 'max:255'],
-            'env_type' => ['required', 'string', 'in:production,staging,development,custom'],
-            'env_color' => ['nullable', 'string', 'max:20'],
-        ]);
+        $data = $request->validated();
 
         $project->update(['name' => $data['app_name']]);
 
