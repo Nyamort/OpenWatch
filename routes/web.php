@@ -5,16 +5,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Issues\IssueCommentController;
 use App\Http\Controllers\Issues\IssueController;
 use App\Http\Controllers\Issues\IssueDetailController;
-use App\Http\Controllers\Organization\AuditController;
 use App\Http\Controllers\Organization\OrganizationController;
-use App\Http\Controllers\Organization\OrganizationInvitationController;
-use App\Http\Controllers\Organization\OrganizationMemberController;
 use App\Http\Controllers\Organization\OrganizationSwitcherController;
 use App\Http\Controllers\Project\EnvironmentSwitcherController;
 use App\Http\Controllers\Project\ProjectSwitcherController;
-use App\Http\Controllers\Projects\EnvironmentController;
-use App\Http\Controllers\Projects\ProjectController;
-use App\Http\Controllers\Projects\ProjectTokenController;
 use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,9 +23,6 @@ Route::get('/', function () {
 Route::get('dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Organizations
-    Route::get('organizations', [OrganizationController::class, 'index'])->name('organizations.index');
-    Route::get('organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
     Route::post('organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::post('organizations/switch', [OrganizationSwitcherController::class, 'store'])->name('organizations.switch');
     Route::post('projects/switch', [ProjectSwitcherController::class, 'store'])->name('projects.switch');
@@ -39,32 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('wizard/app', [WizardController::class, 'store'])->name('wizard.app');
     Route::patch('wizard/app/{project}', [WizardController::class, 'update'])->name('wizard.app.update');
 
-    // Organization-scoped routes (require membership)
     Route::middleware(['organization.member'])->prefix('organizations/{organization}')->name('organizations.')->group(function () {
-        Route::get('/', [OrganizationController::class, 'show'])->name('show');
-        Route::get('edit', [OrganizationController::class, 'edit'])->name('edit');
-        Route::patch('/', [OrganizationController::class, 'update'])->name('update');
-        Route::delete('/', [OrganizationController::class, 'destroy'])->name('destroy');
-
-        Route::get('members', [OrganizationMemberController::class, 'index'])->name('members.index');
-        Route::delete('members/{member}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
-
-        Route::post('invitations', [OrganizationInvitationController::class, 'store'])->name('invitations.store');
-        Route::delete('invitations/{invitation}', [OrganizationInvitationController::class, 'destroy'])->name('invitations.destroy');
-
-        // Projects
-        Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
-        Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-        Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
-
-        // Environments
-        Route::get('projects/{project}/environments', [EnvironmentController::class, 'index'])->name('projects.environments.index');
-        Route::get('projects/{project}/environments/{environment}', [EnvironmentController::class, 'show'])->name('projects.environments.show');
-
-        // Tokens
-        Route::post('projects/{project}/environments/{environment}/tokens', [ProjectTokenController::class, 'store'])->name('projects.environments.tokens.store');
-        Route::delete('projects/{project}/environments/{environment}/tokens/{token}', [ProjectTokenController::class, 'destroy'])->name('projects.environments.tokens.destroy');
-
         // Issues
         Route::prefix('projects/{project}/environments/{environment}/issues')
             ->name('issues.')
@@ -79,9 +45,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('/{issue}/comments/{comment}', [IssueCommentController::class, 'destroy'])->name('comments.destroy');
             });
 
-        // Audit Log
-        Route::get('audit', [AuditController::class, 'index'])->name('audit');
-
         // Alert Rules
         Route::prefix('projects/{project}/environments/{environment}/alert-rules')
             ->name('alert-rules.')
@@ -95,10 +58,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::patch('/{alertRule}/toggle', [AlertRuleController::class, 'toggle'])->name('toggle');
             });
     });
-
-    // Accept invitation (no org membership required)
-    Route::get('invitations/{token}/accept', [OrganizationInvitationController::class, 'show'])->name('invitations.show');
-    Route::post('invitations/{token}/accept', [OrganizationInvitationController::class, 'accept'])->name('invitations.accept');
 });
 
 require __DIR__.'/settings.php';

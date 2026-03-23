@@ -41,7 +41,7 @@ test('owner can access audit log endpoint', function () {
     ]);
 
     $this->actingAs($owner)
-        ->get(route('organizations.audit', $org))
+        ->get(route('settings.organizations.audit', $org))
         ->assertOk();
 });
 
@@ -61,7 +61,7 @@ test('admin can access audit log endpoint', function () {
     ]);
 
     $this->actingAs($admin)
-        ->get(route('organizations.audit', $org))
+        ->get(route('settings.organizations.audit', $org))
         ->assertOk();
 });
 
@@ -81,6 +81,6 @@ test('viewer gets 403 on audit route', function () {
     ]);
 
     $this->actingAs($viewer)
-        ->get(route('organizations.audit', $org))
+        ->get(route('settings.organizations.audit', $org))
         ->assertForbidden();
 });
