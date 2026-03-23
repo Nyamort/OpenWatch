@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { OrgSelector } from '@/components/org-selector';
@@ -34,14 +34,23 @@ function orgNavItems(slug: string): NavItem[] {
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentUrl } = useCurrentUrl();
-    const { organizations, activeOrganization } = usePage().props as {
+    const { url, props } = usePage();
+    const { organizations, activeOrganization } = props as {
         organizations: { id: number; name: string; slug: string }[];
         activeOrganization?: { id: number; name: string; slug: string } | null;
     };
 
+    const urlOrgSlug = url.match(/^\/settings\/organizations\/([^/]+)/)?.[1] ?? null;
+
     const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
-        activeOrganization?.slug ?? organizations[0]?.slug ?? '',
+        urlOrgSlug ?? activeOrganization?.slug ?? organizations[0]?.slug ?? '',
     );
+
+    useEffect(() => {
+        if (urlOrgSlug) {
+            setSelectedOrgSlug(urlOrgSlug);
+        }
+    }, [urlOrgSlug]);
 
     const orgItems = selectedOrgSlug ? orgNavItems(selectedOrgSlug) : [];
 
