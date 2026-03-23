@@ -67,38 +67,40 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                 <div className="flex flex-col divide-y divide-zinc-800 overflow-y-auto max-h-[70vh]">
                     <div className="px-6 py-4">
                         <StepHeader number={1} title="Create Application" done={completedSteps.has(1)} active={step >= 1} />
-                        {step === 1 && activeOrganization && (
-                            <WizardStep1
-                                organizationId={activeOrganization.id}
-                                onCreated={(data) => { setCreated(data); complete(1); setStep(2); }}
-                            />
+                        {activeOrganization && (
+                            <div className={step !== 1 ? 'hidden' : ''}>
+                                <WizardStep1
+                                    organizationId={activeOrganization.id}
+                                    onCreated={(data) => { setCreated(data); complete(1); setStep(2); }}
+                                />
+                            </div>
                         )}
                     </div>
 
                     <div className="px-6 py-4">
                         <StepHeader number={2} title="Install Agent" done={completedSteps.has(2)} active={step >= 2} />
-                        {step === 2 && (
+                        <div className={step !== 2 ? 'hidden' : ''}>
                             <WizardStep2
                                 token={created?.token ?? ''}
                                 onNext={() => { complete(2); setStep(3); }}
                                 onBack={() => setStep(1)}
                             />
-                        )}
+                        </div>
                     </div>
 
                     <div className="px-6 py-4">
                         <StepHeader number={3} title="Sampling" done={completedSteps.has(3)} active={step >= 3} />
-                        {step === 3 && (
+                        <div className={step !== 3 ? 'hidden' : ''}>
                             <WizardStep3
                                 onNext={() => { complete(3); setStep(4); }}
                                 onBack={() => setStep(2)}
                             />
-                        )}
+                        </div>
                     </div>
 
                     <div className="px-6 py-4">
                         <StepHeader number={4} title="Setup Agent" done={completedSteps.has(4)} active={step >= 4} />
-                        {step === 4 && (
+                        {step >= 4 && (
                             <WizardStep4
                                 onComplete={() => { complete(4); handleOpenChange(false); }}
                                 onSkip={() => handleOpenChange(false)}
