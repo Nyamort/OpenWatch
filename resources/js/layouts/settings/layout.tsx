@@ -1,14 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Check, ChevronsUpDown, Plus, Search } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
+import { OrgSelector } from '@/components/org-selector';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
@@ -47,25 +42,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
         activeOrganization?.slug ?? organizations[0]?.slug ?? '',
     );
-    const [open, setOpen] = useState(false);
-    const [search, setSearch] = useState('');
-    const searchRef = useRef<HTMLInputElement>(null);
-
-    const selectedOrg = organizations.find((o) => o.slug === selectedOrgSlug);
-    const filteredOrgs = search.trim()
-        ? organizations.filter((o) => o.name.toLowerCase().includes(search.toLowerCase()))
-        : organizations;
 
     const orgItems = selectedOrgSlug ? orgNavItems(selectedOrgSlug) : [];
-
-    function handleOpenChange(value: boolean) {
-        setOpen(value);
-        if (!value) {
-            setSearch('');
-        } else {
-            setTimeout(() => searchRef.current?.focus(), 50);
-        }
-    }
 
     if (typeof window === 'undefined') {
         return null;
@@ -86,69 +64,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 Organization
                             </p>
 
-                            <DropdownMenu open={open} onOpenChange={handleOpenChange}>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-2 py-1.5 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                                        <span className="flex-1 truncate text-left">
-                                            {selectedOrg?.name ?? 'Select organization'}
-                                        </span>
-                                        <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    className="flex w-52 flex-col p-0 shadow-lg"
-                                    align="start"
-                                    sideOffset={4}
-                                    onCloseAutoFocus={(e) => e.preventDefault()}
-                                >
-                                    <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-                                        <Search className="size-3.5 shrink-0 text-muted-foreground" />
-                                        <input
-                                            ref={searchRef}
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            placeholder="Find organization..."
-                                            className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
-                                        />
-                                    </div>
-
-                                    <div className="max-h-48 overflow-y-auto py-1">
-                                        {filteredOrgs.length === 0 ? (
-                                            <p className="px-3 py-3 text-center text-xs text-muted-foreground">
-                                                No results
-                                            </p>
-                                        ) : (
-                                            filteredOrgs.map((org) => (
-                                                <button
-                                                    key={org.id}
-                                                    onClick={() => {
-                                                        setSelectedOrgSlug(org.slug);
-                                                        setOpen(false);
-                                                        setSearch('');
-                                                    }}
-                                                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
-                                                >
-                                                    <span className="flex-1 truncate">{org.name}</span>
-                                                    {org.slug === selectedOrgSlug && (
-                                                        <Check className="size-3.5 shrink-0 text-primary" />
-                                                    )}
-                                                </button>
-                                            ))
-                                        )}
-                                    </div>
-
-                                    <div className="border-t border-border p-1">
-                                        <Link
-                                            href="/organizations/create"
-                                            onClick={() => setOpen(false)}
-                                            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                                        >
-                                            <Plus className="size-3.5" />
-                                            New Organization
-                                        </Link>
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <OrgSelector
+                                organizations={organizations}
+                                value={selectedOrgSlug}
+                                onChange={setSelectedOrgSlug}
+                            />
 
                             <nav className="flex flex-col space-y-1" aria-label="Organization settings">
                                 {orgItems.map((item) => (
