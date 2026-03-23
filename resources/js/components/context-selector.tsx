@@ -186,7 +186,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                         </span>
                                     </div>
                                     <Link
-                                        href={`/organizations/${group.organization.slug}/edit`}
+                                        href={`/settings/organizations/${group.organization.slug}/general`}
                                         onClick={() => setOpen(false)}
                                         className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
                                         title="Organization settings"
