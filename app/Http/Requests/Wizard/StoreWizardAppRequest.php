@@ -2,16 +2,19 @@
 
 namespace App\Http\Requests\Wizard;
 
+use App\Models\OrganizationMember;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreWizardAppRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        $orgId = $this->integer('organization_id');
+
+        return OrganizationMember::query()
+            ->where('organization_id', $orgId)
+            ->where('user_id', $this->user()->id)
+            ->exists();
     }
 
     /**

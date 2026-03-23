@@ -52,8 +52,13 @@ class WizardController extends Controller
         ]);
     }
 
+    /**
+     * Update the application name and its environment details.
+     */
     public function update(UpdateWizardAppRequest $request, Project $project): JsonResponse
     {
+        $this->authorize('update', $project);
+
         $data = $request->validated();
 
         $project->update(['name' => $data['app_name']]);
