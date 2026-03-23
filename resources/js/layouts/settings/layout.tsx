@@ -1,8 +1,16 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
@@ -13,7 +21,7 @@ import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 
-const sidebarNavItems: NavItem[] = [
+const accountNavItems: NavItem[] = [
     { title: 'Profile', href: edit(), icon: null },
     { title: 'Password', href: editPassword(), icon: null },
     { title: 'Two-Factor Auth', href: show(), icon: null },
@@ -22,10 +30,27 @@ const sidebarNavItems: NavItem[] = [
     { title: 'Appearance', href: editAppearance(), icon: null },
 ];
 
+function orgNavItems(slug: string): NavItem[] {
+    return [
+        { title: 'General', href: `/organizations/${slug}/edit`, icon: null },
+        { title: 'Members', href: `/organizations/${slug}/members`, icon: null },
+        { title: 'Audit', href: `/organizations/${slug}/audit`, icon: null },
+    ];
+}
+
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentUrl } = useCurrentUrl();
+    const { organizations, activeOrganization } = usePage().props as {
+        organizations: { id: number; name: string; slug: string }[];
+        activeOrganization?: { id: number; name: string; slug: string } | null;
+    };
 
-    // When server-side rendering, we only render the layout on the client...
+    const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
+        activeOrganization?.slug ?? organizations[0]?.slug ?? '',
+    );
+
+    const orgItems = selectedOrgSlug ? orgNavItems(selectedOrgSlug) : [];
+
     if (typeof window === 'undefined') {
         return null;
     }
@@ -38,30 +63,66 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
-                    >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
+                <aside className="w-full max-w-xl lg:w-48 space-y-4">
+                    {organizations.length > 0 && (
+                        <div className="space-y-1">
+                            <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Organization
+                            </p>
+
+                            <Select value={selectedOrgSlug} onValueChange={setSelectedOrgSlug}>
+                                <SelectTrigger className="w-full h-8 text-sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {organizations.map((org) => (
+                                        <SelectItem key={org.id} value={org.slug}>
+                                            {org.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <nav className="flex flex-col space-y-1" aria-label="Organization settings">
+                                {orgItems.map((item) => (
+                                    <Button
+                                        key={toUrl(item.href)}
+                                        size="sm"
+                                        variant="ghost"
+                                        asChild
+                                        className={cn('w-full justify-start', {
+                                            'bg-muted': isCurrentUrl(item.href),
+                                        })}
+                                    >
+                                        <Link href={item.href}>{item.title}</Link>
+                                    </Button>
+                                ))}
+                            </nav>
+                        </div>
+                    )}
+
+                    <Separator />
+
+                    <div className="space-y-1">
+                        <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Account
+                        </p>
+                        <nav className="flex flex-col space-y-1" aria-label="Account settings">
+                            {accountNavItems.map((item, index) => (
+                                <Button
+                                    key={`${toUrl(item.href)}-${index}`}
+                                    size="sm"
+                                    variant="ghost"
+                                    asChild
+                                    className={cn('w-full justify-start', {
+                                        'bg-muted': isCurrentUrl(item.href),
+                                    })}
+                                >
+                                    <Link href={item.href}>{item.title}</Link>
+                                </Button>
+                            ))}
+                        </nav>
+                    </div>
                 </aside>
 
                 <Separator className="my-6 lg:hidden" />
