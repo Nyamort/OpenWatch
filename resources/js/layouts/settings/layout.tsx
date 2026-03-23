@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
@@ -40,7 +40,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         activeOrganization?: { id: number; name: string; slug: string } | null;
     };
 
-    const urlOrgSlug = url.match(/^\/settings\/organizations\/([^/]+)/)?.[1] ?? null;
+    const orgUrlMatch = url.match(/^\/settings\/organizations\/([^/]+)\/([^/?]+)/);
+    const urlOrgSlug = orgUrlMatch?.[1] ?? null;
+    const urlSection = orgUrlMatch?.[2] ?? null;
 
     const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
         urlOrgSlug ?? activeOrganization?.slug ?? organizations[0]?.slug ?? '',
@@ -51,6 +53,13 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             setSelectedOrgSlug(urlOrgSlug);
         }
     }, [urlOrgSlug]);
+
+    function handleOrgChange(slug: string) {
+        setSelectedOrgSlug(slug);
+        if (urlSection) {
+            router.visit(`/settings/organizations/${slug}/${urlSection}`);
+        }
+    }
 
     const orgItems = selectedOrgSlug ? orgNavItems(selectedOrgSlug) : [];
 
@@ -76,7 +85,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                             <OrgSelector
                                 organizations={organizations}
                                 value={selectedOrgSlug}
-                                onChange={setSelectedOrgSlug}
+                                onChange={handleOrgChange}
                             />
 
                             <nav className="flex flex-col space-y-1" aria-label="Organization settings">
