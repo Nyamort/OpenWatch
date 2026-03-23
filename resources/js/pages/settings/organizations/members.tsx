@@ -186,7 +186,7 @@ export default function OrganizationMembers({
     }
 
     function revokeInvitation(invitationId: number) {
-        router.delete(`/organizations/${organization.slug}/invitations/${invitationId}`, {
+        router.delete(`${base}/members/invitations/${invitationId}`, {
             onSuccess: () => toast.success('Invitation revoked'),
         });
     }

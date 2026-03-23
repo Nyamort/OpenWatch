@@ -11,6 +11,7 @@ use App\Http\Requests\Settings\UpdateMemberRoleRequest;
 use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
 use App\Models\Organization;
 use App\Models\OrganizationAuditEvent;
+use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Services\Authorization\PermissionResolver;
 use Illuminate\Http\RedirectResponse;
@@ -86,6 +87,19 @@ class OrganizationSettingsController extends Controller
         }
 
         $action->handle($organization, $request->user(), $request->validated());
+
+        return to_route('settings.organizations.members', $organization);
+    }
+
+    public function destroyInvitation(Request $request, Organization $organization, OrganizationInvitation $invitation): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $invitation->delete();
 
         return to_route('settings.organizations.members', $organization);
     }

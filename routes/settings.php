@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified', 'organization.member'])->prefix('settings
     Route::patch('/', [OrganizationSettingsController::class, 'update'])->name('update');
     Route::get('members', [OrganizationSettingsController::class, 'members'])->name('members');
     Route::post('members/invitations', [OrganizationSettingsController::class, 'storeInvitation'])->name('members.invitations.store');
+    Route::delete('members/invitations/{invitation}', [OrganizationSettingsController::class, 'destroyInvitation'])->name('members.invitations.destroy');
     Route::patch('members/{member}', [OrganizationSettingsController::class, 'updateMemberRole'])->name('members.update-role');
     Route::delete('members/{member}', [OrganizationSettingsController::class, 'destroyMember'])->name('members.destroy');
     Route::get('audit', [OrganizationSettingsController::class, 'audit'])->name('audit');
