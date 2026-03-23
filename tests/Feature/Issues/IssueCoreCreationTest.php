@@ -72,9 +72,10 @@ test('second occurrence increments count not creates duplicate', function () {
 });
 
 test('issue creation emits IssueCreated event', function () {
+    $ctx = issueContext(uniqid());
+
     Event::fake();
 
-    $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'event-'.uniqid());
 
     (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [

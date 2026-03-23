@@ -6,7 +6,6 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Validation\ValidationException;
 
 test('it creates a project with unique slug', function () {
     $user = User::factory()->create();
@@ -23,14 +22,15 @@ test('it creates a project with unique slug', function () {
         ->and($project->organization_id)->toBe($org->id);
 });
 
-test('it rejects duplicate project slug within org', function () {
+test('it generates unique slugs for same-name projects within org', function () {
     $user = User::factory()->create();
     $org = (new CreateOrganization)->handle($user, ['name' => 'Acme', 'slug' => 'acme-dup']);
 
-    (new CreateProject)->handle($org, ['name' => 'First', 'slug' => 'shared-slug']);
+    $first = (new CreateProject)->handle($org, ['name' => 'My App']);
+    $second = (new CreateProject)->handle($org, ['name' => 'My App']);
 
-    expect(fn () => (new CreateProject)->handle($org, ['name' => 'Second', 'slug' => 'shared-slug']))
-        ->toThrow(ValidationException::class);
+    expect($first->slug)->toBe('my-app')
+        ->and($second->slug)->toBe('my-app-1');
 });
 
 test('it allows same slug in different orgs', function () {

@@ -4,7 +4,6 @@ namespace App\Actions\Projects;
 
 use App\Models\Environment;
 use App\Models\Project;
-use Illuminate\Validation\ValidationException;
 
 class CreateEnvironment
 {
@@ -14,21 +13,13 @@ class CreateEnvironment
      * Create a new environment within the given project.
      *
      * @param  array<string, mixed>  $data
-     *
-     * @throws ValidationException
      */
     public function handle(Project $project, array $data): Environment
     {
-        if ($project->environments()->where('slug', $data['slug'])->exists()) {
-            throw ValidationException::withMessages([
-                'slug' => 'The slug has already been taken within this project.',
-            ]);
-        }
-
         $environment = $project->environments()->create([
             'name' => $data['name'],
-            'slug' => $data['slug'],
             'type' => $data['type'],
+            'color' => $data['color'] ?? null,
             'status' => $data['status'] ?? 'active',
             'health_status' => $data['health_status'] ?? 'inactive',
         ]);

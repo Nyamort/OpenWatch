@@ -30,12 +30,6 @@ const ENV_TYPES = [
     { value: 'custom', color: 'gray' },
 ];
 
-function slugify(value: string): string {
-    return value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-}
 
 export function WizardStep1({
     organizationId,
@@ -48,18 +42,12 @@ export function WizardStep1({
 }) {
     const [appName, setAppName] = useState('');
     const [envName, setEnvName] = useState('Production');
-    const [envSlug, setEnvSlug] = useState('production');
     const [envColor, setEnvColor] = useState('green');
     const [envUrl, setEnvUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const isEditing = created !== null;
-
-    function handleEnvNameChange(value: string) {
-        setEnvName(value);
-        setEnvSlug(slugify(value));
-    }
 
     function xsrfToken(): string {
         return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
@@ -76,9 +64,7 @@ export function WizardStep1({
                 body: JSON.stringify({
                     organization_id: organizationId,
                     app_name: appName,
-                    app_slug: slugify(appName),
                     env_name: envName,
-                    env_slug: envSlug,
                     env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
                     env_color: envColor,
                     env_url: envUrl || null,

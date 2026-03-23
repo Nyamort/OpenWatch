@@ -10,15 +10,14 @@ use App\Services\Analytics\AnalyticsContextResolver;
 test('it resolves analytics context from valid slugs', function () {
     $user = User::factory()->create();
     $org = (new CreateOrganization)->handle($user, ['name' => 'Test Org', 'slug' => 'test-org-ctx']);
-    $project = (new CreateProject)->handle($org, ['name' => 'My App', 'slug' => 'my-app-ctx']);
+    $project = (new CreateProject)->handle($org, ['name' => 'My App']);
     $env = (new CreateEnvironment(new GenerateToken))->handle($project, [
         'name' => 'Production',
-        'slug' => 'production-ctx',
         'type' => 'production',
     ]);
 
     $resolver = new AnalyticsContextResolver;
-    $ctx = $resolver->resolve('test-org-ctx', 'my-app-ctx', 'production-ctx', $user);
+    $ctx = $resolver->resolve('test-org-ctx', $project->slug, $env->slug, $user);
 
     expect($ctx->organization->id)->toBe($org->id)
         ->and($ctx->project->id)->toBe($project->id)
@@ -30,11 +29,11 @@ test('it rejects project that does not belong to the organization', function () 
     $org1 = (new CreateOrganization)->handle($user, ['name' => 'Org One', 'slug' => 'org-one-ctx']);
     $org2 = (new CreateOrganization)->handle($user, ['name' => 'Org Two', 'slug' => 'org-two-ctx']);
 
-    $projectInOrg2 = (new CreateProject)->handle($org2, ['name' => 'App Two', 'slug' => 'app-two-ctx']);
+    $projectInOrg2 = (new CreateProject)->handle($org2, ['name' => 'App Two']);
 
     $resolver = new AnalyticsContextResolver;
 
-    expect(fn () => $resolver->resolve('org-one-ctx', 'app-two-ctx', 'any-env', $user))
+    expect(fn () => $resolver->resolve('org-one-ctx', $projectInOrg2->slug, 'any-env', $user))
         ->toThrow(\Illuminate\Auth\Access\AuthorizationException::class);
 });
 

@@ -24,17 +24,13 @@ class WizardController extends Controller
 
         $project = $createProject->handle($org, [
             'name' => $data['app_name'],
-            'slug' => $data['app_slug'],
             'description' => null,
         ]);
 
         $environment = $project->environments()->create([
             'name' => $data['env_name'],
-            'slug' => $data['env_slug'],
             'type' => $data['env_type'],
             'color' => $data['env_color'] ?? null,
-            'status' => 'active',
-            'health_status' => 'inactive',
         ]);
 
         ['token' => $rawToken] = $generateToken->handle($environment);
