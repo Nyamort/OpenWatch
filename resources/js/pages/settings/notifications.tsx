@@ -1,5 +1,5 @@
-import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
+import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -45,7 +45,7 @@ export default function Notifications({ categories, status }: NotificationsProps
         initialData[category] = { enabled: pref.enabled };
     }
 
-    const { data, setData, processing, recentlySuccessful, patch } = useForm<{
+    const { data, setData, processing, patch } = useForm<{
         categories: Record<string, { enabled: boolean }>;
     }>({
         categories: initialData,
@@ -53,7 +53,9 @@ export default function Notifications({ categories, status }: NotificationsProps
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        patch(NotificationPreferencesController.update.url());
+        patch(NotificationPreferencesController.update.url(), {
+            onSuccess: () => toast.success('Notifications updated'),
+        });
     }
 
     function handleToggle(category: string, value: boolean) {
@@ -145,16 +147,6 @@ export default function Notifications({ categories, status }: NotificationsProps
                             >
                                 Save
                             </Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm text-neutral-600">Saved</p>
-                            </Transition>
                         </div>
                     </form>
                 </div>
