@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\NotificationPreferencesController;
+use App\Http\Controllers\Settings\OrganizationSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SessionController;
@@ -19,6 +20,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/notifications', [NotificationPreferencesController::class, 'edit'])->name('notifications.edit');
     Route::patch('settings/notifications', [NotificationPreferencesController::class, 'update'])->name('notifications.update');
+});
+
+Route::middleware(['auth', 'verified', 'organization.member'])->prefix('settings/organizations/{organization}')->name('settings.organizations.')->group(function () {
+    Route::get('general', [OrganizationSettingsController::class, 'general'])->name('general');
+    Route::patch('/', [OrganizationSettingsController::class, 'update'])->name('update');
+    Route::get('members', [OrganizationSettingsController::class, 'members'])->name('members');
+    Route::get('audit', [OrganizationSettingsController::class, 'audit'])->name('audit');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

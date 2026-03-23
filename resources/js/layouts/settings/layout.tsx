@@ -32,9 +32,9 @@ const accountNavItems: NavItem[] = [
 
 function orgNavItems(slug: string): NavItem[] {
     return [
-        { title: 'General', href: `/organizations/${slug}/edit`, icon: null },
-        { title: 'Members', href: `/organizations/${slug}/members`, icon: null },
-        { title: 'Audit', href: `/organizations/${slug}/audit`, icon: null },
+        { title: 'General', href: `/settings/organizations/${slug}/general`, icon: null },
+        { title: 'Members', href: `/settings/organizations/${slug}/members`, icon: null },
+        { title: 'Audit', href: `/settings/organizations/${slug}/audit`, icon: null },
     ];
 }
 
