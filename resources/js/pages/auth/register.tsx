@@ -9,11 +9,22 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-export default function Register() {
+interface Invitation {
+    token: string;
+    name: string | null;
+    email: string;
+    organization_name: string;
+}
+
+export default function Register({ invitation }: { invitation?: Invitation | null }) {
     return (
         <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
+            title={invitation ? `Join ${invitation.organization_name}` : 'Create an account'}
+            description={
+                invitation
+                    ? `Create your account to join ${invitation.organization_name}`
+                    : 'Enter your details below to create your account'
+            }
         >
             <Head title="Register" />
             <Form
@@ -24,6 +35,10 @@ export default function Register() {
             >
                 {({ processing, errors }) => (
                     <>
+                        {invitation && (
+                            <input type="hidden" name="invitation_token" value={invitation.token} />
+                        )}
+
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
@@ -36,11 +51,9 @@ export default function Register() {
                                     autoComplete="name"
                                     name="name"
                                     placeholder="Full name"
+                                    defaultValue={invitation?.name ?? ''}
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+                                <InputError message={errors.name} className="mt-2" />
                             </div>
 
                             <div className="grid gap-2">
@@ -53,6 +66,8 @@ export default function Register() {
                                     autoComplete="email"
                                     name="email"
                                     placeholder="email@example.com"
+                                    defaultValue={invitation?.email ?? ''}
+                                    readOnly={!!invitation}
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -72,9 +87,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
+                                <Label htmlFor="password_confirmation">Confirm password</Label>
                                 <Input
                                     id="password_confirmation"
                                     type="password"
@@ -84,9 +97,7 @@ export default function Register() {
                                     name="password_confirmation"
                                     placeholder="Confirm password"
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
 
                             <Button

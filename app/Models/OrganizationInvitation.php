@@ -23,6 +23,7 @@ class OrganizationInvitation extends Model
         'invited_by_user_id',
         'accepted_by_user_id',
         'email',
+        'name',
         'token_hash',
         'expires_at',
         'accepted_at',

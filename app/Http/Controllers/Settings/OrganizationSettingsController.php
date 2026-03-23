@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Organization\InviteMember;
 use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\InviteMemberRequest;
 use App\Http\Requests\Settings\UpdateMemberRoleRequest;
 use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
 use App\Models\Organization;
@@ -55,6 +57,11 @@ class OrganizationSettingsController extends Controller
             ->with(['user:id,name,email', 'role:id,name,slug'])
             ->get();
 
+        $pendingInvitations = $organization->invitations()
+            ->pending()
+            ->with('role:id,name,slug')
+            ->get(['id', 'name', 'email', 'organization_role_id', 'expires_at']);
+
         $roles = $organization->roles()->select('id', 'name', 'slug')->get();
 
         $currentMemberId = $organization->members()
@@ -64,9 +71,23 @@ class OrganizationSettingsController extends Controller
         return Inertia::render('settings/organizations/members', [
             'organization' => $organization,
             'members' => $members,
+            'pendingInvitations' => $pendingInvitations,
             'roles' => $roles,
             'currentMemberId' => $currentMemberId,
         ]);
+    }
+
+    public function storeInvitation(InviteMemberRequest $request, Organization $organization, InviteMember $action): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $action->handle($organization, $request->user(), $request->validated());
+
+        return to_route('settings.organizations.members', $organization);
     }
 
     public function updateMemberRole(UpdateMemberRoleRequest $request, Organization $organization, OrganizationMember $member, UpdateMemberRole $action): RedirectResponse

@@ -27,6 +27,7 @@ class InviteMember
             'invited_by_user_id' => $inviter->id,
             'accepted_by_user_id' => null,
             'email' => $data['email'],
+            'name' => $data['name'] ?? null,
             'token_hash' => $tokenHash,
             'expires_at' => now()->addDays(7),
             'accepted_at' => null,

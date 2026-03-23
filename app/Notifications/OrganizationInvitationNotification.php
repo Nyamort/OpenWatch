@@ -37,12 +37,12 @@ class OrganizationInvitationNotification extends Notification implements ShouldQ
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $acceptUrl = route('invitations.accept', ['token' => $this->rawToken]);
+        $registerUrl = url('/register?invitation='.$this->rawToken);
 
         return (new MailMessage)
             ->subject("You've been invited to {$this->organization->name}")
             ->line("You have been invited to join the **{$this->organization->name}** organization.")
-            ->action('Accept Invitation', $acceptUrl)
+            ->action('Create your account', $registerUrl)
             ->line('This invitation will expire in 7 days.')
             ->line('If you did not expect this invitation, you may ignore this email.');
     }

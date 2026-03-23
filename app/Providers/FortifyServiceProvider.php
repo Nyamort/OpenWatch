@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\OrganizationInvitation;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -66,7 +67,30 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register'));
+        Fortify::registerView(function (Request $request) {
+            $invitation = null;
+
+            if ($request->filled('invitation')) {
+                $tokenHash = hash('sha256', $request->input('invitation'));
+                $pending = OrganizationInvitation::query()
+                    ->where('token_hash', $tokenHash)
+                    ->whereNull('accepted_at')
+                    ->where('expires_at', '>', now())
+                    ->with('organization:id,name')
+                    ->first();
+
+                if ($pending) {
+                    $invitation = [
+                        'token' => $request->input('invitation'),
+                        'name' => $pending->name,
+                        'email' => $pending->email,
+                        'organization_name' => $pending->organization->name,
+                    ];
+                }
+            }
+
+            return Inertia::render('auth/register', ['invitation' => $invitation]);
+        });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
