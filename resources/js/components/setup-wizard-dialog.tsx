@@ -54,6 +54,31 @@ const IGNORE_EVENTS = [
     { key: 'queries', label: 'Database Queries', envVar: 'NIGHTWATCH_IGNORE_QUERIES' },
 ];
 
+const DEFAULT_INCLUDED_EVENTS = Object.fromEntries(IGNORE_EVENTS.map((e) => [e.key, true]));
+
+const DEFAULT_SAMPLING_RATES = { exceptions: '1.0', requests: '0.1', commands: '1.0' };
+
+function useClickOutside(
+    ref: React.RefObject<HTMLElement | null>,
+    onClose: () => void,
+    open: boolean,
+    ignorePortal = false,
+) {
+    useEffect(() => {
+        if (!open) return;
+        function handler(e: MouseEvent) {
+            const target = e.target as Element;
+            if (ref.current && !ref.current.contains(target)) {
+                if (!ignorePortal || !target.closest?.('[data-radix-popper-content-wrapper]')) {
+                    onClose();
+                }
+            }
+        }
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open]); // ref and onClose are stable refs
+}
+
 function SamplingRatesDropdown({
     rates,
     onChange,
@@ -63,20 +88,7 @@ function SamplingRatesDropdown({
 }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!open) return;
-        function handler(e: MouseEvent) {
-            const target = e.target as Element;
-            if (ref.current && !ref.current.contains(target)) {
-                if (!target.closest?.('[data-radix-popper-content-wrapper]')) {
-                    setOpen(false);
-                }
-            }
-        }
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [open]);
+    useClickOutside(ref, () => setOpen(false), open, true);
 
     return (
         <div ref={ref} className="relative">
@@ -114,7 +126,6 @@ function SamplingRatesDropdown({
     );
 }
 
-
 function EventFilterDropdown({
     included,
     onChange,
@@ -124,18 +135,7 @@ function EventFilterDropdown({
 }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!open) return;
-        function handler(e: MouseEvent) {
-            const target = e.target as Element;
-            if (ref.current && !ref.current.contains(target)) {
-                setOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [open]);
+    useClickOutside(ref, () => setOpen(false), open);
 
     const excludedCount = IGNORE_EVENTS.filter((e) => !included[e.key]).length;
     const triggerLabel =
@@ -157,14 +157,14 @@ function EventFilterDropdown({
             {open && (
                 <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-md border border-zinc-700 bg-zinc-800 p-3 shadow-lg">
                     <div className="space-y-2">
-                        {IGNORE_EVENTS.map(({ key, label: eventLabel }) => (
+                        {IGNORE_EVENTS.map(({ key, label }) => (
                             <label key={key} className="flex cursor-pointer items-center gap-2">
                                 <Checkbox
                                     checked={included[key]}
                                     onCheckedChange={(checked) => onChange(key, !!checked)}
                                     className="size-3.5 border-zinc-500"
                                 />
-                                <span className="text-xs text-zinc-300">{eventLabel}</span>
+                                <span className="text-xs text-zinc-300">{label}</span>
                             </label>
                         ))}
                     </div>
@@ -237,15 +237,6 @@ function CodeBlock({
     );
 }
 
-function Token({ value }: { value: string }) {
-    return (
-        <span>
-            <span className="text-emerald-400">NIGHTWATCH_TOKEN</span>
-            <span className="text-zinc-100">={value}</span>
-        </span>
-    );
-}
-
 function EnvVar({ name, value }: { name: string; value: string }) {
     return (
         <span>
@@ -304,33 +295,16 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     const [connected, setConnected] = useState(false);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Step 1 form
     const [appName, setAppName] = useState('');
     const [envName, setEnvName] = useState('Production');
     const [envSlug, setEnvSlug] = useState('production');
     const [envColor, setEnvColor] = useState('green');
     const [envUrl, setEnvUrl] = useState('');
 
-    // Step 2 tab
     const [logTab, setLogTab] = useState<'single' | 'stack'>('single');
 
-    // Step 3 sampling
-    const [samplingRates, setSamplingRates] = useState<Record<string, string>>({
-        exceptions: '1.0',
-        requests: '0.1',
-        commands: '1.0',
-    });
-
-    function handleSamplingRateChange(key: string, value: string) {
-        setSamplingRates((prev) => ({ ...prev, [key]: value }));
-    }
-
-    const defaultIncludedEvents = Object.fromEntries(IGNORE_EVENTS.map((e) => [e.key, true]));
-    const [includedEvents, setIncludedEvents] = useState<Record<string, boolean>>(defaultIncludedEvents);
-
-    function handleIncludedEventChange(key: string, value: boolean) {
-        setIncludedEvents((prev) => ({ ...prev, [key]: value }));
-    }
+    const [samplingRates, setSamplingRates] = useState<Record<string, string>>(DEFAULT_SAMPLING_RATES);
+    const [includedEvents, setIncludedEvents] = useState<Record<string, boolean>>(DEFAULT_INCLUDED_EVENTS);
 
     function resetWizard() {
         setStep(1);
@@ -344,18 +318,14 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         setEnvSlug('production');
         setEnvColor('green');
         setEnvUrl('');
-        setSamplingRates({ exceptions: '1.0', requests: '0.1', commands: '1.0' });
-        setIncludedEvents(defaultIncludedEvents);
+        setSamplingRates(DEFAULT_SAMPLING_RATES);
+        setIncludedEvents(DEFAULT_INCLUDED_EVENTS);
         if (pollRef.current) clearInterval(pollRef.current);
     }
 
     function handleOpenChange(value: boolean) {
         if (!value) resetWizard();
         onOpenChange(value);
-    }
-
-    function handleAppNameChange(value: string) {
-        setAppName(value);
     }
 
     function handleEnvNameChange(value: string) {
@@ -413,17 +383,13 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
         }
     }
 
-    // Poll for connection on step 4
     useEffect(() => {
         if (step !== 4 || !created) return;
 
         pollRef.current = setInterval(async () => {
             try {
                 const res = await fetch(`/api/health`);
-                if (res.ok) {
-                    // In a real app, check for environment data here
-                    // For now just check connectivity
-                }
+                if (res.ok) setConnected(true);
             } catch {
                 // ignore
             }
@@ -435,14 +401,22 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     }, [step, created]);
 
     const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
-
     const orgName = activeOrganization?.name ?? '—';
     const projectName = created?.project.name ?? (appName || 'New Application');
+
+    const samplingEnvLines = SAMPLING_EVENTS.filter((e) => samplingRates[e.key] !== '1.0').map((e) => ({
+        envVar: e.envVar,
+        value: samplingRates[e.key],
+    }));
+    const ignoreEnvLines = IGNORE_EVENTS.filter((e) => !includedEvents[e.key]).map((e) => ({
+        envVar: e.envVar,
+        value: 'true',
+    }));
+    const allEnvLines = [...samplingEnvLines, ...ignoreEnvLines];
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl bg-zinc-950 text-zinc-100 border-zinc-800 p-0 gap-0 overflow-hidden">
-                {/* Persistent header */}
                 <DialogHeader className="border-b border-zinc-800 px-6 py-4">
                     <div className="flex items-center justify-between">
                         <DialogTitle asChild>
@@ -461,30 +435,23 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                 </DialogHeader>
 
                 <div className="flex flex-col divide-y divide-zinc-800 overflow-y-auto max-h-[70vh]">
-                    {/* ── Step 1 ── */}
+                    {/* Step 1 */}
                     <div className="px-6 py-4">
-                        <StepHeader
-                            number={1}
-                            title="Create Application"
-                            done={completedSteps.has(1)}
-                            active={step >= 1}
-                        />
+                        <StepHeader number={1} title="Create Application" done={completedSteps.has(1)} active={step >= 1} />
 
                         {step === 1 && (
                             <div className="mt-4 space-y-4">
-                                {/* App name */}
                                 <div className="grid gap-1.5">
                                     <Label className="text-zinc-300">Application name</Label>
                                     <Input
                                         value={appName}
-                                        onChange={(e) => handleAppNameChange(e.target.value)}
+                                        onChange={(e) => setAppName(e.target.value)}
                                         placeholder="My Application"
                                         className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                                     />
                                     {errors.app_name && <p className="text-xs text-rose-400">{errors.app_name}</p>}
                                 </div>
 
-                                {/* First environment */}
                                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
                                     <div>
                                         <p className="text-sm font-medium text-zinc-200">Add your first environment</p>
@@ -493,7 +460,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         </p>
                                     </div>
 
-                                    {/* Env name */}
                                     <div className="grid gap-1.5">
                                         <Label className="text-zinc-400 text-xs">Environment name</Label>
                                         <Input
@@ -504,7 +470,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         {errors.env_name && <p className="text-xs text-rose-400">{errors.env_name}</p>}
                                     </div>
 
-                                    {/* Env color */}
                                     <div className="grid gap-1.5">
                                         <Label className="text-zinc-400 text-xs">Environment color</Label>
                                         <div className="flex items-center gap-2">
@@ -524,7 +489,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         </div>
                                     </div>
 
-                                    {/* Env URL */}
                                     <div className="grid gap-1.5">
                                         <Label className="text-zinc-400 text-xs">
                                             Environment URL{' '}
@@ -553,18 +517,12 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                         )}
                     </div>
 
-                    {/* ── Step 2 ── */}
+                    {/* Step 2 */}
                     <div className="px-6 py-4">
-                        <StepHeader
-                            number={2}
-                            title="Install Agent"
-                            done={completedSteps.has(2)}
-                            active={step >= 2}
-                        />
+                        <StepHeader number={2} title="Install Agent" done={completedSteps.has(2)} active={step >= 2} />
 
                         {step === 2 && (
                             <div className="mt-4 space-y-5">
-                                {/* Install package */}
                                 <div>
                                     <p className="text-xs font-semibold text-zinc-400 mb-2">
                                         Install the Nightwatch package
@@ -574,17 +532,15 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                     </CodeBlock>
                                 </div>
 
-                                {/* Token */}
                                 <div>
                                     <p className="text-xs font-semibold text-zinc-400 mb-2">
                                         Add the token to your environment variables
                                     </p>
                                     <CodeBlock onCopy={`NIGHTWATCH_TOKEN=${created?.token ?? ''}`}>
-                                        <Token value={created?.token ?? '...'} />
+                                        <EnvVar name="NIGHTWATCH_TOKEN" value={created?.token ?? '...'} />
                                     </CodeBlock>
                                 </div>
 
-                                {/* Log channel */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <p className="text-xs font-semibold text-zinc-400">
@@ -592,7 +548,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         </p>
                                         <span className="text-xs text-zinc-600">Optional</span>
                                     </div>
-                                    {/* Tab switcher */}
                                     <div className="flex gap-4 mb-2 border-b border-zinc-800">
                                         {(['single', 'stack'] as const).map((tab) => (
                                             <button
@@ -639,14 +594,9 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                         )}
                     </div>
 
-                    {/* ── Step 3 ── */}
+                    {/* Step 3 */}
                     <div className="px-6 py-4">
-                        <StepHeader
-                            number={3}
-                            title="Sampling"
-                            done={completedSteps.has(3)}
-                            active={step >= 3}
-                        />
+                        <StepHeader number={3} title="Sampling" done={completedSteps.has(3)} active={step >= 3} />
 
                         {step === 3 && (
                             <div className="mt-4 space-y-4">
@@ -657,43 +607,28 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                     adjusting based on your traffic.
                                 </p>
 
-                                {/* Controls row */}
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <SamplingRatesDropdown
                                         rates={samplingRates}
-                                        onChange={handleSamplingRateChange}
+                                        onChange={(key, value) => setSamplingRates((prev) => ({ ...prev, [key]: value }))}
                                     />
                                     <EventFilterDropdown
                                         included={includedEvents}
-                                        onChange={handleIncludedEventChange}
+                                        onChange={(key, value) => setIncludedEvents((prev) => ({ ...prev, [key]: value }))}
                                     />
                                 </div>
 
-                                {/* Generated env vars */}
-                                {(() => {
-                                    const samplingLines = SAMPLING_EVENTS.filter(
-                                        (e) => samplingRates[e.key] !== '1.0',
-                                    );
-                                    const ignoreLines = IGNORE_EVENTS.filter((e) => !includedEvents[e.key]);
-                                    const allLines = [
-                                        ...samplingLines.map((e) => ({ envVar: e.envVar, value: samplingRates[e.key] })),
-                                        ...ignoreLines.map((e) => ({ envVar: e.envVar, value: 'true' })),
-                                    ];
-                                    if (allLines.length === 0) return null;
-                                    const copyText = allLines.map((l) => `${l.envVar}=${l.value}`).join('\n');
-                                    return (
-                                        <CodeBlock onCopy={copyText}>
-                                            {allLines.map((line, i) => (
-                                                <span key={line.envVar}>
-                                                    <EnvVar name={line.envVar} value={line.value} />
-                                                    {i < allLines.length - 1 && '\n'}
-                                                </span>
-                                            ))}
-                                        </CodeBlock>
-                                    );
-                                })()}
+                                {allEnvLines.length > 0 && (
+                                    <CodeBlock onCopy={allEnvLines.map((l) => `${l.envVar}=${l.value}`).join('\n')}>
+                                        {allEnvLines.map((line, i) => (
+                                            <span key={line.envVar}>
+                                                <EnvVar name={line.envVar} value={line.value} />
+                                                {i < allEnvLines.length - 1 && '\n'}
+                                            </span>
+                                        ))}
+                                    </CodeBlock>
+                                )}
 
-                                {/* Info banner */}
                                 <div className="flex items-center gap-2 rounded-md border border-blue-800 bg-blue-950/40 px-3 py-2">
                                     <Info className="size-4 shrink-0 text-blue-400" />
                                     <span className="text-xs text-blue-300">
@@ -720,14 +655,9 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                         )}
                     </div>
 
-                    {/* ── Step 4 ── */}
+                    {/* Step 4 */}
                     <div className="px-6 py-4">
-                        <StepHeader
-                            number={4}
-                            title="Setup Agent"
-                            done={completedSteps.has(4)}
-                            active={step >= 4}
-                        />
+                        <StepHeader number={4} title="Setup Agent" done={completedSteps.has(4)} active={step >= 4} />
 
                         {step === 4 && (
                             <div className="mt-4 space-y-4">
@@ -740,7 +670,6 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                     </CodeBlock>
                                 </div>
 
-                                {/* Connection status */}
                                 <div
                                     className={cn(
                                         'flex items-center gap-3 rounded-lg border px-4 py-3',
@@ -755,8 +684,8 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                     <div className="flex items-center gap-1.5">
                                         <span
                                             className={cn(
-                                                'size-2 rounded-full',
-                                                connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-pulse',
+                                                'size-2 rounded-full animate-pulse',
+                                                connected ? 'bg-emerald-400' : 'bg-amber-400',
                                             )}
                                         />
                                         {connected ? (
