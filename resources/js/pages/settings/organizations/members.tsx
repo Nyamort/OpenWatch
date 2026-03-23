@@ -270,7 +270,7 @@ export default function OrganizationMembers({
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                        className="text-red-400 hover:text-red-500 hover:bg-red-500/10"
                                                         onClick={() => removeMember(member.id)}
                                                     >
                                                         Remove
@@ -317,7 +317,7 @@ export default function OrganizationMembers({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                className="text-red-400 hover:text-red-500 hover:bg-red-500/10"
                                                 onClick={() => revokeInvitation(invitation.id)}
                                             >
                                                 Revoke
