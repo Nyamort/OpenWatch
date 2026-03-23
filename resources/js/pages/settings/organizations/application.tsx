@@ -1,4 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
+import { ImageIcon, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -23,6 +25,7 @@ interface Project {
     name: string;
     slug: string;
     description: string | null;
+    logo_url: string;
 }
 
 interface Environment {
@@ -133,16 +136,47 @@ export default function ApplicationEdit({
     project: Project;
     environments: Environment[];
 }) {
-    const form = useForm({
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [preview, setPreview] = useState<string | null>(project.logo_url || null);
+
+    const form = useForm<{
+        name: string;
+        description: string;
+        logo: File | null;
+        remove_logo: boolean;
+    }>({
         name: project.name,
         description: project.description ?? '',
+        logo: null,
+        remove_logo: false,
     });
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0] ?? null;
+        form.setData('logo', file);
+        form.setData('remove_logo', false);
+        if (file) {
+            setPreview(URL.createObjectURL(file));
+        }
+    }
+
+    function removeLogo() {
+        form.setData('logo', null);
+        form.setData('remove_logo', true);
+        setPreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.patch(
             `/settings/organizations/${organization.slug}/applications/${project.slug}`,
-            { onSuccess: () => toast.success('Application updated') },
+            {
+                forceFormData: true,
+                onSuccess: () => toast.success('Application updated'),
+            },
         );
     }
 
@@ -162,6 +196,63 @@ export default function ApplicationEdit({
                         />
 
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Logo */}
+                            <div className="grid gap-2">
+                                <Label>Logo</Label>
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        className="flex size-16 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted transition-colors hover:bg-accent"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        {preview ? (
+                                            <img
+                                                src={preview}
+                                                alt="Logo preview"
+                                                className="size-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImageIcon className="size-6 text-muted-foreground" />
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1.5">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            {preview ? 'Change logo' : 'Upload logo'}
+                                        </Button>
+                                        {preview && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-muted-foreground"
+                                                onClick={removeLogo}
+                                            >
+                                                <X className="mr-1 size-3.5" />
+                                                Remove
+                                            </Button>
+                                        )}
+                                        <p className="text-xs text-muted-foreground">
+                                            PNG, JPG up to 2 MB
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                                <InputError message={form.errors.logo} />
+                            </div>
+
+                            {/* Name */}
                             <div className="grid gap-2">
                                 <Label htmlFor="app-name">Name</Label>
                                 <Input
@@ -173,6 +264,7 @@ export default function ApplicationEdit({
                                 <InputError message={form.errors.name} />
                             </div>
 
+                            {/* Description */}
                             <div className="grid gap-2">
                                 <Label htmlFor="app-description">
                                     Description{' '}
