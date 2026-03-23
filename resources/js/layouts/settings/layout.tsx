@@ -10,7 +10,6 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editPreferences } from '@/routes/preferences';
 import { edit as editNotifications } from '@/routes/notifications';
 import { index as sessionsIndex } from '@/routes/sessions';
-import { show as showAccount } from '@/routes/account';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
@@ -22,7 +21,6 @@ const sidebarNavItems: NavItem[] = [
     { title: 'Two-Factor Auth', href: show(), icon: null },
     { title: 'Notifications', href: editNotifications(), icon: null },
     { title: 'Sessions', href: sessionsIndex(), icon: null },
-    { title: 'Account', href: showAccount(), icon: null },
     { title: 'Appearance', href: editAppearance(), icon: null },
 ];
 
