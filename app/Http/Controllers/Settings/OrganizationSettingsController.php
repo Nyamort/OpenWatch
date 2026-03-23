@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Actions\Organization\UpdateOrganization;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
 use App\Models\Organization;
 use App\Models\OrganizationAuditEvent;
 use App\Services\Authorization\PermissionResolver;
@@ -30,17 +31,11 @@ class OrganizationSettingsController extends Controller
         ]);
     }
 
-    public function update(Request $request, Organization $organization, UpdateOrganization $action): RedirectResponse
+    public function update(UpdateOrganizationSettingsRequest $request, Organization $organization, UpdateOrganization $action): RedirectResponse
     {
         $this->authorize('update', $organization);
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'timezone' => ['nullable', 'string', 'timezone:all'],
-            'logo' => ['nullable', 'image', 'max:2048'],
-        ]);
-
-        $action->handle($organization, $data);
+        $action->handle($organization, $request->validated());
 
         if ($request->hasFile('logo')) {
             $organization->addMediaFromRequest('logo')->toMediaCollection('logo');
