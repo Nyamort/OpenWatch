@@ -1,11 +1,20 @@
 import { Head, useForm } from '@inertiajs/react';
-import { ImageIcon, X } from 'lucide-react';
+import { ImageIcon, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { DangerZone } from '@/components/danger-zone';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { TimezoneSelect } from '@/components/timezone-select';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -33,6 +42,9 @@ export default function OrganizationGeneral({
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(organization.logo_url || null);
+    const [deleteOrgOpen, setDeleteOrgOpen] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState('');
+    const deleteForm = useForm({});
 
     const form = useForm<{
         name: string;
@@ -85,6 +97,45 @@ export default function OrganizationGeneral({
                         title="General"
                         description="Update your organization's name and details"
                     />
+
+                    <Dialog open={deleteOrgOpen} onOpenChange={setDeleteOrgOpen}>
+                        <DialogContent className="max-w-sm">
+                            <DialogHeader>
+                                <DialogTitle>Delete organization</DialogTitle>
+                                <DialogDescription>
+                                    This will permanently delete <strong>{organization.name}</strong> and all its data. Type the organization name to confirm.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    deleteForm.delete(`/settings/organizations/${organization.slug}`, {
+                                        onSuccess: () => setDeleteOrgOpen(false),
+                                    });
+                                }}
+                            >
+                                <div className="space-y-4">
+                                    <Input
+                                        value={deleteConfirm}
+                                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                                        placeholder={organization.name}
+                                    />
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" onClick={() => setDeleteOrgOpen(false)}>
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            variant="destructive"
+                                            disabled={deleteConfirm !== organization.name || deleteForm.processing}
+                                        >
+                                            Delete organization
+                                        </Button>
+                                    </DialogFooter>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Logo */}
@@ -170,6 +221,13 @@ export default function OrganizationGeneral({
                             <Button disabled={form.processing}>Save</Button>
                         </div>
                     </form>
+
+                    <DangerZone>
+                        <Button type="button" variant="destructive" onClick={() => setDeleteOrgOpen(true)}>
+                            <Trash2 className="mr-1.5 size-3.5" />
+                            Delete organization
+                        </Button>
+                    </DangerZone>
                 </div>
             </SettingsLayout>
         </AppLayout>

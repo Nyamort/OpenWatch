@@ -44,6 +44,25 @@ class OrganizationSettingsController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, Organization $organization): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if ($requesterRole !== 'owner') {
+            abort(403);
+        }
+
+        $organization->delete();
+
+        $user = $request->user();
+        $user->active_organization_id = null;
+        $user->active_project_id = null;
+        $user->active_environment_id = null;
+        $user->save();
+
+        return to_route('dashboard');
+    }
+
     public function update(UpdateOrganizationSettingsRequest $request, Organization $organization, UpdateOrganization $action): RedirectResponse
     {
         $this->authorize('update', $organization);
