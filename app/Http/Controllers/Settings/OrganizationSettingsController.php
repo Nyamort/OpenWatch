@@ -6,9 +6,11 @@ use App\Actions\Organization\InviteMember;
 use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
 use App\Actions\Projects\CreateEnvironment;
+use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\RotateToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\InviteMemberRequest;
+use App\Http\Requests\Settings\StoreApplicationRequest;
 use App\Http\Requests\Settings\StoreEnvironmentRequest;
 use App\Http\Requests\Settings\UpdateApplicationRequest;
 use App\Http\Requests\Settings\UpdateEnvironmentRequest;
@@ -213,6 +215,19 @@ class OrganizationSettingsController extends Controller
             'organization' => $organization,
             'projects' => $projects,
         ]);
+    }
+
+    public function storeApplication(StoreApplicationRequest $request, Organization $organization, CreateProject $action): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $project = $action->handle($organization, $request->validated());
+
+        return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
 
     public function editApplication(Organization $organization, Project $project): Response

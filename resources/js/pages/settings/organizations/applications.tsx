@@ -1,10 +1,19 @@
-import { Head, Link } from '@inertiajs/react';
-import { Layers, MoreHorizontal, Settings2, Trash2 } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Layers, MoreHorizontal, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { DeleteApplicationDialog } from '@/components/organizations/delete-application-dialog';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,6 +21,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -102,6 +114,73 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
     );
 }
 
+function CreateApplicationDialog({
+    open,
+    onOpenChange,
+    organization,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    organization: Organization;
+}) {
+    const form = useForm({ name: '', description: '' });
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        form.post(`/settings/organizations/${organization.slug}/applications`, {
+            onSuccess: () => {
+                onOpenChange(false);
+                form.reset();
+            },
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>New application</DialogTitle>
+                    <DialogDescription>
+                        Create a new application within <strong>{organization.name}</strong>.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="app-name">Name</Label>
+                        <Input
+                            id="app-name"
+                            value={form.data.name}
+                            onChange={(e) => form.setData('name', e.target.value)}
+                            placeholder="My Application"
+                            required
+                        />
+                        <InputError message={form.errors.name} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="app-description">Description <span className="text-muted-foreground">(optional)</span></Label>
+                        <Textarea
+                            id="app-description"
+                            value={form.data.description}
+                            onChange={(e) => form.setData('description', e.target.value)}
+                            placeholder="What does this application do?"
+                            rows={3}
+                        />
+                        <InputError message={form.errors.description} />
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={form.processing}>
+                            Create
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function Applications({
     organization,
     projects,
@@ -109,6 +188,8 @@ export default function Applications({
     organization: Organization;
     projects: Project[];
 }) {
+    const [createOpen, setCreateOpen] = useState(false);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Applications" />
@@ -117,10 +198,22 @@ export default function Applications({
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Applications"
-                        description="Manage your organization's applications"
+                    <div className="flex items-center justify-between">
+                        <Heading
+                            variant="small"
+                            title="Applications"
+                            description="Manage your organization's applications"
+                        />
+                        <Button size="sm" onClick={() => setCreateOpen(true)}>
+                            <Plus className="mr-1.5 size-3.5" />
+                            New
+                        </Button>
+                    </div>
+
+                    <CreateApplicationDialog
+                        open={createOpen}
+                        onOpenChange={setCreateOpen}
+                        organization={organization}
                     />
 
                     <div className="divide-y divide-border rounded-lg border">
