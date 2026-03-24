@@ -17,13 +17,12 @@ class EnvironmentFactory extends Factory
      */
     public function definition(): array
     {
-        $type = fake()->randomElement(['production', 'staging', 'development', 'custom']);
+        $name = fake()->randomElement(['Production', 'Staging', 'Development', 'Custom']);
 
         return [
             'project_id' => Project::factory(),
-            'name' => ucfirst($type),
-            'slug' => $type.'-'.fake()->unique()->randomNumber(4),
-            'type' => $type,
+            'name' => $name,
+            'slug' => strtolower($name).'-'.fake()->unique()->randomNumber(4),
             'status' => 'active',
             'archived_at' => null,
             'last_ingested_at' => null,

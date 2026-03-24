@@ -199,7 +199,7 @@ class OrganizationSettingsController extends Controller
     {
         $environments = $project->environments()
             ->orderBy('name')
-            ->get(['id', 'name', 'slug', 'type', 'color', 'url']);
+            ->get(['id', 'name', 'slug', 'color', 'url']);
 
         return Inertia::render('settings/organizations/application', [
             'organization' => $organization,

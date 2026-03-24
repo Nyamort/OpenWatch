@@ -18,7 +18,6 @@ class CreateEnvironment
     {
         $environment = $project->environments()->create([
             'name' => $data['name'],
-            'type' => $data['type'] ?? 'custom',
             'color' => $data['color'] ?? null,
             'url' => $data['url'] ?? null,
             'status' => $data['status'] ?? 'active',

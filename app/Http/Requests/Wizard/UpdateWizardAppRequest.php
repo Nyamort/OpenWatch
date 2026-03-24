@@ -23,7 +23,6 @@ class UpdateWizardAppRequest extends FormRequest
             'app_name' => ['required', 'string', 'max:255'],
             'env_id' => ['required', 'integer', 'exists:environments,id'],
             'env_name' => ['required', 'string', 'max:255'],
-            'env_type' => ['required', 'string', 'in:production,staging,development,custom'],
             'env_color' => ['nullable', 'string', 'max:20'],
         ];
     }

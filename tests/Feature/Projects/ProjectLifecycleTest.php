@@ -67,12 +67,10 @@ test('it creates an environment under a project', function () {
     $environment = (new CreateEnvironment(new \App\Actions\Projects\GenerateToken))->handle($project, [
         'name' => 'Production',
         'slug' => 'production',
-        'type' => 'production',
     ])->environment;
 
     expect($environment->name)->toBe('Production')
         ->and($environment->slug)->toBe('production')
-        ->and($environment->type)->toBe('production')
         ->and($environment->project_id)->toBe($project->id);
 });
 
@@ -84,7 +82,6 @@ test('it creates an initial token when environment is created', function () {
     $environment = (new CreateEnvironment(new \App\Actions\Projects\GenerateToken))->handle($project, [
         'name' => 'Staging',
         'slug' => 'staging',
-        'type' => 'staging',
     ])->environment;
 
     $tokens = $environment->projectTokens()->where('status', 'active')->get();

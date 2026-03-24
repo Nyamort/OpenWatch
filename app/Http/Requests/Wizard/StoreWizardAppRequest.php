@@ -26,7 +26,6 @@ class StoreWizardAppRequest extends FormRequest
             'organization_id' => ['required', 'integer', 'exists:organizations,id'],
             'app_name' => ['required', 'string', 'max:255'],
             'env_name' => ['required', 'string', 'max:255'],
-            'env_type' => ['required', 'string', 'in:production,staging,development,custom'],
             'env_color' => ['nullable', 'string', 'max:20'],
             'env_url' => ['nullable', 'url', 'max:500'],
         ];

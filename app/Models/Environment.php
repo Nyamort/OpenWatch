@@ -33,7 +33,6 @@ class Environment extends Model
         'project_id',
         'name',
         'slug',
-        'type',
         'color',
         'url',
         'status',

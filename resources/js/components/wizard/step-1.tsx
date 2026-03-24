@@ -23,14 +23,6 @@ const ENV_COLORS = [
     { label: 'Gray', value: 'gray', class: 'bg-zinc-500' },
 ];
 
-const ENV_TYPES = [
-    { value: 'production', color: 'green' },
-    { value: 'staging', color: 'amber' },
-    { value: 'development', color: 'blue' },
-    { value: 'custom', color: 'gray' },
-];
-
-
 export function WizardStep1({
     organizationId,
     created,
@@ -65,7 +57,6 @@ export function WizardStep1({
                     organization_id: organizationId,
                     app_name: appName,
                     env_name: envName,
-                    env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
                     env_color: envColor,
                     env_url: envUrl || null,
                 }),
@@ -100,7 +91,6 @@ export function WizardStep1({
                     app_name: appName,
                     env_id: created.environment.id,
                     env_name: envName,
-                    env_type: ENV_TYPES.find((t) => t.color === envColor)?.value ?? 'production',
                     env_color: envColor,
                 }),
             });
@@ -152,7 +142,7 @@ export function WizardStep1({
                     <Label className="text-zinc-400 text-xs">Environment name</Label>
                     <Input
                         value={envName}
-                        onChange={(e) => handleEnvNameChange(e.target.value)}
+                        onChange={(e) => setEnvName(e.target.value)}
                         className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                     />
                     {errors.env_name && <p className="text-xs text-rose-400">{errors.env_name}</p>}

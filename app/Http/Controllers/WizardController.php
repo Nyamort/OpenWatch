@@ -29,8 +29,8 @@ class WizardController extends Controller
 
         $result = $createEnvironment->handle($project, [
             'name' => $data['env_name'],
-            'type' => $data['env_type'],
             'color' => $data['env_color'] ?? null,
+            'url' => $data['env_url'] ?? null,
         ]);
 
         $user = $request->user();
@@ -60,7 +60,6 @@ class WizardController extends Controller
         $environment = $project->environments()->findOrFail($data['env_id']);
         $environment->update([
             'name' => $data['env_name'],
-            'type' => $data['env_type'],
             'color' => $data['env_color'] ?? null,
         ]);
 
