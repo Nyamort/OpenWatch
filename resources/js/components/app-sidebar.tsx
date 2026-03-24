@@ -1,4 +1,3 @@
-import { usePage } from '@inertiajs/react';
 import { LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/nav-main';
@@ -12,6 +11,7 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
     const [wizardOpen, setWizardOpen] = useState(false);
@@ -25,11 +25,12 @@ export function AppSidebar() {
     ];
 
     return (
+        <>
+        <SetupWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <ContextSelector onNewApplication={() => setWizardOpen(true)} />
             </SidebarHeader>
-            <SetupWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
@@ -39,5 +40,6 @@ export function AppSidebar() {
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
+        </>
     );
 }
