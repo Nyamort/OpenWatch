@@ -247,14 +247,12 @@ export default function ApplicationEdit({
                         )}
                     </div>
 
-                    <div className="space-y-3 rounded-lg border border-destructive/30 p-4">
-                        <div>
-                            <h3 className="text-sm font-medium text-destructive">Danger zone</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Permanently delete this application and all its environments and data.
-                            </p>
+                    <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
+                        <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
+                            <p className="font-medium">Warning</p>
+                            <p className="text-sm">Please proceed with caution, this cannot be undone.</p>
                         </div>
-                        <Button type="button" variant="destructive" size="sm" onClick={() => setDeleteAppOpen(true)}>
+                        <Button type="button" variant="destructive" onClick={() => setDeleteAppOpen(true)}>
                             <Trash2 className="mr-1.5 size-3.5" />
                             Delete application
                         </Button>
