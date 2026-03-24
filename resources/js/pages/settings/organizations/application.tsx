@@ -1,13 +1,26 @@
 import { Head, useForm } from '@inertiajs/react';
-import { ImageIcon, X } from 'lucide-react';
+import { ImageIcon, Plus, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -45,12 +58,130 @@ const ENV_COLORS = [
     { label: 'Gray', value: 'gray', class: 'bg-zinc-400' },
 ];
 
+const ENV_TYPES = [
+    { value: 'production', label: 'Production' },
+    { value: 'staging', label: 'Staging' },
+    { value: 'development', label: 'Development' },
+    { value: 'custom', label: 'Custom' },
+];
+
 const ENV_TYPE_LABELS: Record<string, string> = {
     production: 'Production',
     staging: 'Staging',
     development: 'Development',
     custom: 'Custom',
 };
+
+function AddEnvironmentDialog({
+    open,
+    onOpenChange,
+    organization,
+    project,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    organization: Organization;
+    project: Project;
+}) {
+    const form = useForm({
+        name: '',
+        type: 'production',
+        color: 'green',
+    });
+
+    function handleOpenChange(value: boolean) {
+        if (!value) {
+            form.reset();
+        }
+        onOpenChange(value);
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        form.post(
+            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments`,
+            {
+                onSuccess: () => {
+                    toast.success('Environment created');
+                    handleOpenChange(false);
+                },
+            },
+        );
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent className="max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Add Environment</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="env-name">Name</Label>
+                        <Input
+                            id="env-name"
+                            value={form.data.name}
+                            onChange={(e) => form.setData('name', e.target.value)}
+                            placeholder="Production"
+                            autoFocus
+                            required
+                        />
+                        <InputError message={form.errors.name} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Type</Label>
+                        <Select value={form.data.type} onValueChange={(v) => form.setData('type', v)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ENV_TYPES.map((t) => (
+                                    <SelectItem key={t.value} value={t.value}>
+                                        {t.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={form.errors.type} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Color</Label>
+                        <div className="flex items-center gap-2">
+                            {ENV_COLORS.map((c) => (
+                                <button
+                                    key={c.value}
+                                    type="button"
+                                    onClick={() => form.setData('color', c.value)}
+                                    title={c.label}
+                                    className={cn(
+                                        'size-5 rounded-full transition-all',
+                                        c.class,
+                                        form.data.color === c.value
+                                            ? 'ring-2 ring-offset-2 ring-offset-background ring-current scale-110'
+                                            : 'opacity-50 hover:opacity-80',
+                                    )}
+                                />
+                            ))}
+                        </div>
+                        <InputError message={form.errors.color} />
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={form.processing || !form.data.name.trim()}>
+                            Add Environment
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function EnvironmentRow({
     environment,
@@ -138,6 +269,7 @@ export default function ApplicationEdit({
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(project.logo_url || null);
+    const [addEnvOpen, setAddEnvOpen] = useState(false);
 
     const form = useForm<{
         name: string;
@@ -185,6 +317,13 @@ export default function ApplicationEdit({
             <Head title={`${project.name} — Application settings`} />
 
             <h1 className="sr-only">Application Settings</h1>
+
+            <AddEnvironmentDialog
+                open={addEnvOpen}
+                onOpenChange={setAddEnvOpen}
+                organization={organization}
+                project={project}
+            />
 
             <SettingsLayout>
                 <div className="space-y-8">
@@ -283,15 +422,26 @@ export default function ApplicationEdit({
                         </form>
                     </div>
 
-                    {environments.length > 0 && (
-                        <div className="space-y-3">
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-sm font-medium">Environments</h3>
                                 <p className="text-sm text-muted-foreground">
                                     Update the name and color of each environment.
                                 </p>
                             </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAddEnvOpen(true)}
+                            >
+                                <Plus className="mr-1.5 size-3.5" />
+                                Add
+                            </Button>
+                        </div>
 
+                        {environments.length > 0 ? (
                             <div className="divide-y divide-border rounded-lg border">
                                 {environments.map((env) => (
                                     <EnvironmentRow
@@ -302,8 +452,12 @@ export default function ApplicationEdit({
                                     />
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <p className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+                                No environments yet.
+                            </p>
+                        )}
+                    </div>
                 </div>
             </SettingsLayout>
         </AppLayout>

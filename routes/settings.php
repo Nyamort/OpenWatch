@@ -34,6 +34,7 @@ Route::middleware(['auth', 'verified', 'organization.member'])->prefix('settings
     Route::get('applications', [OrganizationSettingsController::class, 'applications'])->name('applications');
     Route::get('applications/{project}', [OrganizationSettingsController::class, 'editApplication'])->name('applications.edit');
     Route::patch('applications/{project}', [OrganizationSettingsController::class, 'updateApplication'])->name('applications.update');
+    Route::post('applications/{project}/environments', [OrganizationSettingsController::class, 'storeEnvironment'])->name('applications.environments.store');
     Route::patch('applications/{project}/environments/{environment}', [OrganizationSettingsController::class, 'updateEnvironment'])->name('applications.environments.update');
 });
 

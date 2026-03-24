@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Settings;
 use App\Actions\Organization\InviteMember;
 use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
+use App\Actions\Projects\CreateEnvironment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\InviteMemberRequest;
+use App\Http\Requests\Settings\StoreEnvironmentRequest;
 use App\Http\Requests\Settings\UpdateApplicationRequest;
 use App\Http\Requests\Settings\UpdateEnvironmentRequest;
 use App\Http\Requests\Settings\UpdateMemberRoleRequest;
@@ -217,6 +219,13 @@ class OrganizationSettingsController extends Controller
         } elseif ($request->boolean('remove_logo')) {
             $project->clearMediaCollection('logo');
         }
+
+        return to_route('settings.organizations.applications.edit', [$organization, $project]);
+    }
+
+    public function storeEnvironment(StoreEnvironmentRequest $request, Organization $organization, Project $project, CreateEnvironment $createEnvironment): RedirectResponse
+    {
+        $createEnvironment->handle($project, $request->validated());
 
         return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
