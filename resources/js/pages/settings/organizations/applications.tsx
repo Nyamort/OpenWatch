@@ -89,7 +89,7 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => setDeleteOpen(true)}
-                                className="text-red-500 focus:bg-red-500/10 focus:text-red-500 dark:text-red-400 dark:focus:text-red-400"
+                                className="text-red-500 focus:bg-red-500/10 focus:text-red-500 dark:text-red-500 dark:focus:text-red-500"
                             >
                                 <Trash2 className="mr-2 size-3.5" />
                                 Delete
