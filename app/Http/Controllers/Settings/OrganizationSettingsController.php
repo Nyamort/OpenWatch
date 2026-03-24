@@ -6,6 +6,7 @@ use App\Actions\Organization\InviteMember;
 use App\Actions\Organization\UpdateMemberRole;
 use App\Actions\Organization\UpdateOrganization;
 use App\Actions\Projects\CreateEnvironment;
+use App\Actions\Projects\RotateToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\InviteMemberRequest;
 use App\Http\Requests\Settings\StoreEnvironmentRequest;
@@ -207,6 +208,8 @@ class OrganizationSettingsController extends Controller
                 'logo_url' => $project->getFirstMediaUrl('logo'),
             ]),
             'environments' => $environments,
+            'newToken' => session('environment_token'),
+            'newTokenEnvironmentName' => session('environment_token_name'),
         ]);
     }
 
@@ -225,7 +228,28 @@ class OrganizationSettingsController extends Controller
 
     public function storeEnvironment(StoreEnvironmentRequest $request, Organization $organization, Project $project, CreateEnvironment $createEnvironment): RedirectResponse
     {
-        $createEnvironment->handle($project, $request->validated());
+        $result = $createEnvironment->handle($project, $request->validated());
+
+        session()->flash('environment_token', $result->token);
+        session()->flash('environment_token_name', $result->environment->name);
+
+        return to_route('settings.organizations.applications.edit', [$organization, $project]);
+    }
+
+    public function rotateEnvironmentToken(Request $request, Organization $organization, Project $project, Environment $environment, RotateToken $rotateToken): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $activeToken = $environment->projectTokens()->where('status', 'active')->firstOrFail();
+
+        ['token' => $rawToken] = $rotateToken->handle($activeToken);
+
+        session()->flash('environment_token', $rawToken);
+        session()->flash('environment_token_name', $environment->name);
 
         return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
