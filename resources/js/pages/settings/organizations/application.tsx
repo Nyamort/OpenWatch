@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Check, Copy, ImageIcon, Plus, RefreshCw, X } from 'lucide-react';
+import { Check, Copy, ImageIcon, Plus, RefreshCw, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
@@ -134,6 +134,53 @@ function RotateTokenDialog({
     );
 }
 
+function DeleteEnvironmentDialog({
+    open,
+    onOpenChange,
+    organization,
+    project,
+    environment,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    organization: Organization;
+    project: Project;
+    environment: Environment;
+}) {
+    const form = useForm({});
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        form.delete(
+            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}`,
+            { onSuccess: () => onOpenChange(false) },
+        );
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Delete environment</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete <strong>{environment.name}</strong>? This will permanently remove all associated tokens and data.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="destructive" disabled={form.processing}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function AddEnvironmentDialog({
     open,
     onOpenChange,
@@ -233,6 +280,7 @@ function EnvironmentRow({
     project: Project;
 }) {
     const [rotateOpen, setRotateOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     const form = useForm({
         name: environment.name,
@@ -258,6 +306,13 @@ function EnvironmentRow({
             <RotateTokenDialog
                 open={rotateOpen}
                 onOpenChange={setRotateOpen}
+                organization={organization}
+                project={project}
+                environment={environment}
+            />
+            <DeleteEnvironmentDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
                 organization={organization}
                 project={project}
                 environment={environment}
@@ -301,6 +356,16 @@ function EnvironmentRow({
                         disabled={form.processing || !isDirty}
                     >
                         Save
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setDeleteOpen(true)}
+                        title="Delete environment"
+                        className="text-destructive hover:text-destructive"
+                    >
+                        <Trash2 className="size-3.5" />
                     </Button>
                 </div>
             </form>
