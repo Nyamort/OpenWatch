@@ -1,19 +1,21 @@
 import { Head, useForm } from '@inertiajs/react';
-import { ImageIcon, Plus, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { Check, Copy, ImageIcon, Plus, RefreshCw, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -38,7 +40,6 @@ interface Environment {
     id: number;
     name: string;
     slug: string;
-    type: string;
     color: string | null;
     url: string | null;
 }
@@ -52,12 +53,133 @@ const ENV_COLORS = [
     { label: 'Gray', value: 'gray', class: 'bg-zinc-400' },
 ];
 
-const ENV_TYPE_LABELS: Record<string, string> = {
-    production: 'Production',
-    staging: 'Staging',
-    development: 'Development',
-    custom: 'Custom',
-};
+function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const [open, setOpen] = useState(false);
+    const current = ENV_COLORS.find((c) => c.value === value) ?? ENV_COLORS[0];
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <button
+                    type="button"
+                    title={current.label}
+                    className="size-4 shrink-0 rounded-full ring-offset-background transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    style={{ backgroundColor: `var(--color-${current.value}, currentColor)` }}
+                >
+                    <span className={cn('block size-full rounded-full', current.class)} />
+                </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="start">
+                <div className="flex gap-1.5">
+                    {ENV_COLORS.map((c) => (
+                        <button
+                            key={c.value}
+                            type="button"
+                            title={c.label}
+                            onClick={() => { onChange(c.value); setOpen(false); }}
+                            className={cn(
+                                'size-5 rounded-full transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background',
+                                c.class,
+                                value === c.value && 'ring-2 ring-offset-2 ring-current scale-110',
+                            )}
+                        />
+                    ))}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+function TokenDialog({
+    open,
+    onOpenChange,
+    token,
+    environmentName,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    token: string;
+    environmentName: string;
+}) {
+    const [copied, setCopied] = useState(false);
+
+    function copyToken() {
+        navigator.clipboard.writeText(token);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Ingest token — {environmentName}</DialogTitle>
+                    <DialogDescription>
+                        Copy this token now. It will not be shown again.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
+                    <code className="flex-1 truncate text-sm font-mono">{token}</code>
+                    <Button type="button" size="icon" variant="ghost" className="size-7 shrink-0" onClick={copyToken}>
+                        {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
+                    </Button>
+                </div>
+
+                <DialogFooter>
+                    <Button onClick={() => onOpenChange(false)}>Done</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function RotateTokenDialog({
+    open,
+    onOpenChange,
+    organization,
+    project,
+    environment,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    organization: Organization;
+    project: Project;
+    environment: Environment;
+}) {
+    const form = useForm({});
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        form.post(
+            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}/rotate-token`,
+            { onSuccess: () => onOpenChange(false) },
+        );
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Rotate token — {environment.name}</DialogTitle>
+                    <DialogDescription>
+                        The current token will enter a 3-day grace period before being revoked. A new token will be generated and shown once.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="destructive" disabled={form.processing}>
+                            Rotate token
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function AddEnvironmentDialog({
     open,
@@ -88,10 +210,7 @@ function AddEnvironmentDialog({
         form.post(
             `/settings/organizations/${organization.slug}/applications/${project.slug}/environments`,
             {
-                onSuccess: () => {
-                    toast.success('Environment created');
-                    handleOpenChange(false);
-                },
+                onSuccess: () => handleOpenChange(false),
             },
         );
     }
@@ -119,23 +238,7 @@ function AddEnvironmentDialog({
 
                     <div className="grid gap-2">
                         <Label>Color</Label>
-                        <div className="flex items-center gap-2">
-                            {ENV_COLORS.map((c) => (
-                                <button
-                                    key={c.value}
-                                    type="button"
-                                    onClick={() => form.setData('color', c.value)}
-                                    title={c.label}
-                                    className={cn(
-                                        'size-5 rounded-full transition-all',
-                                        c.class,
-                                        form.data.color === c.value
-                                            ? 'ring-2 ring-offset-2 ring-offset-background ring-current scale-110'
-                                            : 'opacity-50 hover:opacity-80',
-                                    )}
-                                />
-                            ))}
-                        </div>
+                        <ColorPicker value={form.data.color} onChange={(v) => form.setData('color', v)} />
                         <InputError message={form.errors.color} />
                     </div>
 
@@ -176,6 +279,8 @@ function EnvironmentRow({
     organization: Organization;
     project: Project;
 }) {
+    const [rotateOpen, setRotateOpen] = useState(false);
+
     const form = useForm({
         name: environment.name,
         color: environment.color ?? 'gray',
@@ -185,7 +290,7 @@ function EnvironmentRow({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.patch(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.id}`,
+            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}`,
             { onSuccess: () => toast.success('Environment updated') },
         );
     }
@@ -196,56 +301,57 @@ function EnvironmentRow({
         form.data.url !== (environment.url ?? '');
 
     return (
-        <form onSubmit={handleSubmit} className="flex items-center gap-4 px-4 py-3">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                    {ENV_COLORS.map((c) => (
-                        <button
-                            key={c.value}
-                            type="button"
-                            onClick={() => form.setData('color', c.value)}
-                            title={c.label}
-                            className={cn(
-                                'size-4 rounded-full transition-all',
-                                c.class,
-                                form.data.color === c.value
-                                    ? 'ring-2 ring-offset-2 ring-offset-background ring-current scale-110'
-                                    : 'opacity-50 hover:opacity-80',
-                            )}
-                        />
-                    ))}
+        <>
+            <RotateTokenDialog
+                open={rotateOpen}
+                onOpenChange={setRotateOpen}
+                organization={organization}
+                project={project}
+                environment={environment}
+            />
+
+            <form onSubmit={handleSubmit} className="flex items-center gap-4 px-4 py-3">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <ColorPicker value={form.data.color} onChange={(v) => form.setData('color', v)} />
+
+                    <Input
+                        value={form.data.name}
+                        onChange={(e) => form.setData('name', e.target.value)}
+                        className="h-8 w-36 text-sm"
+                        required
+                    />
+                    <Input
+                        type="url"
+                        value={form.data.url}
+                        onChange={(e) => form.setData('url', e.target.value)}
+                        placeholder="https://example.com"
+                        className="h-8 w-52 text-sm"
+                    />
+                    <InputError message={form.errors.name ?? form.errors.url} />
                 </div>
 
-                <Input
-                    value={form.data.name}
-                    onChange={(e) => form.setData('name', e.target.value)}
-                    className="h-8 w-36 text-sm"
-                    required
-                />
-                <Input
-                    type="url"
-                    value={form.data.url}
-                    onChange={(e) => form.setData('url', e.target.value)}
-                    placeholder="https://example.com"
-                    className="h-8 w-52 text-sm"
-                />
-                <InputError message={form.errors.name ?? form.errors.url} />
-            </div>
-
-            <div className="flex shrink-0 items-center gap-3">
-                <Badge variant="secondary" className="capitalize">
-                    {ENV_TYPE_LABELS[environment.type] ?? environment.type}
-                </Badge>
-                <Button
-                    type="submit"
-                    size="sm"
-                    variant="outline"
-                    disabled={form.processing || !isDirty}
-                >
-                    Save
-                </Button>
-            </div>
-        </form>
+                <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setRotateOpen(true)}
+                        title="Rotate ingest token"
+                    >
+                        <RefreshCw className="size-3.5" />
+                        Rotate token
+                    </Button>
+                    <Button
+                        type="submit"
+                        size="sm"
+                        variant="outline"
+                        disabled={form.processing || !isDirty}
+                    >
+                        Save
+                    </Button>
+                </div>
+            </form>
+        </>
     );
 }
 
@@ -257,14 +363,29 @@ export default function ApplicationEdit({
     organization,
     project,
     environments,
+    newToken,
+    newTokenEnvironmentName,
 }: {
     organization: Organization;
     project: Project;
     environments: Environment[];
+    newToken: string | null;
+    newTokenEnvironmentName: string | null;
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(project.logo_url || null);
     const [addEnvOpen, setAddEnvOpen] = useState(false);
+    const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
+    const [displayedToken, setDisplayedToken] = useState<string | null>(null);
+    const [displayedTokenEnvName, setDisplayedTokenEnvName] = useState<string>('');
+
+    useEffect(() => {
+        if (newToken) {
+            setDisplayedToken(newToken);
+            setDisplayedTokenEnvName(newTokenEnvironmentName ?? '');
+            setTokenDialogOpen(true);
+        }
+    }, [newToken]);
 
     const form = useForm<{
         name: string;
@@ -312,6 +433,15 @@ export default function ApplicationEdit({
             <Head title={`${project.name} — Application settings`} />
 
             <h1 className="sr-only">Application Settings</h1>
+
+            {displayedToken && (
+                <TokenDialog
+                    open={tokenDialogOpen}
+                    onOpenChange={setTokenDialogOpen}
+                    token={displayedToken}
+                    environmentName={displayedTokenEnvName}
+                />
+            )}
 
             <AddEnvironmentDialog
                 open={addEnvOpen}
