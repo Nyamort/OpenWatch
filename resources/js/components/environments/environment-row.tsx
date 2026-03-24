@@ -17,6 +17,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -199,9 +200,10 @@ export function EnvironmentRow({
                                 <RefreshCw className="mr-2 size-3.5" />
                                 Rotate token
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => setDeleteOpen(true)}
-                                className="text-destructive focus:text-destructive"
+                                className="text-red-500 focus:bg-red-500/10 focus:text-red-500 dark:text-red-400 dark:focus:text-red-400"
                             >
                                 <Trash2 className="mr-2 size-3.5" />
                                 Delete

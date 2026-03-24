@@ -9,6 +9,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
@@ -85,9 +86,10 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
                                     Settings
                                 </Link>
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => setDeleteOpen(true)}
-                                className="text-destructive focus:text-destructive"
+                                className="text-red-500 focus:bg-red-500/10 focus:text-red-500 dark:text-red-400 dark:focus:text-red-400"
                             >
                                 <Trash2 className="mr-2 size-3.5" />
                                 Delete
