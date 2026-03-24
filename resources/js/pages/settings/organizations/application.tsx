@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { DangerZone } from '@/components/danger-zone';
 import { AddEnvironmentDialog } from '@/components/environments/add-environment-dialog';
 import { DeleteApplicationDialog } from '@/components/organizations/delete-application-dialog';
 import { EnvironmentRow } from '@/components/environments/environment-row';
@@ -247,16 +248,12 @@ export default function ApplicationEdit({
                         )}
                     </div>
 
-                    <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                        <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                            <p className="font-medium">Warning</p>
-                            <p className="text-sm">Please proceed with caution, this cannot be undone.</p>
-                        </div>
+                    <DangerZone>
                         <Button type="button" variant="destructive" onClick={() => setDeleteAppOpen(true)}>
                             <Trash2 className="mr-1.5 size-3.5" />
                             Delete application
                         </Button>
-                    </div>
+                    </DangerZone>
                 </div>
             </SettingsLayout>
 
