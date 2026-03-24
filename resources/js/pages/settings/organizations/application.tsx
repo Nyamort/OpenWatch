@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { ImageIcon, Plus, X } from 'lucide-react';
+import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { AddEnvironmentDialog } from '@/components/environments/add-environment-dialog';
@@ -9,6 +9,14 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { TokenDialog } from '@/components/environments/token-dialog';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,6 +58,9 @@ export default function ApplicationEdit({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(project.logo_url || null);
     const [addEnvOpen, setAddEnvOpen] = useState(false);
+    const [deleteAppOpen, setDeleteAppOpen] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState('');
+    const deleteForm = useForm({});
     const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
     const [displayedToken, setDisplayedToken] = useState<string | null>(null);
     const [displayedTokenEnvName, setDisplayedTokenEnvName] = useState<string>('');
@@ -244,8 +255,49 @@ export default function ApplicationEdit({
                             </p>
                         )}
                     </div>
+
+                    <div className="space-y-3 rounded-lg border border-destructive/30 p-4">
+                        <div>
+                            <h3 className="text-sm font-medium text-destructive">Danger zone</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Permanently delete this application and all its environments and data.
+                            </p>
+                        </div>
+                        <Button type="button" variant="destructive" size="sm" onClick={() => setDeleteAppOpen(true)}>
+                            <Trash2 className="mr-1.5 size-3.5" />
+                            Delete application
+                        </Button>
+                    </div>
                 </div>
             </SettingsLayout>
+
+            <Dialog open={deleteAppOpen} onOpenChange={(v) => { setDeleteAppOpen(v); setDeleteConfirm(''); }}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Delete application</DialogTitle>
+                        <DialogDescription>
+                            This will permanently delete <strong>{project.name}</strong> and all its environments and data. Type <strong>{project.name}</strong> to confirm.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                        value={deleteConfirm}
+                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                        placeholder={project.name}
+                    />
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => { setDeleteAppOpen(false); setDeleteConfirm(''); }}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            disabled={deleteConfirm !== project.name || deleteForm.processing}
+                            onClick={() => deleteForm.delete(`/settings/organizations/${organization.slug}/applications/${project.slug}`)}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

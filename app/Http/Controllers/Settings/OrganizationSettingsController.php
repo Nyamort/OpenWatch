@@ -226,6 +226,19 @@ class OrganizationSettingsController extends Controller
         return to_route('settings.organizations.applications.edit', [$organization, $project]);
     }
 
+    public function destroyApplication(Request $request, Organization $organization, Project $project): RedirectResponse
+    {
+        $requesterRole = $this->permissionResolver->getRole($request->user()->id, $organization->id);
+
+        if (! in_array($requesterRole, ['owner', 'admin'], true)) {
+            abort(403);
+        }
+
+        $project->delete();
+
+        return to_route('settings.organizations.applications', $organization);
+    }
+
     public function storeEnvironment(StoreEnvironmentRequest $request, Organization $organization, Project $project, CreateEnvironment $createEnvironment): RedirectResponse
     {
         $result = $createEnvironment->handle($project, $request->validated());
