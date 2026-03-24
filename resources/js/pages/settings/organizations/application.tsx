@@ -14,13 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -47,6 +40,7 @@ interface Environment {
     slug: string;
     type: string;
     color: string | null;
+    url: string | null;
 }
 
 const ENV_COLORS = [
@@ -56,13 +50,6 @@ const ENV_COLORS = [
     { label: 'Purple', value: 'purple', class: 'bg-violet-500' },
     { label: 'Red', value: 'red', class: 'bg-rose-500' },
     { label: 'Gray', value: 'gray', class: 'bg-zinc-400' },
-];
-
-const ENV_TYPES = [
-    { value: 'production', label: 'Production' },
-    { value: 'staging', label: 'Staging' },
-    { value: 'development', label: 'Development' },
-    { value: 'custom', label: 'Custom' },
 ];
 
 const ENV_TYPE_LABELS: Record<string, string> = {
@@ -85,8 +72,8 @@ function AddEnvironmentDialog({
 }) {
     const form = useForm({
         name: '',
-        type: 'production',
         color: 'green',
+        url: '',
     });
 
     function handleOpenChange(value: boolean) {
@@ -131,23 +118,6 @@ function AddEnvironmentDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Type</Label>
-                        <Select value={form.data.type} onValueChange={(v) => form.setData('type', v)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ENV_TYPES.map((t) => (
-                                    <SelectItem key={t.value} value={t.value}>
-                                        {t.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <InputError message={form.errors.type} />
-                    </div>
-
-                    <div className="grid gap-2">
                         <Label>Color</Label>
                         <div className="flex items-center gap-2">
                             {ENV_COLORS.map((c) => (
@@ -167,6 +137,20 @@ function AddEnvironmentDialog({
                             ))}
                         </div>
                         <InputError message={form.errors.color} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="env-url">
+                            URL <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Input
+                            id="env-url"
+                            type="url"
+                            value={form.data.url}
+                            onChange={(e) => form.setData('url', e.target.value)}
+                            placeholder="https://example.com"
+                        />
+                        <InputError message={form.errors.url} />
                     </div>
 
                     <div className="flex justify-end gap-2">
@@ -195,6 +179,7 @@ function EnvironmentRow({
     const form = useForm({
         name: environment.name,
         color: environment.color ?? 'gray',
+        url: environment.url ?? '',
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -205,7 +190,10 @@ function EnvironmentRow({
         );
     }
 
-    const isDirty = form.data.name !== environment.name || form.data.color !== (environment.color ?? 'gray');
+    const isDirty =
+        form.data.name !== environment.name ||
+        form.data.color !== (environment.color ?? 'gray') ||
+        form.data.url !== (environment.url ?? '');
 
     return (
         <form onSubmit={handleSubmit} className="flex items-center gap-4 px-4 py-3">
@@ -231,10 +219,17 @@ function EnvironmentRow({
                 <Input
                     value={form.data.name}
                     onChange={(e) => form.setData('name', e.target.value)}
-                    className="h-8 w-40 text-sm"
+                    className="h-8 w-36 text-sm"
                     required
                 />
-                <InputError message={form.errors.name} />
+                <Input
+                    type="url"
+                    value={form.data.url}
+                    onChange={(e) => form.setData('url', e.target.value)}
+                    placeholder="https://example.com"
+                    className="h-8 w-52 text-sm"
+                />
+                <InputError message={form.errors.name ?? form.errors.url} />
             </div>
 
             <div className="flex shrink-0 items-center gap-3">

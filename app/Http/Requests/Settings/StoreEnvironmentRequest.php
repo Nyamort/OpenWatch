@@ -16,8 +16,8 @@ class StoreEnvironmentRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'in:production,staging,development,custom'],
             'color' => ['nullable', 'string', 'in:green,amber,blue,purple,red,gray'],
+            'url' => ['nullable', 'url', 'max:2048'],
         ];
     }
 }

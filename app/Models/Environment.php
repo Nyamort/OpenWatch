@@ -35,6 +35,7 @@ class Environment extends Model
         'slug',
         'type',
         'color',
+        'url',
         'status',
         'archived_at',
         'last_ingested_at',

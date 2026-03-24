@@ -17,6 +17,7 @@ class UpdateEnvironmentRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'color' => ['nullable', 'string', 'in:green,amber,blue,purple,red,gray'],
+            'url' => ['nullable', 'url', 'max:2048'],
         ];
     }
 }
