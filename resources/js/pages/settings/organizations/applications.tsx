@@ -34,7 +34,7 @@ interface Organization {
     slug: string;
 }
 
-interface Project {
+interface Application {
     id: number;
     name: string;
     slug: string;
@@ -55,7 +55,7 @@ function avatarColor(name: string): string {
     return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
-function ProjectRow({ organization, project }: { organization: Organization; project: Project }) {
+function ApplicationRow({ organization, application }: { organization: Organization; application: Application }) {
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     return (
@@ -64,18 +64,18 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
                 organization={organization}
-                project={project}
+                application={application}
             />
 
             <div className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="flex min-w-0 items-center gap-3">
-                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${avatarColor(project.name)}`}>
-                        {project.name.charAt(0).toUpperCase()}
+                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${avatarColor(application.name)}`}>
+                        {application.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 space-y-0.5">
-                        <p className="truncate text-sm font-medium">{project.name}</p>
-                        {project.description && (
-                            <p className="truncate text-xs text-muted-foreground">{project.description}</p>
+                        <p className="truncate text-sm font-medium">{application.name}</p>
+                        {application.description && (
+                            <p className="truncate text-xs text-muted-foreground">{application.description}</p>
                         )}
                     </div>
                 </div>
@@ -83,7 +83,7 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
                 <div className="flex shrink-0 items-center gap-3">
                     <Badge variant="secondary" className="gap-1">
                         <Layers className="size-3" />
-                        {project.environments_count}
+                        {application.environments_count}
                     </Badge>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -93,7 +93,7 @@ function ProjectRow({ organization, project }: { organization: Organization; pro
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                                <Link href={`/settings/organizations/${organization.slug}/applications/${project.slug}`}>
+                                <Link href={`/settings/organizations/${organization.slug}/applications/${application.slug}`}>
                                     <Settings2 className="mr-2 size-3.5" />
                                     Settings
                                 </Link>
@@ -183,10 +183,10 @@ function CreateApplicationDialog({
 
 export default function Applications({
     organization,
-    projects,
+    applications,
 }: {
     organization: Organization;
-    projects: Project[];
+    applications: Application[];
 }) {
     const [createOpen, setCreateOpen] = useState(false);
 
@@ -217,14 +217,14 @@ export default function Applications({
                     />
 
                     <div className="divide-y divide-border rounded-lg border">
-                        {projects.length === 0 ? (
+                        {applications.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 py-12 text-center">
                                 <Layers className="size-8 text-muted-foreground/40" />
                                 <p className="text-sm text-muted-foreground">No applications yet.</p>
                             </div>
                         ) : (
-                            projects.map((project) => (
-                                <ProjectRow key={project.id} organization={organization} project={project} />
+                            applications.map((application) => (
+                                <ApplicationRow key={application.id} organization={organization} application={application} />
                             ))
                         )}
                     </div>

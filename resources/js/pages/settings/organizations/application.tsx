@@ -24,7 +24,7 @@ interface Organization {
     slug: string;
 }
 
-interface Project {
+interface Application {
     id: number;
     name: string;
     slug: string;
@@ -38,19 +38,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function ApplicationEdit({
     organization,
-    project,
+    application,
     environments,
     newToken,
     newTokenEnvironmentName,
 }: {
     organization: Organization;
-    project: Project;
+    application: Application;
     environments: Environment[];
     newToken: string | null;
     newTokenEnvironmentName: string | null;
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(project.logo_url || null);
+    const [preview, setPreview] = useState<string | null>(application.logo_url || null);
     const [addEnvOpen, setAddEnvOpen] = useState(false);
     const [deleteAppOpen, setDeleteAppOpen] = useState(false);
     const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
@@ -71,8 +71,8 @@ export default function ApplicationEdit({
         logo: File | null;
         remove_logo: boolean;
     }>({
-        name: project.name,
-        description: project.description ?? '',
+        name: application.name,
+        description: application.description ?? '',
         logo: null,
         remove_logo: false,
     });
@@ -98,7 +98,7 @@ export default function ApplicationEdit({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.patch(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}`,
+            `/settings/organizations/${organization.slug}/applications/${application.slug}`,
             {
                 forceFormData: true,
                 onSuccess: () => toast.success('Application updated'),
@@ -108,7 +108,7 @@ export default function ApplicationEdit({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${project.name} — Application settings`} />
+            <Head title={`${application.name} — Application settings`} />
 
             <h1 className="sr-only">Application Settings</h1>
 
@@ -133,7 +133,7 @@ export default function ApplicationEdit({
                     <div className="space-y-6">
                         <Heading
                             variant="small"
-                            title={project.name}
+                            title={application.name}
                             description="Manage application name, description, and environments"
                         />
 

@@ -213,7 +213,7 @@ class OrganizationSettingsController extends Controller
 
         return Inertia::render('settings/organizations/applications', [
             'organization' => $organization,
-            'projects' => $projects,
+            'applications' => $projects,
         ]);
     }
 
@@ -238,7 +238,7 @@ class OrganizationSettingsController extends Controller
 
         return Inertia::render('settings/organizations/application', [
             'organization' => $organization,
-            'project' => array_merge($project->only('id', 'name', 'slug', 'description'), [
+            'application' => array_merge($project->only('id', 'name', 'slug', 'description'), [
                 'logo_url' => $project->getFirstMediaUrl('logo'),
             ]),
             'environments' => $environments,

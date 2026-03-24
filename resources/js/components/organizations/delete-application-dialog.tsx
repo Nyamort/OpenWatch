@@ -15,7 +15,7 @@ interface Organization {
     slug: string;
 }
 
-interface Project {
+interface Application {
     name: string;
     slug: string;
 }
@@ -24,12 +24,12 @@ export function DeleteApplicationDialog({
     open,
     onOpenChange,
     organization,
-    project,
+    application,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     organization: Organization;
-    project: Project;
+    application: Application;
 }) {
     const [confirm, setConfirm] = useState('');
     const form = useForm({});
@@ -45,13 +45,13 @@ export function DeleteApplicationDialog({
                 <DialogHeader>
                     <DialogTitle>Delete application</DialogTitle>
                     <DialogDescription>
-                        This will permanently delete <strong>{project.name}</strong> and all its environments and data. Type <strong>{project.name}</strong> to confirm.
+                        This will permanently delete <strong>{application.name}</strong> and all its environments and data. Type <strong>{application.name}</strong> to confirm.
                     </DialogDescription>
                 </DialogHeader>
                 <Input
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    placeholder={project.name}
+                    placeholder={application.name}
                 />
                 <DialogFooter>
                     <Button variant="outline" onClick={() => handleOpenChange(false)}>
@@ -59,8 +59,8 @@ export function DeleteApplicationDialog({
                     </Button>
                     <Button
                         variant="destructive"
-                        disabled={confirm !== project.name || form.processing}
-                        onClick={() => form.delete(`/settings/organizations/${organization.slug}/applications/${project.slug}`)}
+                        disabled={confirm !== application.name || form.processing}
+                        onClick={() => form.delete(`/settings/organizations/${organization.slug}/applications/${application.slug}`)}
                     >
                         Delete
                     </Button>

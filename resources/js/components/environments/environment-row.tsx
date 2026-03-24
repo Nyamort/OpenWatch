@@ -26,7 +26,7 @@ interface Organization {
     slug: string;
 }
 
-interface Project {
+interface Application {
     slug: string;
 }
 
@@ -42,13 +42,13 @@ function RotateTokenDialog({
     open,
     onOpenChange,
     organization,
-    project,
+    application,
     environment,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     organization: Organization;
-    project: Project;
+    application: Application;
     environment: Environment;
 }) {
     const form = useForm({});
@@ -56,7 +56,7 @@ function RotateTokenDialog({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.post(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}/rotate-token`,
+            `/settings/organizations/${organization.slug}/applications/${application.slug}/environments/${environment.slug}/rotate-token`,
             { onSuccess: () => onOpenChange(false) },
         );
     }
@@ -89,13 +89,13 @@ function DeleteEnvironmentDialog({
     open,
     onOpenChange,
     organization,
-    project,
+    application,
     environment,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     organization: Organization;
-    project: Project;
+    application: Application;
     environment: Environment;
 }) {
     const form = useForm({});
@@ -103,7 +103,7 @@ function DeleteEnvironmentDialog({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.delete(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}`,
+            `/settings/organizations/${organization.slug}/applications/${application.slug}/environments/${environment.slug}`,
             { onSuccess: () => onOpenChange(false) },
         );
     }
@@ -135,11 +135,11 @@ function DeleteEnvironmentDialog({
 export function EnvironmentRow({
     environment,
     organization,
-    project,
+    application,
 }: {
     environment: Environment;
     organization: Organization;
-    project: Project;
+    application: Application;
 }) {
     const [rotateOpen, setRotateOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
@@ -153,7 +153,7 @@ export function EnvironmentRow({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.patch(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments/${environment.slug}`,
+            `/settings/organizations/${organization.slug}/applications/${application.slug}/environments/${environment.slug}`,
             { onSuccess: () => toast.success('Environment updated') },
         );
     }

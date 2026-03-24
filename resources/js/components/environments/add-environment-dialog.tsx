@@ -15,7 +15,7 @@ interface Organization {
     slug: string;
 }
 
-interface Project {
+interface Application {
     slug: string;
 }
 
@@ -23,12 +23,12 @@ export function AddEnvironmentDialog({
     open,
     onOpenChange,
     organization,
-    project,
+    application,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     organization: Organization;
-    project: Project;
+    application: Application;
 }) {
     const form = useForm({
         name: '',
@@ -46,7 +46,7 @@ export function AddEnvironmentDialog({
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         form.post(
-            `/settings/organizations/${organization.slug}/applications/${project.slug}/environments`,
+            `/settings/organizations/${organization.slug}/applications/${application.slug}/environments`,
             { onSuccess: () => handleOpenChange(false) },
         );
     }
