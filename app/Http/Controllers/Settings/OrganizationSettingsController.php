@@ -52,7 +52,7 @@ class OrganizationSettingsController extends Controller
             abort(403);
         }
 
-        $organization->delete();
+        $organization->forceDelete();
 
         $user = $request->user();
         $user->active_organization_id = null;

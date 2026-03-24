@@ -1,7 +1,9 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
+import { CreateOrganizationDialog } from '@/components/organizations/create-organization-dialog';
 import { OrgSelector } from '@/components/organizations/org-selector';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -45,6 +47,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const urlOrgSlug = orgUrlMatch?.[1] ?? null;
     const urlSection = orgUrlMatch?.[2] ?? null;
 
+    const [createOrgOpen, setCreateOrgOpen] = useState(false);
     const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
         urlOrgSlug ?? activeOrganization?.slug ?? organizations[0]?.slug ?? '',
     );
@@ -77,35 +80,48 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48 space-y-4">
-                    {organizations.length > 0 && (
-                        <div className="space-y-1">
-                            <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Organization
-                            </p>
+                    <div className="space-y-1">
+                        <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Organization
+                        </p>
 
-                            <OrgSelector
-                                organizations={organizations}
-                                value={selectedOrgSlug}
-                                onChange={handleOrgChange}
-                            />
+                        {organizations.length === 0 ? (
+                            <>
+                                <CreateOrganizationDialog open={createOrgOpen} onOpenChange={setCreateOrgOpen} />
+                                <button
+                                    onClick={() => setCreateOrgOpen(true)}
+                                    className="flex w-full items-center gap-2 rounded-md border border-dashed border-input px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                >
+                                    <Plus className="size-3.5" />
+                                    New Organization
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <OrgSelector
+                                    organizations={organizations}
+                                    value={selectedOrgSlug}
+                                    onChange={handleOrgChange}
+                                />
 
-                            <nav className="flex flex-col space-y-1" aria-label="Organization settings">
-                                {orgItems.map((item) => (
-                                    <Button
-                                        key={toUrl(item.href)}
-                                        size="sm"
-                                        variant="ghost"
-                                        asChild
-                                        className={cn('w-full justify-start', {
-                                            'bg-muted': isCurrentUrl(item.href),
-                                        })}
-                                    >
-                                        <Link href={item.href}>{item.title}</Link>
-                                    </Button>
-                                ))}
-                            </nav>
-                        </div>
-                    )}
+                                <nav className="flex flex-col space-y-1" aria-label="Organization settings">
+                                    {orgItems.map((item) => (
+                                        <Button
+                                            key={toUrl(item.href)}
+                                            size="sm"
+                                            variant="ghost"
+                                            asChild
+                                            className={cn('w-full justify-start', {
+                                                'bg-muted': isCurrentUrl(item.href),
+                                            })}
+                                        >
+                                            <Link href={item.href}>{item.title}</Link>
+                                        </Button>
+                                    ))}
+                                </nav>
+                            </>
+                        )}
+                    </div>
 
                     <Separator />
 
