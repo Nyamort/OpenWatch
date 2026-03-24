@@ -127,7 +127,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
     return (
         <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring">
+                <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0">
                     <div
                         className={`flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-bold text-white ${
                             activeProject && !activeProject.logo_url ? avatarColor(activeProject.name) : 'bg-muted'
@@ -139,7 +139,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                             activeProject ? activeProject.name.charAt(0).toUpperCase() : '?'
                         )}
                     </div>
-                    <div className="grid flex-1 leading-tight">
+                    <div className="grid flex-1 leading-tight group-data-[collapsible=icon]:hidden">
                         <span className="truncate text-sm font-semibold text-sidebar-foreground">
                             {activeProject ? activeProject.name : 'Select application'}
                         </span>
@@ -147,7 +147,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                             {activeEnvironment ? activeEnvironment.name : 'No environment'}
                         </span>
                     </div>
-                    <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/40" />
+                    <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden" />
                 </button>
             </DropdownMenuTrigger>
 
