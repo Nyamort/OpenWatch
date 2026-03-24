@@ -1,6 +1,6 @@
 import { Check, ChevronsUpDown, Plus, Search } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { CreateOrganizationDialog } from '@/components/create-organization-dialog';
+import { CreateOrganizationDialog } from '@/components/organizations/create-organization-dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,

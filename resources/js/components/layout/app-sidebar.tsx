@@ -1,8 +1,8 @@
 import { LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
-import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
-import { ContextSelector } from '@/components/context-selector';
+import { NavMain } from '@/components/layout/nav-main';
+import { NavUser } from '@/components/layout/nav-user';
+import { ContextSelector } from '@/components/organizations/context-selector';
 import { SetupWizardDialog } from '@/components/setup-wizard-dialog';
 import {
     Sidebar,
