@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProjectToken;
 use App\Services\Ingestion\SessionTokenService;
 use App\Services\Ingestion\ValidateIngestToken;
 use Illuminate\Http\JsonResponse;
@@ -32,30 +31,23 @@ class AgentAuthController extends Controller
 
         $rawToken = substr((string) $authHeader, 7);
 
-        $environment = $this->tokenValidator->validate($rawToken);
+        $result = $this->tokenValidator->validate($rawToken);
 
-        if ($environment === null) {
-            // Check if the token exists but is revoked (to return 403 vs 401)
-            $tokenHash = hash('sha256', $rawToken);
-            $revokedToken = ProjectToken::query()
-                ->where('token_hash', $tokenHash)
-                ->where('status', 'revoked')
-                ->exists();
+        if ($result->isRevoked) {
+            return response()->json([
+                'message' => 'Token has been revoked.',
+                'refresh_in' => 60,
+            ], 403);
+        }
 
-            if ($revokedToken) {
-                return response()->json([
-                    'message' => 'Token has been revoked.',
-                    'refresh_in' => 60,
-                ], 403);
-            }
-
+        if ($result->environment === null) {
             return response()->json([
                 'message' => 'Invalid authorization token.',
                 'refresh_in' => 60,
             ], 401);
         }
 
-        $session = $this->sessionTokenService->issue($environment->id);
+        $session = $this->sessionTokenService->issue($result->environment->id);
 
         return response()->json($session, 200);
     }

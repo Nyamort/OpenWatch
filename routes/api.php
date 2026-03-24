@@ -29,5 +29,5 @@ Route::get('health', function () {
     ], $status);
 })->name('health');
 
-Route::post('agent-auth', [AgentAuthController::class, 'store']);
+Route::post('agent-auth', [AgentAuthController::class, 'store'])->middleware('throttle:60,1');
 Route::post('ingest', [IngestController::class, 'store']);

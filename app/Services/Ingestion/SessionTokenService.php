@@ -7,10 +7,6 @@ use Illuminate\Support\Str;
 
 class SessionTokenService
 {
-    private const TTL = 3600; // 1 hour
-
-    private const REFRESH_IN = 300; // 5 min before expiry
-
     public function __construct(private Repository $cache) {}
 
     /**
@@ -20,17 +16,19 @@ class SessionTokenService
      */
     public function issue(int $environmentId): array
     {
+        $ttl = (int) config('ingest.session_ttl');
+        $refreshIn = (int) config('ingest.refresh_in');
         $token = (string) Str::uuid();
 
         $this->cache->put("session_token:{$token}", [
             'environment_id' => $environmentId,
             'issued_at' => now()->toIso8601String(),
-        ], self::TTL);
+        ], $ttl);
 
         return [
             'token' => $token,
-            'expires_in' => self::TTL,
-            'refresh_in' => self::REFRESH_IN,
+            'expires_in' => $ttl,
+            'refresh_in' => $refreshIn,
             'ingest_url' => config('ingest.url'),
         ];
     }
