@@ -169,14 +169,14 @@ export function EnvironmentRow({
                 open={rotateOpen}
                 onOpenChange={setRotateOpen}
                 organization={organization}
-                project={project}
+                application={application}
                 environment={environment}
             />
             <DeleteEnvironmentDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
                 organization={organization}
-                project={project}
+                application={application}
                 environment={environment}
             />
 

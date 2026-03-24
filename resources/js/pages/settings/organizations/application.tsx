@@ -125,7 +125,7 @@ export default function ApplicationEdit({
                 open={addEnvOpen}
                 onOpenChange={setAddEnvOpen}
                 organization={organization}
-                project={project}
+                application={application}
             />
 
             <SettingsLayout>
@@ -237,7 +237,7 @@ export default function ApplicationEdit({
                                         key={env.id}
                                         environment={env}
                                         organization={organization}
-                                        project={project}
+                                        application={application}
                                     />
                                 ))}
                             </div>
@@ -261,7 +261,7 @@ export default function ApplicationEdit({
                 open={deleteAppOpen}
                 onOpenChange={setDeleteAppOpen}
                 organization={organization}
-                project={project}
+                application={application}
             />
         </AppLayout>
     );
