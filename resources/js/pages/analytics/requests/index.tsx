@@ -64,7 +64,6 @@ function formatBucketDatetime(bucket: string): string {
 
 export default function RequestsIndex({ graph, stats, period }: Props) {
     const totalRequests = stats.count;
-    const successRate = totalRequests > 0 ? Math.round((stats['2xx'] / totalRequests) * 100) : 0;
 
     return (
         <AnalyticsLayout title="Requests" period={period} breadcrumbs={breadcrumbs}>
@@ -72,36 +71,32 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* Requests Panel */}
-                <div className="bg-card rounded-xl border p-5">
+                <div className="bg-card flex flex-col rounded-xl border p-5">
                     <div className="mb-4 flex items-start justify-between">
                         <div>
                             <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Requests</p>
-                            <p className="mt-1 text-3xl font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
+                            <p className="mt-1 font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
                         </div>
-                        <div className="text-right text-sm">
-                            <div className="text-muted-foreground">{successRate}% success</div>
-                        </div>
-                    </div>
-
-                    <div className="mb-4 flex gap-4 text-sm">
-                        <div className="flex items-center gap-1.5">
-                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: requestChartConfig['2xx'].color }} />
-                            <span className="text-muted-foreground">2xx</span>
-                            <span className="font-medium">{stats['2xx'].toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: requestChartConfig['4xx'].color }} />
-                            <span className="text-muted-foreground">4xx</span>
-                            <span className="font-medium">{stats['4xx'].toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: requestChartConfig['5xx'].color }} />
-                            <span className="text-muted-foreground">5xx</span>
-                            <span className="font-medium">{stats['5xx'].toLocaleString()}</span>
+                        <div className="grid grid-cols-3 gap-x-4 text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['2xx'].color }} />
+                                2xx
+                            </span>
+                            <span className="text-muted-foreground flex items-center gap-1">
+                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['4xx'].color }} />
+                                4xx
+                            </span>
+                            <span className="text-muted-foreground flex items-center gap-1">
+                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['5xx'].color }} />
+                                5xx
+                            </span>
+                            <span className="font-medium tabular-nums text-right">{stats['2xx'].toLocaleString()}</span>
+                            <span className="font-medium tabular-nums text-right">{stats['4xx'].toLocaleString()}</span>
+                            <span className="font-medium tabular-nums text-right">{stats['5xx'].toLocaleString()}</span>
                         </div>
                     </div>
 
-                    <ChartContainer config={requestChartConfig} className="h-40 w-full">
+                    <ChartContainer config={requestChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
                         <BarChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
@@ -121,7 +116,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                 </div>
 
                 {/* Duration Panel */}
-                <div className="bg-card rounded-xl border p-5">
+                <div className="bg-card flex flex-col rounded-xl border p-5">
                     <div className="mb-4 flex items-start justify-between">
                         <div>
                             <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Duration</p>
@@ -155,7 +150,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                         </div>
                     </div>
 
-                    <ChartContainer config={durationChartConfig} className="h-40 w-full">
+                    <ChartContainer config={durationChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
                         <LineChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
