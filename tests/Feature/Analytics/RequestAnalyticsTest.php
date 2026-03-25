@@ -46,7 +46,7 @@ function insertRequest(array $ctx, array $overrides = []): void
     ], $overrides));
 }
 
-test('requests index returns grouped routes', function () {
+test('requests index returns graph and stats', function () {
     $ctx = setupAnalyticsContext('req-'.uniqid());
 
     insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET']);
@@ -58,7 +58,8 @@ test('requests index returns grouped routes', function () {
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/requests/index')
-        ->has('analytics')
+        ->has('graph')
+        ->has('stats')
     );
 });
 
@@ -80,7 +81,7 @@ test('requests route view requires auth', function () {
     $response->assertRedirect();
 });
 
-test('request index returns correct total count in summary', function () {
+test('request index returns correct total count in stats', function () {
     $ctx = setupAnalyticsContext('req-count-'.uniqid());
 
     insertRequest($ctx);
@@ -91,6 +92,6 @@ test('request index returns correct total count in summary', function () {
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
 
     $response->assertInertia(fn ($page) => $page
-        ->where('analytics.summary.total_requests', 3)
+        ->where('stats.count', 3)
     );
 });

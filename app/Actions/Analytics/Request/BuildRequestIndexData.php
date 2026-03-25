@@ -3,79 +3,89 @@
 namespace App\Actions\Analytics\Request;
 
 use App\Services\Analytics\AnalyticsContext;
-use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BuildRequestIndexData
 {
     /**
-     * Build aggregated request analytics grouped by route_path + method.
+     * Build graph buckets and global stats for request analytics.
      *
      * @return array<string, mixed>
      */
-    public function handle(
-        AnalyticsContext $ctx,
-        PeriodResult $period,
-        ?string $search = null,
-        ?string $sort = null,
-        ?string $direction = null,
-    ): array {
-        $query = DB::table('extraction_requests')
+    public function handle(AnalyticsContext $ctx, PeriodResult $period): array
+    {
+        $base = DB::table('extraction_requests')
             ->where('organization_id', $ctx->organization->id)
             ->where('project_id', $ctx->project->id)
             ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->select([
-                'route_path',
-                'method',
-                DB::raw('COUNT(*) as total'),
-                DB::raw('CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg_duration'),
-                DB::raw('MAX(duration) as p95_duration'),
-                DB::raw('CAST(ROUND(SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS DOUBLE) as error_rate'),
-            ])
-            ->groupBy('route_path', 'method');
+            ->whereBetween('recorded_at', [$period->start, $period->end]);
 
-        if ($search !== null && $search !== '') {
-            $query->where('route_path', 'like', '%'.$search.'%');
+        // Global stats
+        $stats = (clone $base)->selectRaw('
+            COUNT(*) as count,
+            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) as `2xx`,
+            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) as `4xx`,
+            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as `5xx`,
+            CAST(MIN(duration) AS DOUBLE) as min,
+            CAST(MAX(duration) AS DOUBLE) as max,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as p95
+        ')->first();
+
+        // Time-bucketed graph data
+        $bucketSeconds = $period->bucketSeconds;
+        $rawBuckets = (clone $base)->selectRaw('
+            FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(recorded_at) / ?) * ?) as bucket,
+            COUNT(*) as count,
+            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) as `2xx`,
+            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) as `4xx`,
+            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as `5xx`,
+            CAST(MIN(duration) AS DOUBLE) as min,
+            CAST(MAX(duration) AS DOUBLE) as max,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as p95
+        ', [$bucketSeconds, $bucketSeconds])
+            ->groupByRaw('bucket')
+            ->orderBy('bucket')
+            ->get()
+            ->keyBy('bucket');
+
+        // Build complete bucket series with zeros for missing buckets
+        $graph = [];
+        $cursor = Carbon::parse($period->start)->floorSeconds($bucketSeconds);
+        $end = Carbon::parse($period->end);
+
+        while ($cursor->lte($end)) {
+            $key = $cursor->format('Y-m-d H:i:s');
+            $row = $rawBuckets->get($key);
+            $graph[] = [
+                'bucket' => $key,
+                'count' => $row ? (int) $row->count : 0,
+                '2xx' => $row ? (int) $row->{'2xx'} : 0,
+                '4xx' => $row ? (int) $row->{'4xx'} : 0,
+                '5xx' => $row ? (int) $row->{'5xx'} : 0,
+                'min' => $row ? $row->min : null,
+                'max' => $row ? $row->max : null,
+                'avg' => $row ? $row->avg : null,
+                'p95' => $row ? $row->p95 : null,
+            ];
+            $cursor->addSeconds($bucketSeconds);
         }
 
-        $allowedSorts = ['total', 'avg_duration', 'p95_duration', 'error_rate'];
-        $sortColumn = in_array($sort, $allowedSorts, true) ? $sort : 'total';
-        $sortDir = $direction === 'asc' ? 'asc' : 'desc';
-
-        $query->orderBy($sortColumn, $sortDir);
-
-        $rows = $query->paginate(50);
-
-        $totalRequests = DB::table('extraction_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->count();
-
-        return (new AnalyticsResponseBuilder)
-            ->withSummary([
-                'total_requests' => $totalRequests,
-                'period_label' => $period->label,
-            ])
-            ->withRows($rows->items())
-            ->withPagination([
-                'current_page' => $rows->currentPage(),
-                'last_page' => $rows->lastPage(),
-                'per_page' => $rows->perPage(),
-                'total' => $rows->total(),
-            ])
-            ->withFiltersApplied([
-                'search' => $search,
-                'sort' => $sortColumn,
-                'direction' => $sortDir,
-            ])
-            ->withConfig([
-                'period' => $period->label,
-                'bucket_seconds' => $period->bucketSeconds,
-            ])
-            ->build();
+        return [
+            'graph' => $graph,
+            'stats' => [
+                'count' => (int) ($stats->count ?? 0),
+                '2xx' => (int) ($stats->{'2xx'} ?? 0),
+                '4xx' => (int) ($stats->{'4xx'} ?? 0),
+                '5xx' => (int) ($stats->{'5xx'} ?? 0),
+                'min' => $stats->min ?? null,
+                'max' => $stats->max ?? null,
+                'avg' => $stats->avg ?? null,
+                'p95' => $stats->p95 ?? null,
+            ],
+        ];
     }
 }
