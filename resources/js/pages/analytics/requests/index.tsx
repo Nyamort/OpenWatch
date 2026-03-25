@@ -39,10 +39,12 @@ const columns = [
     },
 ];
 
+const breadcrumbs = [{ title: 'Requests', href: '#' }];
+
 export default function RequestsIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Request Analytics" period={period}>
-            <Head title="Request Analytics" />
+        <AnalyticsLayout title="Requests" period={period} breadcrumbs={breadcrumbs}>
+            <Head title="Requests" />
             <div className="rounded-lg border bg-card p-4">
                 <p className="text-sm text-muted-foreground">
                     Total requests: <span className="font-medium text-foreground">{analytics.summary.total_requests}</span>
