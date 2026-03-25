@@ -34,7 +34,7 @@ export function ChartPanel({ config, title, heroValue, legendStats, firstBucket,
     );
 
     return (
-        <div className="bg-card flex flex-col rounded-xl border p-5">
+        <div className="bg-surface flex flex-col rounded-xl border p-5">
             <ChartContainer config={config} className="min-h-0 w-full flex-1 max-h-[270px]">
                 {children(legendContent) as React.ReactElement}
             </ChartContainer>
