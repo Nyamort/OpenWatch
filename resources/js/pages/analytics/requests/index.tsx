@@ -102,7 +102,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     lastBucket={graph[graph.length - 1]?.bucket}
                 >
                     {(legendContent, tooltipPos) => (
-                        <BarChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <BarChart syncId="requests" data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide />
@@ -146,7 +146,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     lastBucket={graph[graph.length - 1]?.bucket}
                 >
                     {(legendContent, tooltipPos) => (
-                        <AreaChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <AreaChart syncId="requests" data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="fillAvg" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={durationChartConfig.avg.color} stopOpacity={0.3} />
