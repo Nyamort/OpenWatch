@@ -55,29 +55,29 @@ function formatDuration(us: number | null): string {
 
 export default function RequestsIndex({ graph, stats, period }: Props) {
     const requestStats = (
-        <div className="grid grid-cols-3 gap-x-4 text-sm">
+        <div className="flex gap-4 text-sm">
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
-                <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
-                    {requestChartConfig[key].label}
-                </span>
-            ))}
-            {(['2xx', '4xx', '5xx'] as const).map((key) => (
-                <span key={key} className="font-medium tabular-nums text-right">{stats[key].toLocaleString()}</span>
+                <div key={key} className="flex flex-col items-end gap-0.5">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                        <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
+                        {requestChartConfig[key].label}
+                    </span>
+                    <span className="font-medium tabular-nums">{stats[key].toLocaleString()}</span>
+                </div>
             ))}
         </div>
     );
 
     const durationStats = (
-        <div className="grid grid-cols-2 gap-x-4 text-sm">
+        <div className="flex gap-4 text-sm">
             {(['avg', 'p95'] as const).map((key) => (
-                <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig[key].color }} />
-                    {key.toUpperCase()}
-                </span>
-            ))}
-            {(['avg', 'p95'] as const).map((key) => (
-                <span key={key} className="font-medium tabular-nums text-right">{formatDuration(stats[key])}</span>
+                <div key={key} className="flex flex-col items-end gap-0.5">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                        <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig[key].color }} />
+                        {key.toUpperCase()}
+                    </span>
+                    <span className="font-medium tabular-nums">{formatDuration(stats[key])}</span>
+                </div>
             ))}
         </div>
     );
