@@ -45,10 +45,11 @@ const durationChartConfig = {
     p95: { label: 'p95', color: 'var(--color-chart-4)' },
 } satisfies ChartConfig;
 
-function formatDuration(ms: number | null): string {
-    if (ms === null) return '—';
+function formatDuration(us: number | null): string {
+    if (us === null) return '—';
+    const ms = us / 1000;
     if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
-    return `${ms.toFixed(0)}ms`;
+    return `${ms.toFixed(2)}ms`;
 }
 
 function formatBucketDatetime(bucket: string): string {
@@ -78,15 +79,15 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                             <p className="mt-1 font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
                         </div>
                         <div className="grid grid-cols-3 gap-x-4 text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
+                            <span className="text-muted-foreground flex items-center justify-end gap-1">
                                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['2xx'].color }} />
                                 2xx
                             </span>
-                            <span className="text-muted-foreground flex items-center gap-1">
+                            <span className="text-muted-foreground flex items-center justify-end gap-1">
                                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['4xx'].color }} />
                                 4xx
                             </span>
-                            <span className="text-muted-foreground flex items-center gap-1">
+                            <span className="text-muted-foreground flex items-center justify-end gap-1">
                                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['5xx'].color }} />
                                 5xx
                             </span>
@@ -120,33 +121,19 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     <div className="mb-4 flex items-start justify-between">
                         <div>
                             <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Duration</p>
-                            <p className="mt-1 text-3xl font-bold tabular-nums">{formatDuration(stats.avg)}</p>
-                            <p className="text-muted-foreground text-xs">avg response time</p>
+                            <p className="mt-1 font-bold tabular-nums">{formatDuration(stats.min)} – {formatDuration(stats.max)}</p>
                         </div>
-                        <div className="text-right text-sm space-y-1">
-                            <div>
-                                <span className="text-muted-foreground">p95 </span>
-                                <span className="font-medium">{formatDuration(stats.p95)}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted-foreground">min </span>
-                                <span className="font-medium">{formatDuration(stats.min)}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted-foreground">max </span>
-                                <span className="font-medium">{formatDuration(stats.max)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mb-4 flex gap-4 text-sm">
-                        <div className="flex items-center gap-1.5">
-                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: durationChartConfig.avg.color }} />
-                            <span className="text-muted-foreground">avg</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: durationChartConfig.p95.color }} />
-                            <span className="text-muted-foreground">p95</span>
+                        <div className="grid grid-cols-2 gap-x-4 text-sm">
+                            <span className="text-muted-foreground flex items-center justify-end gap-1">
+                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.avg.color }} />
+                                AVG
+                            </span>
+                            <span className="text-muted-foreground flex items-center justify-end gap-1">
+                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.p95.color }} />
+                                P95
+                            </span>
+                            <span className="font-medium tabular-nums text-right">{formatDuration(stats.avg)}</span>
+                            <span className="font-medium tabular-nums text-right">{formatDuration(stats.p95)}</span>
                         </div>
                     </div>
 
