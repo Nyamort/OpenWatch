@@ -30,27 +30,61 @@ class BuildRequestIndexData
             SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as `5xx`,
             CAST(MIN(duration) AS DOUBLE) as min,
             CAST(MAX(duration) AS DOUBLE) as max,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as p95
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg
         ')->first();
 
-        // Time-bucketed graph data
+        $totalCount = (int) ($stats->count ?? 0);
+        $globalP95 = null;
+
+        if ($totalCount > 0) {
+            $p95Offset = max(0, (int) ceil($totalCount * 0.95) - 1);
+            $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
+        }
+
+        // Time-bucketed graph data — p95 via window functions
         $bucketSeconds = $period->bucketSeconds;
-        $rawBuckets = (clone $base)->selectRaw('
-            FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(recorded_at) / ?) * ?) as bucket,
-            COUNT(*) as count,
-            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) as `2xx`,
-            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) as `4xx`,
-            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as `5xx`,
-            CAST(MIN(duration) AS DOUBLE) as min,
-            CAST(MAX(duration) AS DOUBLE) as max,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as p95
-        ', [$bucketSeconds, $bucketSeconds])
-            ->groupByRaw('bucket')
-            ->orderBy('bucket')
-            ->get()
-            ->keyBy('bucket');
+
+        $rawBuckets = DB::select('
+            SELECT
+                FROM_UNIXTIME(bucket_slot * ?) AS bucket,
+                COUNT(*) AS count,
+                SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
+                SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
+                SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
+                CAST(MIN(duration) AS DOUBLE) AS min,
+                CAST(MAX(duration) AS DOUBLE) AS max,
+                CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg,
+                CAST(
+                    MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END)
+                AS DOUBLE) AS p95
+            FROM (
+                SELECT
+                    status_code,
+                    duration,
+                    FLOOR(UNIX_TIMESTAMP(recorded_at) / ?) AS bucket_slot,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY FLOOR(UNIX_TIMESTAMP(recorded_at) / ?)
+                        ORDER BY duration
+                    ) AS row_num,
+                    COUNT(*) OVER (
+                        PARTITION BY FLOOR(UNIX_TIMESTAMP(recorded_at) / ?)
+                    ) AS bucket_count
+                FROM extraction_requests
+                WHERE organization_id = ?
+                  AND project_id = ?
+                  AND environment_id = ?
+                  AND recorded_at BETWEEN ? AND ?
+            ) AS ranked
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ', [
+            $bucketSeconds,
+            $bucketSeconds, $bucketSeconds, $bucketSeconds,
+            $ctx->organization->id, $ctx->project->id, $ctx->environment->id,
+            $period->start, $period->end,
+        ]);
+
+        $bucketMap = collect($rawBuckets)->keyBy('bucket');
 
         // Build complete bucket series with zeros for missing buckets
         $graph = [];
@@ -59,7 +93,7 @@ class BuildRequestIndexData
 
         while ($cursor->lte($end)) {
             $key = $cursor->format('Y-m-d H:i:s');
-            $row = $rawBuckets->get($key);
+            $row = $bucketMap->get($key);
             $graph[] = [
                 'bucket' => $key,
                 'count' => $row ? (int) $row->count : 0,
@@ -77,14 +111,14 @@ class BuildRequestIndexData
         return [
             'graph' => $graph,
             'stats' => [
-                'count' => (int) ($stats->count ?? 0),
+                'count' => $totalCount,
                 '2xx' => (int) ($stats->{'2xx'} ?? 0),
                 '4xx' => (int) ($stats->{'4xx'} ?? 0),
                 '5xx' => (int) ($stats->{'5xx'} ?? 0),
                 'min' => $stats->min ?? null,
                 'max' => $stats->max ?? null,
                 'avg' => $stats->avg ?? null,
-                'p95' => $stats->p95 ?? null,
+                'p95' => $globalP95 ? (float) $globalP95 : null,
             ],
         ];
     }
