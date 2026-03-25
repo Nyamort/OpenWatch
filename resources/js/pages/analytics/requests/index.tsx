@@ -54,6 +54,11 @@ function formatDuration(us: number | null): string {
     return `${ms.toFixed(2)}ms`;
 }
 
+function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
+    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
+    return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
+}
+
 export default function RequestsIndex({ graph, stats, period }: Props) {
     const requestStats = (
         <div className="flex gap-4 text-sm">
@@ -103,6 +108,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                             <YAxis hide />
                             <ChartTooltip
                                 position={tooltipPos}
+                                cursor={<BarCursor />}
                                 content={({ active, label, payload }) => (
                                     <AnalyticsTooltip
                                         active={active}
