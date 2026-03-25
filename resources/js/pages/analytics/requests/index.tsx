@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { ChartPanel } from '@/components/analytics/chart-panel';
 import AnalyticsLayout from '@/layouts/analytics-layout';
@@ -118,7 +118,17 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     lastBucket={graph[graph.length - 1]?.bucket}
                 >
                     {(legendContent) => (
-                        <LineChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <AreaChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="fillAvg" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={durationChartConfig.avg.color} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={durationChartConfig.avg.color} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="fillP95" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={durationChartConfig.p95.color} stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor={durationChartConfig.p95.color} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide />
@@ -131,9 +141,9 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                 }
                             />
                             <ChartLegend verticalAlign="top" content={legendContent} />
-                            <Line type="monotone" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} dot={false} connectNulls />
-                            <Line type="monotone" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} dot={false} connectNulls strokeDasharray="4 2" />
-                        </LineChart>
+                            <Area type="monotone" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false} connectNulls strokeDasharray="4 2" />
+                            <Area type="monotone" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={false} connectNulls />
+                        </AreaChart>
                     )}
                 </ChartPanel>
             </div>
