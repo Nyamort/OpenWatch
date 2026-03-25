@@ -36,7 +36,7 @@ interface Props {
 const breadcrumbs = [{ title: 'Requests', href: '#' }];
 
 const requestChartConfig = {
-    '2xx': { label: '2xx', color: 'var(--color-chart-2)' },
+    '2xx': { label: '1/2/3xx', color: 'var(--color-chart-2)' },
     '4xx': { label: '4xx', color: 'hsl(30 90% 55%)' },
     '5xx': { label: '5xx', color: 'hsl(0 72% 51%)' },
 } satisfies ChartConfig;
@@ -59,7 +59,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
                 <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
                     <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
-                    {key}
+                    {requestChartConfig[key].label}
                 </span>
             ))}
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
