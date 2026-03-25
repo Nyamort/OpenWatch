@@ -31,13 +31,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(
-            prepend: [
-                AssignRequestId::class,
-            ],
             append: [
                 HandleAppearance::class,
                 HandleInertiaRequests::class,
                 AddLinkHeadersForPreloadedAssets::class,
+            ],
+            prepend: [
+                AssignRequestId::class,
             ],
         );
 

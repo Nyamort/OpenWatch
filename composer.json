@@ -16,7 +16,8 @@
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
         "spatie/laravel-medialibrary": "^11.21",
-        "spatie/laravel-sluggable": "^3.8"
+        "spatie/laravel-sluggable": "^3.8",
+        "ext-zlib": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

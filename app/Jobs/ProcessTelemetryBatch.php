@@ -49,7 +49,7 @@ class ProcessTelemetryBatch implements ShouldQueue
                 $traceId = $record['trace_id'] ?? null;
                 $groupKey = $record['_group'] ?? null;
                 $executionId = $record['execution_id'] ?? null;
-                $recordedAt = $record['timestamp'];
+                $recordedAt = \Carbon\Carbon::createFromTimestamp($record['timestamp'])->toDateTimeString();
 
                 $telemetryRecord = TelemetryRecord::create([
                     'organization_id' => $organizationId,

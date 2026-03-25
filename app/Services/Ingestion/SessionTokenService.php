@@ -29,7 +29,7 @@ class SessionTokenService
             'token' => $token,
             'expires_in' => $ttl,
             'refresh_in' => $refreshIn,
-            'ingest_url' => config('ingest.url'),
+            'ingest_url' => route('api.ingest'),
         ];
     }
 

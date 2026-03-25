@@ -30,4 +30,4 @@ Route::get('health', function () {
 })->name('health');
 
 Route::post('agent-auth', [AgentAuthController::class, 'store'])->middleware('throttle:60,1');
-Route::post('ingest', [IngestController::class, 'store']);
+Route::post('ingest', [IngestController::class, 'store'])->name('api.ingest');
