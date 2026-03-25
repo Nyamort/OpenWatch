@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
-import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { ChartPanel } from '@/components/analytics/chart-panel';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 
 interface GraphBucket {
@@ -52,58 +53,32 @@ function formatDuration(us: number | null): string {
     return `${ms.toFixed(2)}ms`;
 }
 
-function formatBucketDatetime(bucket: string): string {
-    return new Date(bucket).toLocaleString([], {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-    });
-}
-
 export default function RequestsIndex({ graph, stats, period }: Props) {
-    const totalRequests = stats.count;
-
-    const requestLegend = () => (
-        <div className="mb-3 flex items-center justify-between text-sm">
-            <div>
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Requests</p>
-                <p className="mt-1 font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-x-4 text-sm">
-                {([['2xx', stats['2xx']], ['4xx', stats['4xx']], ['5xx', stats['5xx']]] as const).map(([key]) => (
-                    <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
-                        <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
-                        {key}
-                    </span>
-                ))}
-                {([['2xx', stats['2xx']], ['4xx', stats['4xx']], ['5xx', stats['5xx']]] as const).map(([key, value]) => (
-                    <span key={key} className="font-medium tabular-nums text-right">{value.toLocaleString()}</span>
-                ))}
-            </div>
+    const requestStats = (
+        <div className="grid grid-cols-3 gap-x-4 text-sm">
+            {(['2xx', '4xx', '5xx'] as const).map((key) => (
+                <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
+                    {key}
+                </span>
+            ))}
+            {(['2xx', '4xx', '5xx'] as const).map((key) => (
+                <span key={key} className="font-medium tabular-nums text-right">{stats[key].toLocaleString()}</span>
+            ))}
         </div>
     );
 
-    const durationLegend = () => (
-        <div className="mb-3 flex items-center justify-between text-sm">
-            <div>
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Duration</p>
-                <p className="mt-1 font-bold tabular-nums">{formatDuration(stats.min)} – {formatDuration(stats.max)}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 text-sm">
-                <span className="text-muted-foreground flex items-center justify-end gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.avg.color }} />
-                    AVG
+    const durationStats = (
+        <div className="grid grid-cols-2 gap-x-4 text-sm">
+            {(['avg', 'p95'] as const).map((key) => (
+                <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig[key].color }} />
+                    {key.toUpperCase()}
                 </span>
-                <span className="text-muted-foreground flex items-center justify-end gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.p95.color }} />
-                    P95
-                </span>
-                <span className="font-medium tabular-nums text-right">{formatDuration(stats.avg)}</span>
-                <span className="font-medium tabular-nums text-right">{formatDuration(stats.p95)}</span>
-            </div>
+            ))}
+            {(['avg', 'p95'] as const).map((key) => (
+                <span key={key} className="font-medium tabular-nums text-right">{formatDuration(stats[key])}</span>
+            ))}
         </div>
     );
 
@@ -112,31 +87,37 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
             <Head title="Requests" />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {/* Requests Panel */}
-                <div className="bg-card flex flex-col rounded-xl border p-5">
-                    <ChartContainer config={requestChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
+                <ChartPanel
+                    config={requestChartConfig}
+                    title="Requests"
+                    heroValue={stats.count.toLocaleString()}
+                    legendStats={requestStats}
+                    firstBucket={graph[0]?.bucket}
+                    lastBucket={graph[graph.length - 1]?.bucket}
+                >
+                    {(legendContent) => (
                         <BarChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide />
                             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                            <ChartLegend verticalAlign="top" content={requestLegend} />
+                            <ChartLegend verticalAlign="top" content={legendContent} />
                             <Bar dataKey="2xx" stackId="a" fill={requestChartConfig['2xx'].color} radius={0} />
                             <Bar dataKey="4xx" stackId="a" fill={requestChartConfig['4xx'].color} radius={0} />
                             <Bar dataKey="5xx" stackId="a" fill={requestChartConfig['5xx'].color} radius={[3, 3, 0, 0]} />
                         </BarChart>
-                    </ChartContainer>
-                    {graph.length > 0 && (
-                        <div className="text-muted-foreground mt-1 flex justify-between text-xs">
-                            <span>{formatBucketDatetime(graph[0].bucket)}</span>
-                            <span>{formatBucketDatetime(graph[graph.length - 1].bucket)}</span>
-                        </div>
                     )}
-                </div>
+                </ChartPanel>
 
-                {/* Duration Panel */}
-                <div className="bg-card flex flex-col rounded-xl border p-5">
-                    <ChartContainer config={durationChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
+                <ChartPanel
+                    config={durationChartConfig}
+                    title="Duration"
+                    heroValue={`${formatDuration(stats.min)} – ${formatDuration(stats.max)}`}
+                    legendStats={durationStats}
+                    firstBucket={graph[0]?.bucket}
+                    lastBucket={graph[graph.length - 1]?.bucket}
+                >
+                    {(legendContent) => (
                         <LineChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
@@ -149,33 +130,12 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                     />
                                 }
                             />
-                            <ChartLegend verticalAlign="top" content={durationLegend} />
-                            <Line
-                                type="monotone"
-                                dataKey="avg"
-                                stroke={durationChartConfig.avg.color}
-                                strokeWidth={2}
-                                dot={false}
-                                connectNulls
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="p95"
-                                stroke={durationChartConfig.p95.color}
-                                strokeWidth={2}
-                                dot={false}
-                                connectNulls
-                                strokeDasharray="4 2"
-                            />
+                            <ChartLegend verticalAlign="top" content={legendContent} />
+                            <Line type="monotone" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} dot={false} connectNulls />
+                            <Line type="monotone" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} dot={false} connectNulls strokeDasharray="4 2" />
                         </LineChart>
-                    </ChartContainer>
-                    {graph.length > 0 && (
-                        <div className="text-muted-foreground mt-1 flex justify-between text-xs">
-                            <span>{formatBucketDatetime(graph[0].bucket)}</span>
-                            <span>{formatBucketDatetime(graph[graph.length - 1].bucket)}</span>
-                        </div>
                     )}
-                </div>
+                </ChartPanel>
             </div>
         </AnalyticsLayout>
     );
