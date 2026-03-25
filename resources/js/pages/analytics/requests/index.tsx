@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 
 interface GraphBucket {
@@ -41,8 +41,8 @@ const requestChartConfig = {
 } satisfies ChartConfig;
 
 const durationChartConfig = {
-    avg: { label: 'Avg', color: 'var(--color-chart-1)' },
-    p95: { label: 'p95', color: 'var(--color-chart-4)' },
+    avg: { label: 'AVG', color: 'var(--color-chart-1)' },
+    p95: { label: 'P95', color: 'var(--color-chart-4)' },
 } satisfies ChartConfig;
 
 function formatDuration(us: number | null): string {
@@ -66,6 +66,47 @@ function formatBucketDatetime(bucket: string): string {
 export default function RequestsIndex({ graph, stats, period }: Props) {
     const totalRequests = stats.count;
 
+    const requestLegend = () => (
+        <div className="mb-3 flex items-center justify-between text-sm">
+            <div>
+                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Requests</p>
+                <p className="mt-1 font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-x-4 text-sm">
+                {([['2xx', stats['2xx']], ['4xx', stats['4xx']], ['5xx', stats['5xx']]] as const).map(([key]) => (
+                    <span key={key} className="text-muted-foreground flex items-center justify-end gap-1">
+                        <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig[key].color }} />
+                        {key}
+                    </span>
+                ))}
+                {([['2xx', stats['2xx']], ['4xx', stats['4xx']], ['5xx', stats['5xx']]] as const).map(([key, value]) => (
+                    <span key={key} className="font-medium tabular-nums text-right">{value.toLocaleString()}</span>
+                ))}
+            </div>
+        </div>
+    );
+
+    const durationLegend = () => (
+        <div className="mb-3 flex items-center justify-between text-sm">
+            <div>
+                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Duration</p>
+                <p className="mt-1 font-bold tabular-nums">{formatDuration(stats.min)} – {formatDuration(stats.max)}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 text-sm">
+                <span className="text-muted-foreground flex items-center justify-end gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.avg.color }} />
+                    AVG
+                </span>
+                <span className="text-muted-foreground flex items-center justify-end gap-1">
+                    <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.p95.color }} />
+                    P95
+                </span>
+                <span className="font-medium tabular-nums text-right">{formatDuration(stats.avg)}</span>
+                <span className="font-medium tabular-nums text-right">{formatDuration(stats.p95)}</span>
+            </div>
+        </div>
+    );
+
     return (
         <AnalyticsLayout title="Requests" period={period} breadcrumbs={breadcrumbs}>
             <Head title="Requests" />
@@ -73,36 +114,13 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* Requests Panel */}
                 <div className="bg-card flex flex-col rounded-xl border p-5">
-                    <div className="mb-4 flex items-start justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Requests</p>
-                            <p className="mt-1 font-bold tabular-nums">{totalRequests.toLocaleString()}</p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-x-4 text-sm">
-                            <span className="text-muted-foreground flex items-center justify-end gap-1">
-                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['2xx'].color }} />
-                                2xx
-                            </span>
-                            <span className="text-muted-foreground flex items-center justify-end gap-1">
-                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['4xx'].color }} />
-                                4xx
-                            </span>
-                            <span className="text-muted-foreground flex items-center justify-end gap-1">
-                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: requestChartConfig['5xx'].color }} />
-                                5xx
-                            </span>
-                            <span className="font-medium tabular-nums text-right">{stats['2xx'].toLocaleString()}</span>
-                            <span className="font-medium tabular-nums text-right">{stats['4xx'].toLocaleString()}</span>
-                            <span className="font-medium tabular-nums text-right">{stats['5xx'].toLocaleString()}</span>
-                        </div>
-                    </div>
-
                     <ChartContainer config={requestChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
                         <BarChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide />
                             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                            <ChartLegend verticalAlign="top" content={requestLegend} />
                             <Bar dataKey="2xx" stackId="a" fill={requestChartConfig['2xx'].color} radius={0} />
                             <Bar dataKey="4xx" stackId="a" fill={requestChartConfig['4xx'].color} radius={0} />
                             <Bar dataKey="5xx" stackId="a" fill={requestChartConfig['5xx'].color} radius={[3, 3, 0, 0]} />
@@ -118,25 +136,6 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
 
                 {/* Duration Panel */}
                 <div className="bg-card flex flex-col rounded-xl border p-5">
-                    <div className="mb-4 flex items-start justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Duration</p>
-                            <p className="mt-1 font-bold tabular-nums">{formatDuration(stats.min)} – {formatDuration(stats.max)}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 text-sm">
-                            <span className="text-muted-foreground flex items-center justify-end gap-1">
-                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.avg.color }} />
-                                AVG
-                            </span>
-                            <span className="text-muted-foreground flex items-center justify-end gap-1">
-                                <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: durationChartConfig.p95.color }} />
-                                P95
-                            </span>
-                            <span className="font-medium tabular-nums text-right">{formatDuration(stats.avg)}</span>
-                            <span className="font-medium tabular-nums text-right">{formatDuration(stats.p95)}</span>
-                        </div>
-                    </div>
-
                     <ChartContainer config={durationChartConfig} className="min-h-0 w-full flex-1 max-h-[270px]">
                         <LineChart data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
@@ -150,6 +149,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                     />
                                 }
                             />
+                            <ChartLegend verticalAlign="top" content={durationLegend} />
                             <Line
                                 type="monotone"
                                 dataKey="avg"
