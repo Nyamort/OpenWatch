@@ -141,8 +141,8 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                 }
                             />
                             <ChartLegend verticalAlign="top" content={legendContent} />
-                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false} connectNulls strokeDasharray="4 2" />
-                            <Area type="linear" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={false} connectNulls />
+                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false} strokeDasharray="4 2" />
+                            <Area type="linear" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={false} />
                         </AreaChart>
                     )}
                 </ChartPanel>
