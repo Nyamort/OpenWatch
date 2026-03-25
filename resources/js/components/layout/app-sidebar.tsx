@@ -1,4 +1,5 @@
-import { LayoutGrid } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { LayoutGrid, Network } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
 import { NavUser } from '@/components/layout/nav-user';
@@ -11,10 +12,18 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as requestsIndex } from '@/routes/analytics/requests';
 import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
     const [wizardOpen, setWizardOpen] = useState(false);
+    const { activeOrganization, activeProject, activeEnvironment } = usePage().props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const hasContext = !!(activeOrganization && activeProject && activeEnvironment);
 
     const mainNavItems: NavItem[] = [
         {
@@ -22,6 +31,17 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        ...(hasContext ? [
+            {
+                title: 'Requests',
+                href: requestsIndex({
+                    organization: activeOrganization!.slug,
+                    project: activeProject!.slug,
+                    environment: activeEnvironment!.slug,
+                }),
+                icon: Network,
+            },
+        ] : []),
     ];
 
     return (
