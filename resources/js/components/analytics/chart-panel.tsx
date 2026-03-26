@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { ReactNode, MouseEvent } from 'react';
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
 
-interface TooltipPosition {
+export interface TooltipPosition {
     x: number;
     y: number;
 }
@@ -14,6 +14,8 @@ interface ChartPanelProps {
     legendStats: ReactNode;
     firstBucket?: string;
     lastBucket?: string;
+    tooltipPos?: TooltipPosition;
+    onTooltipMove?: (pos: TooltipPosition | undefined) => void;
     children: (legendContent: () => ReactNode, tooltipPos: TooltipPosition | undefined) => ReactNode;
 }
 
@@ -31,17 +33,16 @@ function formatBucketDatetime(bucket: string): string {
 const TOOLTIP_WIDTH = 288; // min-w-72
 const OFFSET = 16;
 
-export function ChartPanel({ config, title, heroValue, legendStats, firstBucket, lastBucket, children }: ChartPanelProps) {
-    const [tooltipPos, setTooltipPos] = useState<TooltipPosition | undefined>(undefined);
+export function ChartPanel({ config, title, heroValue, legendStats, firstBucket, lastBucket, tooltipPos, onTooltipMove, children }: ChartPanelProps) {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-        if (!wrapperRef.current) return;
+        if (!wrapperRef.current || !onTooltipMove) return;
         const rect = wrapperRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const goLeft = x + TOOLTIP_WIDTH + OFFSET > rect.width;
-        setTooltipPos({
+        onTooltipMove({
             x: goLeft ? x - TOOLTIP_WIDTH - OFFSET : x + OFFSET,
             y: y + OFFSET,
         });
@@ -59,7 +60,7 @@ export function ChartPanel({ config, title, heroValue, legendStats, firstBucket,
 
     return (
         <div className="bg-surface flex flex-col rounded-xl border p-5">
-            <div ref={wrapperRef} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltipPos(undefined)}>
+            <div ref={wrapperRef} onMouseMove={handleMouseMove} onMouseLeave={() => onTooltipMove?.(undefined)}>
                 <ChartContainer config={config} className="min-h-0 w-full flex-1 max-h-[270px]">
                     {children(legendContent, tooltipPos) as React.ReactElement}
                 </ChartContainer>
