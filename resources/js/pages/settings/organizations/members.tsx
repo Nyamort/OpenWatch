@@ -268,9 +268,8 @@ export default function OrganizationMembers({
 
                                                 {!isSelf && (
                                                     <Button
-                                                        variant="ghost"
-                                                        size="sm"
                                                         variant="destructive"
+                                                        size="sm"
                                                         onClick={() => removeMember(member.id)}
                                                     >
                                                         Remove
@@ -315,9 +314,8 @@ export default function OrganizationMembers({
                                                 <Badge variant="outline">{invitation.role.name}</Badge>
                                             )}
                                             <Button
-                                                variant="ghost"
-                                                size="sm"
                                                 variant="destructive"
+                                                size="sm"
                                                 onClick={() => revokeInvitation(invitation.id)}
                                             >
                                                 Revoke
