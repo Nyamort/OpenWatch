@@ -71,9 +71,9 @@ class BuildRequestIndexData
             'graph' => $graph,
             'stats' => [
                 'count' => $totalCount,
-                '2xx' => $stats?->{'2xx'},
-                '4xx' => $stats?->{'4xx'},
-                '5xx' => $stats?->{'5xx'},
+                '2xx' => (int) ($stats?->{'2xx'} ?? 0),
+                '4xx' => (int) ($stats?->{'4xx'} ?? 0),
+                '5xx' => (int) ($stats?->{'5xx'} ?? 0),
                 'min' => $stats->min ?? null,
                 'max' => $stats->max ?? null,
                 'avg' => $stats->avg ?? null,
