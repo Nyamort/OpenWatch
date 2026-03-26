@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
  * (i.e. points with no non-null neighbour on either side). Useful for area
  * charts where gaps in the data would otherwise leave isolated values invisible.
  */
-export function isolatedDot<T extends Record<string, unknown>>(data: T[], key: keyof T, color: string) {
+export function isolatedDot<T>(data: T[], key: keyof T, color: string) {
     return (props: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
         const { cx, cy, index, value } = props;
         if (value == null || cx == null || cy == null || index == null) return null;
