@@ -45,10 +45,8 @@ export default function Profile({
 
                     <Form
                         {...ProfileController.update.form()}
-                        options={{
-                            preserveScroll: true,
-                            onSuccess: () => toast.success('Profile updated'),
-                        }}
+                        options={{ preserveScroll: true }}
+                        onSuccess={() => toast.success('Profile updated')}
                         className="space-y-6"
                     >
                         {({ processing, errors }) => (

@@ -39,10 +39,8 @@ export default function Password() {
 
                     <Form
                         {...PasswordController.update.form()}
-                        options={{
-                            preserveScroll: true,
-                            onSuccess: () => toast.success('Password updated'),
-                        }}
+                        options={{ preserveScroll: true }}
+                        onSuccess={() => toast.success('Password updated')}
                         resetOnError={[
                             'password',
                             'password_confirmation',
