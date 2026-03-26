@@ -38,7 +38,7 @@ function orgNavItems(slug: string): NavItem[] {
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentUrl } = useCurrentUrl();
     const { url, props } = usePage();
-    const { organizations, activeOrganization } = props as {
+    const { organizations, activeOrganization } = props as unknown as {
         organizations: { id: number; name: string; slug: string }[];
         activeOrganization?: { id: number; name: string; slug: string } | null;
     };
