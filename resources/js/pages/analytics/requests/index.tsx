@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartPanel } from '@/components/analytics/chart-panel';
+import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import AnalyticsLayout from '@/layouts/analytics-layout';
@@ -176,8 +176,8 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                 )}
                             />
                             <ChartLegend verticalAlign="top" content={legendContent} />
-                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false}  />
-                            <Area type="linear" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={false} />
+                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={isolatedDot(graph, 'p95', durationChartConfig.p95.color)} />
+                            <Area type="linear" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={isolatedDot(graph, 'avg', durationChartConfig.avg.color)} />
                         </AreaChart>
                     )}
                 </ChartPanel>

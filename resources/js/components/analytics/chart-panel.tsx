@@ -1,5 +1,21 @@
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
+
+/**
+ * Returns a Recharts dot renderer that only draws a dot for isolated points
+ * (i.e. points with no non-null neighbour on either side). Useful for area
+ * charts where gaps in the data would otherwise leave isolated values invisible.
+ */
+export function isolatedDot<T extends Record<string, unknown>>(data: T[], key: keyof T, color: string) {
+    return (props: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
+        const { cx, cy, index, value } = props;
+        if (value == null || cx == null || cy == null || index == null) return null;
+        const prev = data[index - 1]?.[key];
+        const next = data[index + 1]?.[key];
+        if (prev != null || next != null) return null;
+        return <circle cx={cx} cy={cy} r={3} fill={color} />;
+    };
+}
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
 
 interface ChartPanelProps {
