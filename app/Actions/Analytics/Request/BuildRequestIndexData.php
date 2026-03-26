@@ -46,7 +46,7 @@ class BuildRequestIndexData
 
         $rawBuckets = DB::select('
             SELECT
-                FROM_UNIXTIME(bucket_slot * ?) AS bucket,
+                DATE_ADD(\'1970-01-01\', INTERVAL (bucket_slot * ?) SECOND) AS bucket,
                 COUNT(*) AS count,
                 SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
                 SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
@@ -86,35 +86,35 @@ class BuildRequestIndexData
 
         $bucketMap = collect($rawBuckets)->keyBy('bucket');
 
-        // Build complete bucket series with zeros for missing buckets
+        // Build complete bucket series with zeros for missing buckets.
+        // Use UTC-aligned unix slots to match DATE_ADD('1970-01-01', ...) in SQL.
         $graph = [];
-        $cursor = Carbon::parse($period->start)->floorSeconds($bucketSeconds);
-        $end = Carbon::parse($period->end);
+        $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
+        $endSlot = (int) floor(Carbon::parse($period->end)->utc()->timestamp / $bucketSeconds);
 
-        while ($cursor->lte($end)) {
-            $key = $cursor->format('Y-m-d H:i:s');
+        for ($slot = $startSlot; $slot <= $endSlot; $slot++) {
+            $key = Carbon::createFromTimestampUTC($slot * $bucketSeconds)->format('Y-m-d H:i:s');
             $row = $bucketMap->get($key);
             $graph[] = [
                 'bucket' => $key,
-                'count' => $row ? (int) $row->count : 0,
-                '2xx' => $row ? (int) $row->{'2xx'} : 0,
-                '4xx' => $row ? (int) $row->{'4xx'} : 0,
-                '5xx' => $row ? (int) $row->{'5xx'} : 0,
-                'min' => $row ? $row->min : null,
-                'max' => $row ? $row->max : null,
-                'avg' => $row ? $row->avg : null,
-                'p95' => $row ? $row->p95 : null,
+                'count' => $row?->count,
+                '2xx' => $row?->{'2xx'},
+                '4xx' => $row?->{'4xx'},
+                '5xx' => $row?->{'5xx'},
+                'min' => $row?->min,
+                'max' => $row?->max,
+                'avg' => $row?->avg,
+                'p95' => $row?->p95,
             ];
-            $cursor->addSeconds($bucketSeconds);
         }
 
         return [
             'graph' => $graph,
             'stats' => [
                 'count' => $totalCount,
-                '2xx' => (int) ($stats->{'2xx'} ?? 0),
-                '4xx' => (int) ($stats->{'4xx'} ?? 0),
-                '5xx' => (int) ($stats->{'5xx'} ?? 0),
+                '2xx' => $stats?->{'2xx'},
+                '4xx' => $stats?->{'4xx'},
+                '5xx' => $stats?->{'5xx'},
                 'min' => $stats->min ?? null,
                 'max' => $stats->max ?? null,
                 'avg' => $stats->avg ?? null,
