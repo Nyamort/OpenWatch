@@ -38,14 +38,14 @@ interface Props {
 const breadcrumbs = [{ title: 'Requests', href: '#' }];
 
 const requestChartConfig = {
-    '2xx': { label: '1/2/3xx', color: 'var(--color-chart-2)' },
+    '2xx': { label: '1/2/3xx', color: 'oklch(0.50 0 0)' },
     '4xx': { label: '4xx', color: 'hsl(30 90% 55%)' },
     '5xx': { label: '5xx', color: 'hsl(0 72% 51%)' },
 } satisfies ChartConfig;
 
 const durationChartConfig = {
-    avg: { label: 'AVG', color: 'var(--color-chart-1)' },
-    p95: { label: 'P95', color: 'var(--color-chart-4)' },
+    avg: { label: 'AVG', color: 'oklch(0.50 0 0)' },
+    p95: { label: 'P95', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
 
 function formatDuration(us: number | null): string {
@@ -166,7 +166,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                             </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
-                            <YAxis hide />
+                            <YAxis hide domain={[0, 'auto']} />
                             <ChartTooltip
                                 position={tooltipPos}
                                 content={({ active, label, payload }) => (
@@ -181,7 +181,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                                 )}
                             />
                             <ChartLegend verticalAlign="top" content={legendContent} />
-                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false} strokeDasharray="4 2" />
+                            <Area type="linear" dataKey="p95" stroke={durationChartConfig.p95.color} strokeWidth={2} fill="url(#fillP95)" dot={false}  />
                             <Area type="linear" dataKey="avg" stroke={durationChartConfig.avg.color} strokeWidth={2} fill="url(#fillAvg)" dot={false} />
                         </AreaChart>
                     )}
