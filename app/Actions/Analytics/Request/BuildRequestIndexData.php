@@ -5,6 +5,8 @@ namespace App\Actions\Analytics\Request;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
 use Carbon\Carbon;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BuildRequestIndexData
@@ -41,66 +43,23 @@ class BuildRequestIndexData
             $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
         }
 
-        // Time-bucketed graph data — p95 via window functions
+        // Time-bucketed graph data
         $bucketSeconds = $period->bucketSeconds;
+        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
+        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
 
-        $rawBuckets = DB::select('
-            SELECT
-                DATE_ADD(\'1970-01-01\', INTERVAL (bucket_slot * ?) SECOND) AS bucket,
-                COUNT(*) AS count,
-                SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
-                SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
-                SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
-                CAST(MIN(duration) AS DOUBLE) AS min,
-                CAST(MAX(duration) AS DOUBLE) AS max,
-                CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg,
-                CAST(
-                    MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END)
-                AS DOUBLE) AS p95
-            FROM (
-                SELECT
-                    status_code,
-                    duration,
-                    FLOOR(UNIX_TIMESTAMP(recorded_at) / ?) AS bucket_slot,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY FLOOR(UNIX_TIMESTAMP(recorded_at) / ?)
-                        ORDER BY duration
-                    ) AS row_num,
-                    COUNT(*) OVER (
-                        PARTITION BY FLOOR(UNIX_TIMESTAMP(recorded_at) / ?)
-                    ) AS bucket_count
-                FROM extraction_requests
-                WHERE organization_id = ?
-                  AND project_id = ?
-                  AND environment_id = ?
-                  AND recorded_at BETWEEN ? AND ?
-            ) AS ranked
-            GROUP BY bucket_slot
-            ORDER BY bucket_slot
-        ', [
-            $bucketSeconds,
-            $bucketSeconds, $bucketSeconds, $bucketSeconds,
-            $ctx->organization->id, $ctx->project->id, $ctx->environment->id,
-            $period->start, $period->end,
-        ]);
-
-        $bucketMap = collect($rawBuckets)->keyBy('bucket');
-
-        // Build complete bucket series with zeros for missing buckets.
-        // Use UTC-aligned unix slots to match DATE_ADD('1970-01-01', ...) in SQL.
         $graph = [];
         $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
         $endSlot = (int) floor(Carbon::parse($period->end)->utc()->timestamp / $bucketSeconds);
 
         for ($slot = $startSlot; $slot <= $endSlot; $slot++) {
-            $key = Carbon::createFromTimestampUTC($slot * $bucketSeconds)->format('Y-m-d H:i:s');
-            $row = $bucketMap->get($key);
+            $row = $bucketMap->get($slot);
             $graph[] = [
-                'bucket' => $key,
-                'count' => $row?->count,
-                '2xx' => $row?->{'2xx'},
-                '4xx' => $row?->{'4xx'},
-                '5xx' => $row?->{'5xx'},
+                'bucket' => Carbon::createFromTimestampUTC($slot * $bucketSeconds)->format('Y-m-d H:i:s'),
+                'count' => (int) ($row?->count ?? 0),
+                '2xx' => (int) ($row?->{'2xx'} ?? 0),
+                '4xx' => (int) ($row?->{'4xx'} ?? 0),
+                '5xx' => (int) ($row?->{'5xx'} ?? 0),
                 'min' => $row?->min,
                 'max' => $row?->max,
                 'avg' => $row?->avg,
@@ -121,5 +80,61 @@ class BuildRequestIndexData
                 'p95' => $globalP95 ? (float) $globalP95 : null,
             ],
         ];
+    }
+
+    /**
+     * Driver-aware SQL expression for the integer bucket slot from recorded_at.
+     */
+    private function bucketSlotExpression(int $bucketSeconds): string
+    {
+        $epoch = match (DB::getDriverName()) {
+            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
+            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
+            default => 'UNIX_TIMESTAMP(recorded_at)',
+        };
+
+        return "FLOOR({$epoch} / {$bucketSeconds})";
+    }
+
+    /**
+     * Fetch per-bucket aggregates.
+     * Uses window functions for p95 on MySQL/PostgreSQL; returns NULL on SQLite.
+     */
+    private function fetchBuckets(Builder $base, string $slotExpr): Collection
+    {
+        $aggregates = '
+            COUNT(*) AS count,
+            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
+            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
+            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
+            CAST(MIN(duration) AS DOUBLE) AS min,
+            CAST(MAX(duration) AS DOUBLE) AS max,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
+        ';
+
+        // SQLite does not support window functions (tests only) — p95 per bucket is skipped
+        if (DB::getDriverName() === 'sqlite') {
+            return (clone $base)
+                ->selectRaw("{$slotExpr} AS bucket_slot, {$aggregates}, NULL AS p95")
+                ->groupByRaw($slotExpr)
+                ->orderByRaw($slotExpr)
+                ->get();
+        }
+
+        // MySQL & PostgreSQL: compute p95 per bucket via window functions in a subquery
+        $inner = (clone $base)->select([
+            'status_code',
+            'duration',
+            DB::raw("{$slotExpr} AS bucket_slot"),
+            DB::raw("ROW_NUMBER() OVER (PARTITION BY {$slotExpr} ORDER BY duration) AS row_num"),
+            DB::raw("COUNT(*) OVER (PARTITION BY {$slotExpr}) AS bucket_count"),
+        ]);
+
+        return DB::query()
+            ->fromSub($inner, 'ranked')
+            ->selectRaw("bucket_slot, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END) AS DOUBLE) AS p95")
+            ->groupBy('bucket_slot')
+            ->orderBy('bucket_slot')
+            ->get();
     }
 }
