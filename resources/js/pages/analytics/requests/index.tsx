@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartPanel, type TooltipPosition } from '@/components/analytics/chart-panel';
+import { ChartPanel } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import AnalyticsLayout from '@/layouts/analytics-layout';
@@ -61,8 +60,6 @@ function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: nu
 }
 
 export default function RequestsIndex({ graph, stats, period }: Props) {
-    const [tooltipPos, setTooltipPos] = useState<TooltipPosition | undefined>(undefined);
-
     const requestStats = (
         <div className="flex gap-4 text-sm">
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
@@ -103,17 +100,16 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     legendStats={requestStats}
                     firstBucket={graph[0]?.bucket}
                     lastBucket={graph[graph.length - 1]?.bucket}
-                    tooltipPos={tooltipPos}
-                    onTooltipMove={setTooltipPos}
                 >
-                    {(legendContent, tooltipPos) => (
+                    {(legendContent) => (
                         <BarChart syncId="requests" data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide />
                             <ChartTooltip
-                                position={tooltipPos}
+                                isAnimationActive={false}
                                 cursor={<BarCursor />}
+                                allowEscapeViewBox={{ x: false, y: true }}
                                 content={({ active, label, payload }) => (
                                     <AnalyticsTooltip
                                         active={active}
@@ -149,10 +145,8 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                     legendStats={durationStats}
                     firstBucket={graph[0]?.bucket}
                     lastBucket={graph[graph.length - 1]?.bucket}
-                    tooltipPos={tooltipPos}
-                    onTooltipMove={setTooltipPos}
                 >
-                    {(legendContent, tooltipPos) => (
+                    {(legendContent) => (
                         <AreaChart syncId="requests" data={graph} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="fillAvg" x1="0" y1="0" x2="0" y2="1">
@@ -168,7 +162,8 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                             <XAxis dataKey="bucket" hide />
                             <YAxis hide domain={[0, 'auto']} />
                             <ChartTooltip
-                                position={tooltipPos}
+                                isAnimationActive={false}
+                                allowEscapeViewBox={{ x: false, y: true }}
                                 content={({ active, label, payload }) => (
                                     <AnalyticsTooltip
                                         active={active}
