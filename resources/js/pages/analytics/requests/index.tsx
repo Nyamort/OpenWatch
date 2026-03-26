@@ -140,7 +140,7 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                 <ChartPanel
                     config={durationChartConfig}
                     title="Duration"
-                    heroValue={`${formatDuration(stats.min)} – ${formatDuration(stats.max)}`}
+                    heroValue={stats.min !== null && stats.max !== null ? `${formatDuration(stats.min)} – ${formatDuration(stats.max)}` : '—'}
                     legendStats={durationStats}
                     firstBucket={graph[0]?.bucket}
                     lastBucket={graph[graph.length - 1]?.bucket}
