@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight, TriangleAlert } from 'lucide-react';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { PathRow, SortDir, SortKey } from '../types';
@@ -110,8 +110,11 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
                             <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
                                 {row['2xx'].toLocaleString()}
                             </TableCell>
-                            <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : ''}`}>
-                                {row['4xx'].toLocaleString()}
+                            <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : 'text-orange-500'}`}>
+                                <div className="flex items-center justify-end gap-1">
+                                    {row['4xx'] > 0 && <TriangleAlert className="size-3 shrink-0" />}
+                                    {row['4xx'].toLocaleString()}
+                                </div>
                             </TableCell>
                             <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['5xx'] === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
                                 {row['5xx'].toLocaleString()}
