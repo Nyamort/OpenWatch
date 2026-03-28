@@ -19,6 +19,12 @@ interface RequestPathsTableProps {
 export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableProps) {
     const { url } = usePage();
 
+    function colClass(key: SortKey, align: 'left' | 'right' = 'left') {
+        const active = sort === key ? 'text-foreground' : 'text-muted-foreground';
+        const base = 'flex cursor-pointer items-center gap-1 hover:text-foreground';
+        return align === 'right' ? `${base} w-full justify-end ${active}` : `${base} ${active}`;
+    }
+
     function handleSort(key: SortKey) {
         const urlObj = new URL(url, window.location.origin);
         const newDir: SortDir = sort === key && direction === 'desc' ? 'asc' : 'desc';
@@ -32,42 +38,42 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
             <TableHeader className="[&_tr]:border-0">
                 <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
                     <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('method')} className="flex cursor-pointer items-center gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('method')} className={colClass('method')}>
                             Method <SortIcon column="method" sort={sort} direction={direction} />
                         </button>
                     </TableHead>
                     <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('path')} className="flex cursor-pointer items-center gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('path')} className={colClass('path')}>
                             Path <SortIcon column="path" sort={sort} direction={direction} />
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('2xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('2xx')} className={colClass('2xx', 'right')}>
                             <SortIcon column="2xx" sort={sort} direction={direction} /> 1/2/3xx
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('4xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('4xx')} className={colClass('4xx', 'right')}>
                             <SortIcon column="4xx" sort={sort} direction={direction} /> 4xx
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('5xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('5xx')} className={colClass('5xx', 'right')}>
                             <SortIcon column="5xx" sort={sort} direction={direction} /> 5xx
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('total')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('total')} className={colClass('total', 'right')}>
                             <SortIcon column="total" sort={sort} direction={direction} /> Total
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('avg')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('avg')} className={colClass('avg', 'right')}>
                             <SortIcon column="avg" sort={sort} direction={direction} /> AVG
                         </button>
                     </TableHead>
                     <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('p95')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                        <button onClick={() => handleSort('p95')} className={colClass('p95', 'right')}>
                             <SortIcon column="p95" sort={sort} direction={direction} /> P95
                         </button>
                     </TableHead>

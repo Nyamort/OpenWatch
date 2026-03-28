@@ -25,7 +25,7 @@ class RequestController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $sort = (string) $request->query('sort', 'total');
+        $sort = (string) $request->query('sort', 'path');
         $direction = (string) $request->query('direction', 'desc');
 
         $data = $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction);
