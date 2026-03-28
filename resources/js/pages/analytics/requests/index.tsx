@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { ArrowUpRight, Globe, PanelRight } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
@@ -71,14 +72,6 @@ function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: nu
     if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
     return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
 }
-
-const METHOD_COLORS: Record<string, string> = {
-    GET: 'text-sky-500',
-    POST: 'text-green-500',
-    PUT: 'text-amber-500',
-    PATCH: 'text-orange-500',
-    DELETE: 'text-red-500',
-};
 
 export default function RequestsIndex({ graph, stats, paths, period }: Props) {
     const requestStats = (
@@ -203,58 +196,81 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                     )}
                 </ChartPanel>
             </div>
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-20">Method</TableHead>
-                            <TableHead>Path</TableHead>
-                            <TableHead className="text-right">1/2/3xx</TableHead>
-                            <TableHead className="text-right">4xx</TableHead>
-                            <TableHead className="text-right">5xx</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="text-right">AVG</TableHead>
-                            <TableHead className="text-right">P95</TableHead>
-                            <TableHead className="w-10" />
+            <Table className="border-separate border-spacing-y-1.5">
+                <TableHeader className="[&_tr]:border-0">
+                    <TableRow className="border-0 hover:bg-transparent">
+                        <TableHead className="h-8 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">Method</TableHead>
+                        <TableHead className="h-8 px-4 text-xs font-medium uppercase tracking-wide">Path</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">1/2/3xx</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">4xx</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">5xx</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">Total</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">AVG</TableHead>
+                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">P95</TableHead>
+                        <TableHead className="h-8 w-px pr-5" />
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {paths.length === 0 ? (
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
+                                No requests recorded for this period.
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {paths.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={9} className="text-muted-foreground py-12 text-center text-sm">
-                                    No requests recorded for this period.
+                    ) : (
+                        paths.map((row, i) => (
+                            <TableRow
+                                key={i}
+                                className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
+                            >
+                                <TableCell className="h-11 w-px whitespace-nowrap pl-5 pr-4">
+                                    <span className="font-mono text-xs font-semibold text-muted-foreground">
+                                        {row.methods.length === 0 ? 'ANY' : row.methods.join(' | ')}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="h-11 overflow-hidden px-4">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground" />
+                                        <span className="truncate font-mono text-sm">
+                                            {row.path ?? 'Unmatched Route'}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {row['2xx'].toLocaleString()}
+                                </TableCell>
+                                <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : ''}`}>
+                                    {row['4xx'].toLocaleString()}
+                                </TableCell>
+                                <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['5xx'] === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
+                                    {row['5xx'].toLocaleString()}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
+                                    {row.total.toLocaleString()}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {formatDuration(row.avg)}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {formatDuration(row.p95)}
+                                </TableCell>
+                                <TableCell className="h-11 pr-5">
+                                    <div className="flex items-center justify-end">
+                                        <div className="flex items-center rounded-sm border border-border/50 bg-muted/30 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100">
+                                            <button className="flex size-6 items-center justify-center hover:text-foreground">
+                                                <PanelRight className="size-3" />
+                                            </button>
+                                            <button className="flex size-6 items-center justify-center hover:text-foreground">
+                                                <ArrowUpRight className="size-4" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </TableCell>
                             </TableRow>
-                        ) : (
-                            paths.map((row, i) => (
-                                <TableRow key={i}>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {row.methods.length === 0 ? (
-                                                <span className="text-muted-foreground font-mono text-xs font-semibold">ANY</span>
-                                            ) : row.methods.map((m) => (
-                                                <span key={m} className={`font-mono text-xs font-semibold ${METHOD_COLORS[m] ?? 'text-muted-foreground'}`}>
-                                                    {m}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-mono text-sm">
-                                        {row.path || <span>Unmatched Route</span>}
-                                    </TableCell>
-                                    <TableCell className="text-right tabular-nums">{row['2xx'].toLocaleString()}</TableCell>
-                                    <TableCell className="text-right tabular-nums">{row['4xx'].toLocaleString()}</TableCell>
-                                    <TableCell className="text-right tabular-nums">{row['5xx'].toLocaleString()}</TableCell>
-                                    <TableCell className="text-right tabular-nums font-medium">{row.total.toLocaleString()}</TableCell>
-                                    <TableCell className="text-right tabular-nums">{formatDuration(row.avg)}</TableCell>
-                                    <TableCell className="text-right tabular-nums">{formatDuration(row.p95)}</TableCell>
-                                    <TableCell />
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
         </AnalyticsLayout>
     );
 }
