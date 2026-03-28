@@ -27,8 +27,9 @@ class RequestController extends AnalyticsController
 
         $sort = (string) $request->query('sort', 'path');
         $direction = (string) $request->query('direction', 'desc');
+        $search = (string) $request->query('search', '');
 
-        $data = $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction);
+        $data = $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction, search: $search);
 
         return Inertia::render('analytics/requests/index', [
             'graph' => $data['graph'],
@@ -37,6 +38,7 @@ class RequestController extends AnalyticsController
             'period' => $request->query('period', '24h'),
             'sort' => $sort,
             'direction' => $direction,
+            'search' => $search,
         ]);
     }
 

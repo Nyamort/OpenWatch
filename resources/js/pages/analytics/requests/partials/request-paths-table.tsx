@@ -1,5 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight, Search, TriangleAlert } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Input } from '@/components/ui/input';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { PathRow, SortDir, SortKey } from '../types';
@@ -14,10 +16,25 @@ interface RequestPathsTableProps {
     paths: PathRow[];
     sort: SortKey;
     direction: SortDir;
+    search: string;
 }
 
-export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableProps) {
+export function RequestPathsTable({ paths, sort, direction, search }: RequestPathsTableProps) {
     const { url } = usePage();
+    const [searchValue, setSearchValue] = useState(search);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function handleSearch(value: string) {
+        setSearchValue(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            const urlObj = new URL(url, window.location.origin);
+            urlObj.searchParams.set('search', value);
+            urlObj.searchParams.delete('sort');
+            urlObj.searchParams.delete('direction');
+            router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'sort', 'direction', 'search'] });
+        }, 300);
+    }
 
     function colClass(key: SortKey, align: 'left' | 'right' = 'left') {
         const active = sort === key ? 'text-foreground' : 'text-muted-foreground';
@@ -34,6 +51,23 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
     }
 
     return (
+        <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium">
+                <Globe className="size-4 text-muted-foreground" />
+                <span><span className="text-muted-foreground">{paths.length}</span> Routes</span>
+            </div>
+            <div className="relative w-64">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search routes..."
+                    value={searchValue}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="h-8 pl-8 text-sm"
+                />
+            </div>
+        </div>
         <Table className="border-separate border-spacing-y-1.5">
             <TableHeader className="[&_tr]:border-0">
                 <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
@@ -145,5 +179,6 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
                 )}
             </TableBody>
         </Table>
+        </div>
     );
 }

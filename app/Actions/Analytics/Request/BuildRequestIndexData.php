@@ -16,7 +16,7 @@ class BuildRequestIndexData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc'): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = ''): array
     {
         $base = DB::table('extraction_requests')
             ->where('organization_id', $ctx->organization->id)
@@ -67,7 +67,7 @@ class BuildRequestIndexData
             ];
         }
 
-        $paths = $this->fetchPaths($base, $sort, $direction);
+        $paths = $this->fetchPaths($base, $sort, $direction, $search);
 
         return [
             'graph' => $graph,
@@ -90,8 +90,12 @@ class BuildRequestIndexData
      *
      * @return array<int, array<string, mixed>>
      */
-    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc'): array
+    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = ''): array
     {
+        if ($search !== '') {
+            $base = (clone $base)->where('route_path', 'like', '%'.$search.'%');
+        }
+
         $allowedSorts = ['method' => 'methods', 'path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
         $orderCol = $allowedSorts[$sort] ?? 'total';
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';

@@ -11,16 +11,17 @@ interface Props {
     period: string;
     sort: SortKey;
     direction: SortDir;
+    search: string;
 }
 
 const breadcrumbs = [{ title: 'Requests', href: '#' }];
 
-export default function RequestsIndex({ graph, stats, paths, period, sort, direction }: Props) {
+export default function RequestsIndex({ graph, stats, paths, period, sort, direction, search }: Props) {
     return (
         <AnalyticsLayout title="Requests" period={period} breadcrumbs={breadcrumbs}>
             <Head title="Requests" />
             <RequestCharts graph={graph} stats={stats} />
-            <RequestPathsTable paths={paths} sort={sort} direction={direction} />
+            <RequestPathsTable paths={paths} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }
