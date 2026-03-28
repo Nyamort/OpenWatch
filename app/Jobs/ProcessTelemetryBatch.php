@@ -8,6 +8,7 @@ use App\Services\Ingestion\RecordValidatorRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class ProcessTelemetryBatch implements ShouldQueue
@@ -42,6 +43,8 @@ class ProcessTelemetryBatch implements ShouldQueue
         foreach ($this->records as $record) {
             try {
                 if (! $registry->validate($record)) {
+                    Log::info('Invalid telemetry record', ['record' => $record]);
+
                     continue;
                 }
 

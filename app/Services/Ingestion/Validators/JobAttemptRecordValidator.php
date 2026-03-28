@@ -9,6 +9,6 @@ class JobAttemptRecordValidator extends BaseRecordValidator
      */
     protected function requiredFields(): array
     {
-        return ['execution_id', 'job_id', 'attempt_id', 'attempt', 'name', 'status'];
+        return ['job_id', 'attempt_id', 'attempt', 'name', 'status'];
     }
 }
