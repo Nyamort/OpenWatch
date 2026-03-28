@@ -198,16 +198,16 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
             </div>
             <Table className="border-separate border-spacing-y-1.5">
                 <TableHeader className="[&_tr]:border-0">
-                    <TableRow className="border-0 hover:bg-transparent">
-                        <TableHead className="h-8 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">Method</TableHead>
-                        <TableHead className="h-8 px-4 text-xs font-medium uppercase tracking-wide">Path</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">1/2/3xx</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">4xx</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">5xx</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">Total</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">AVG</TableHead>
-                        <TableHead className="h-8 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">P95</TableHead>
-                        <TableHead className="h-8 w-px pr-5" />
+                    <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
+                        <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">Method</TableHead>
+                        <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">Path</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">1/2/3xx</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">4xx</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">5xx</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">Total</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">AVG</TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">P95</TableHead>
+                        <TableHead className="h-11 w-px pr-5" />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -257,15 +257,15 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                                 <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
                                     {formatDuration(row.p95)}
                                 </TableCell>
-                                <TableCell className="h-11 pr-5">
+                                <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
-                                        <div className="flex items-center rounded-sm border border-border/50 bg-muted/30 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100">
-                                            <button className="flex size-6 items-center justify-center hover:text-foreground">
+                                        <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 uppercase text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-green-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-green-500">
+                                            <button className="flex size-6 items-center justify-center">
                                                 <PanelRight className="size-3" />
                                             </button>
-                                            <button className="flex size-6 items-center justify-center hover:text-foreground">
+                                            <a className="-ml-1 flex size-6 items-center justify-center">
                                                 <ArrowUpRight className="size-4" />
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 </TableCell>
