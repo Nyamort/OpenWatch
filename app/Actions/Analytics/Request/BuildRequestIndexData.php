@@ -2,6 +2,7 @@
 
 namespace App\Actions\Analytics\Request;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
 use Carbon\Carbon;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class BuildRequestIndexData
 {
+    use PaginatesAnalyticsQuery;
+
     /**
      * Build graph buckets and global stats for request analytics.
      *
@@ -93,14 +96,12 @@ class BuildRequestIndexData
      */
     private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $perPage = 25;
-
         if ($search !== '') {
             $base = (clone $base)->where('route_path', 'like', '%'.$search.'%');
         }
 
         $allowedSorts = ['method' => 'methods', 'path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
-        $orderCol = $allowedSorts[$sort] ?? 'total';
+        $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
         $aggregates = '
@@ -113,14 +114,14 @@ class BuildRequestIndexData
         ';
 
         $totalRoutes = (clone $base)->distinct()->count('route_path');
-        $offset = ($page - 1) * $perPage;
+        $offset = $this->pageOffset($page);
 
         if (DB::getDriverName() === 'sqlite') {
             $rows = (clone $base)
                 ->selectRaw("route_path, {$aggregates}, NULL AS p95")
                 ->groupByRaw('route_path')
                 ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($perPage)
+                ->limit($this->analyticsPerPage)
                 ->offset($offset)
                 ->get();
         } else {
@@ -138,7 +139,7 @@ class BuildRequestIndexData
                 ->selectRaw("route_path, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * path_count) THEN duration END) AS DOUBLE) AS p95")
                 ->groupByRaw('route_path')
                 ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($perPage)
+                ->limit($this->analyticsPerPage)
                 ->offset($offset)
                 ->get();
         }
@@ -156,12 +157,7 @@ class BuildRequestIndexData
 
         return [
             'data' => $data,
-            'pagination' => [
-                'total' => $totalRoutes,
-                'per_page' => $perPage,
-                'current_page' => $page,
-                'last_page' => (int) ceil($totalRoutes / $perPage),
-            ],
+            'pagination' => $this->buildPaginationMeta($totalRoutes, $page),
         ];
     }
 

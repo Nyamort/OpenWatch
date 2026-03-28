@@ -1,16 +1,13 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsUpDown, FolderClosed, Globe, OctagonAlert, PanelRight, Search, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, FolderClosed, Globe, OctagonAlert, PanelRight, TriangleAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
+import { SortableHead } from '@/components/analytics/table/sortable-head';
+import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Pagination, PathRow, SortDir, SortKey } from '../types';
 import { formatDuration } from './request-charts';
-
-function SortIcon({ column, sort, direction }: { column: SortKey; sort: SortKey; direction: SortDir }) {
-    if (sort !== column) return <ChevronsUpDown className="size-3 opacity-40" />;
-    return direction === 'asc' ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />;
-}
 
 interface RequestPathsTableProps {
     paths: PathRow[];
@@ -36,12 +33,6 @@ export function RequestPathsTable({ paths, pagination, sort, direction, search }
         }, 300);
     }
 
-    function colClass(key: SortKey, align: 'left' | 'right' = 'left') {
-        const active = sort === key ? 'text-foreground' : 'text-muted-foreground';
-        const base = 'flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-foreground';
-        return align === 'right' ? `${base} w-full justify-end ${active}` : `${base} ${active}`;
-    }
-
     function handlePage(page: number) {
         const urlObj = new URL(url, window.location.origin);
         urlObj.searchParams.set('page', String(page));
@@ -57,162 +48,117 @@ export function RequestPathsTable({ paths, pagination, sort, direction, search }
         router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction'] });
     }
 
+    const onSort = (col: string) => handleSort(col as SortKey);
+
     return (
         <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-medium">
-                <Globe className="size-4 text-muted-foreground" />
-                <span>{pagination.total} Routes</span>
-            </div>
-            <div className="relative w-64">
-                <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search routes..."
-                    value={searchValue}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="h-8 pl-8 text-sm"
-                />
-            </div>
-        </div>
-        <Table className="border-separate border-spacing-y-1.5">
-            <TableHeader className="[&_tr]:border-0">
-                <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
-                    <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('method')} className={colClass('method')}>
-                            Method <SortIcon column="method" sort={sort} direction={direction} />
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('path')} className={colClass('path')}>
-                            Path <SortIcon column="path" sort={sort} direction={direction} />
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('2xx')} className={colClass('2xx', 'right')}>
-                            <SortIcon column="2xx" sort={sort} direction={direction} /> 1/2/3xx
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('4xx')} className={colClass('4xx', 'right')}>
-                            <SortIcon column="4xx" sort={sort} direction={direction} /> 4xx
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('5xx')} className={colClass('5xx', 'right')}>
-                            <SortIcon column="5xx" sort={sort} direction={direction} /> 5xx
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('total')} className={colClass('total', 'right')}>
-                            <SortIcon column="total" sort={sort} direction={direction} /> Total
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('avg')} className={colClass('avg', 'right')}>
-                            <SortIcon column="avg" sort={sort} direction={direction} /> AVG
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
-                        <button onClick={() => handleSort('p95')} className={colClass('p95', 'right')}>
-                            <SortIcon column="p95" sort={sort} direction={direction} /> P95
-                        </button>
-                    </TableHead>
-                    <TableHead className="h-11 w-px pr-5" />
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {paths.length === 0 ? (
-                    <TableRow className="border-0 hover:bg-transparent">
-                        <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
-                            No requests recorded for this period.
-                        </TableCell>
+            <AnalyticsTableHeader
+                icon={Globe}
+                label="Routes"
+                count={pagination.total}
+                search={searchValue}
+                searchPlaceholder="Search routes..."
+                onSearch={handleSearch}
+            />
+            <Table className="border-separate border-spacing-y-1.5">
+                <TableHeader className="[&_tr]:border-0">
+                    <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
+                        <SortableHead column="method" sort={sort} direction={direction} onSort={onSort} className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium">
+                            Method
+                        </SortableHead>
+                        <SortableHead column="path" sort={sort} direction={direction} onSort={onSort} className="h-11 px-4 text-xs font-medium">
+                            Path
+                        </SortableHead>
+                        <SortableHead column="2xx" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            1/2/3xx
+                        </SortableHead>
+                        <SortableHead column="4xx" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            4xx
+                        </SortableHead>
+                        <SortableHead column="5xx" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            5xx
+                        </SortableHead>
+                        <SortableHead column="total" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            Total
+                        </SortableHead>
+                        <SortableHead column="avg" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            AVG
+                        </SortableHead>
+                        <SortableHead column="p95" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            P95
+                        </SortableHead>
+                        <TableHead className="h-11 w-px pr-5" />
                     </TableRow>
-                ) : (
-                    paths.map((row, i) => (
-                        <TableRow
-                            key={i}
-                            className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
-                        >
-                            <TableCell className="h-11 w-px whitespace-nowrap pl-5 pr-4">
-                                <HttpMethodBadge methods={row.methods} />
-                            </TableCell>
-                            <TableCell className="h-11 overflow-hidden px-4">
-                                <div className="flex min-w-0 items-center gap-2">
-                                    {row.path
-                                        ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
-                                        : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
-                                    }
-                                    <span className="truncate font-mono text-sm">
-                                        {row.path ?? 'Unmatched Route'}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
-                                {row['2xx'].toLocaleString()}
-                            </TableCell>
-                            <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : 'text-amber-500'}`}>
-                                <div className="flex items-center justify-end gap-1">
-                                    {row['4xx'] > 0 && <TriangleAlert className="size-3" />}
-                                    {row['4xx'].toLocaleString()}
-                                </div>
-                            </TableCell>
-                            <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['5xx'] === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
-                                <div className="flex items-center justify-end gap-1">
-                                    {row['5xx'] > 0 && <OctagonAlert className="size-3 shrink-0" />}
-                                    {row['5xx'].toLocaleString()}
-                                </div>
-                            </TableCell>
-                            <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
-                                {row.total.toLocaleString()}
-                            </TableCell>
-                            <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
-                                {formatDuration(row.avg)}
-                            </TableCell>
-                            <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
-                                {formatDuration(row.p95)}
-                            </TableCell>
-                            <TableCell className="h-11 w-px pr-5">
-                                <div className="flex items-center justify-end">
-                                    <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 uppercase text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
-                                        <button className="flex size-6 items-center justify-center">
-                                            <PanelRight className="size-3" />
-                                        </button>
-                                        <a className="-ml-1 flex size-6 items-center justify-center">
-                                            <ArrowUpRight className="size-4" />
-                                        </a>
-                                    </div>
-                                </div>
+                </TableHeader>
+                <TableBody>
+                    {paths.length === 0 ? (
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableCell colSpan={9} className="py-12 text-center text-sm text-muted-foreground">
+                                No requests recorded for this period.
                             </TableCell>
                         </TableRow>
-                    ))
-                )}
-            </TableBody>
-        </Table>
-        {pagination.last_page > 1 && (
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>
-                    {((pagination.current_page - 1) * pagination.per_page) + 1}–{Math.min(pagination.current_page * pagination.per_page, pagination.total)} of {pagination.total} routes
-                </span>
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={() => handlePage(pagination.current_page - 1)}
-                        disabled={pagination.current_page === 1}
-                        className="flex size-7 items-center justify-center rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
-                    >
-                        <ChevronLeft className="size-4" />
-                    </button>
-                    <span className="px-2 tabular-nums">{pagination.current_page} / {pagination.last_page}</span>
-                    <button
-                        onClick={() => handlePage(pagination.current_page + 1)}
-                        disabled={pagination.current_page === pagination.last_page}
-                        className="flex size-7 items-center justify-center rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
-                    >
-                        <ChevronRight className="size-4" />
-                    </button>
-                </div>
-            </div>
-        )}
+                    ) : (
+                        paths.map((row, i) => (
+                            <TableRow
+                                key={i}
+                                className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
+                            >
+                                <TableCell className="h-11 w-px whitespace-nowrap pl-5 pr-4">
+                                    <HttpMethodBadge methods={row.methods} />
+                                </TableCell>
+                                <TableCell className="h-11 overflow-hidden px-4">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        {row.path
+                                            ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
+                                            : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
+                                        }
+                                        <span className="truncate font-mono text-sm">
+                                            {row.path ?? 'Unmatched Route'}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {row['2xx'].toLocaleString()}
+                                </TableCell>
+                                <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : 'text-amber-500'}`}>
+                                    <div className="flex items-center justify-end gap-1">
+                                        {row['4xx'] > 0 && <TriangleAlert className="size-3" />}
+                                        {row['4xx'].toLocaleString()}
+                                    </div>
+                                </TableCell>
+                                <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['5xx'] === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
+                                    <div className="flex items-center justify-end gap-1">
+                                        {row['5xx'] > 0 && <OctagonAlert className="size-3 shrink-0" />}
+                                        {row['5xx'].toLocaleString()}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
+                                    {row.total.toLocaleString()}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {formatDuration(row.avg)}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {formatDuration(row.p95)}
+                                </TableCell>
+                                <TableCell className="h-11 w-px pr-5">
+                                    <div className="flex items-center justify-end">
+                                        <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 uppercase text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
+                                            <button className="flex size-6 items-center justify-center">
+                                                <PanelRight className="size-3" />
+                                            </button>
+                                            <a className="-ml-1 flex size-6 items-center justify-center">
+                                                <ArrowUpRight className="size-4" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+            <TablePagination pagination={pagination} onPage={handlePage} />
         </div>
     );
 }
