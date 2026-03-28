@@ -99,8 +99,8 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
                             <TableCell className="h-11 overflow-hidden px-4">
                                 <div className="flex min-w-0 items-center gap-2">
                                     {row.path
-                                        ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-green-500" />
-                                        : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-green-500" />
+                                        ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
+                                        : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-emerald-500" />
                                     }
                                     <span className="truncate font-mono text-sm">
                                         {row.path ?? 'Unmatched Route'}
@@ -127,7 +127,7 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
                             </TableCell>
                             <TableCell className="h-11 w-px pr-5">
                                 <div className="flex items-center justify-end">
-                                    <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 uppercase text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-green-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-green-500">
+                                    <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 uppercase text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
                                         <button className="flex size-6 items-center justify-center">
                                             <PanelRight className="size-3" />
                                         </button>
