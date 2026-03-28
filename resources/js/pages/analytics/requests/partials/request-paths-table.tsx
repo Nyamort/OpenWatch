@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight, Search, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, OctagonMinus, PanelRight, Search, TriangleAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
@@ -146,12 +146,15 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
                             </TableCell>
                             <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['4xx'] === 0 ? 'text-muted-foreground' : 'text-amber-500'}`}>
                                 <div className="flex items-center justify-end gap-1">
-                                    {row['4xx'] > 0 && <TriangleAlert className="size-3 shrink-0" />}
+                                    {row['4xx'] > 0 && <TriangleAlert className="size-3" />}
                                     {row['4xx'].toLocaleString()}
                                 </div>
                             </TableCell>
                             <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row['5xx'] === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
-                                {row['5xx'].toLocaleString()}
+                                <div className="flex items-center justify-end gap-1">
+                                    {row['5xx'] > 0 && <OctagonMinus className="size-3 shrink-0" />}
+                                    {row['5xx'].toLocaleString()}
+                                </div>
                             </TableCell>
                             <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
                                 {row.total.toLocaleString()}
