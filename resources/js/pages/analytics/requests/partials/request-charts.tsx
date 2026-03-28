@@ -1,5 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { BarCursor, ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
+import { BarCursor, ChartPanel, isolatedDot, tooltipProps } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import type { GraphBucket, Stats } from '../types';
@@ -72,10 +72,8 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
                         <XAxis dataKey="bucket" hide />
                         <YAxis hide />
                         <ChartTooltip
-                            isAnimationActive={false}
-                            wrapperStyle={{ zIndex: 1000 }}
+                            {...tooltipProps}
                             cursor={<BarCursor />}
-                            allowEscapeViewBox={{ x: false, y: true }}
                             content={({ active, label, payload }) => (
                                 <AnalyticsTooltip
                                     active={active}
@@ -128,9 +126,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
                         <XAxis dataKey="bucket" hide />
                         <YAxis hide domain={[0, 'auto']} />
                         <ChartTooltip
-                            isAnimationActive={false}
-                            wrapperStyle={{ zIndex: 1000 }}
-                            allowEscapeViewBox={{ x: false, y: true }}
+                            {...tooltipProps}
                             content={({ active, label, payload }) => (
                                 <AnalyticsTooltip
                                     active={active}

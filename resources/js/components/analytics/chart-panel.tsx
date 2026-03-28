@@ -1,6 +1,12 @@
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 
+export const tooltipProps = {
+    isAnimationActive: false,
+    wrapperStyle: { zIndex: 1000 },
+    allowEscapeViewBox: { x: false, y: true },
+} as const;
+
 export function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
     if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
     return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
