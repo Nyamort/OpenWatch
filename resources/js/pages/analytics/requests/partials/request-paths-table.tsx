@@ -55,7 +55,7 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium">
                 <Globe className="size-4 text-muted-foreground" />
-                <span><span className="text-muted-foreground">{paths.length}</span> Routes</span>
+                <span>{paths.length} Routes</span>
             </div>
             <div className="relative w-64">
                 <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
