@@ -21,7 +21,7 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
 
     function colClass(key: SortKey, align: 'left' | 'right' = 'left') {
         const active = sort === key ? 'text-foreground' : 'text-muted-foreground';
-        const base = 'flex cursor-pointer items-center gap-1 hover:text-foreground';
+        const base = 'flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-foreground';
         return align === 'right' ? `${base} w-full justify-end ${active}` : `${base} ${active}`;
     }
 
