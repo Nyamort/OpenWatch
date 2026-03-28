@@ -2,8 +2,8 @@ import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight } from 'lucide-react';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDuration } from './request-charts';
 import type { PathRow, SortDir, SortKey } from '../types';
+import { formatDuration } from './request-charts';
 
 function SortIcon({ column, sort, direction }: { column: SortKey; sort: SortKey; direction: SortDir }) {
     if (sort !== column) return <ChevronsUpDown className="size-3 opacity-40" />;
