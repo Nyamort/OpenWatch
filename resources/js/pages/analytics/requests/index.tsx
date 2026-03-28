@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { ArrowUpRight, Globe, PanelRight } from 'lucide-react';
+import { ArrowUpRight, FolderClosed, Globe, PanelRight } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
@@ -230,7 +230,10 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                                 </TableCell>
                                 <TableCell className="h-11 overflow-hidden px-4">
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground" />
+                                        {row.path
+                                            ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground" />
+                                            : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground" />
+                                        }
                                         <span className="truncate font-mono text-sm">
                                             {row.path ?? 'Unmatched Route'}
                                         </span>
