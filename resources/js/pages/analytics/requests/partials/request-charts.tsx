@@ -73,6 +73,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
                         <YAxis hide />
                         <ChartTooltip
                             isAnimationActive={false}
+                            wrapperStyle={{ zIndex: 1000 }}
                             cursor={<BarCursor />}
                             allowEscapeViewBox={{ x: false, y: true }}
                             content={({ active, label, payload }) => (
@@ -128,6 +129,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
                         <YAxis hide domain={[0, 'auto']} />
                         <ChartTooltip
                             isAnimationActive={false}
+                            wrapperStyle={{ zIndex: 1000 }}
                             allowEscapeViewBox={{ x: false, y: true }}
                             content={({ active, label, payload }) => (
                                 <AnalyticsTooltip
