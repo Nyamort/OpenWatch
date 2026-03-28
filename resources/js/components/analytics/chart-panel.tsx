@@ -1,6 +1,11 @@
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 
+export function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
+    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
+    return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
+}
+
 /**
  * Returns a Recharts dot renderer that only draws a dot for isolated points
  * (i.e. points with no non-null neighbour on either side). Useful for area

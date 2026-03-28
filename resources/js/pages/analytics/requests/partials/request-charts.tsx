@@ -1,5 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
+import { BarCursor, ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import type { GraphBucket, Stats } from '../types';
@@ -20,11 +20,6 @@ export function formatDuration(us: number | null): string {
     const ms = us / 1000;
     if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
     return `${ms.toFixed(2)}ms`;
-}
-
-function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
-    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
-    return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
 }
 
 interface RequestChartsProps {
