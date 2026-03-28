@@ -34,6 +34,7 @@ function insertRequest(array $ctx, array $overrides = []): void
         'url' => 'https://example.com/',
         'route_name' => 'home',
         'route_path' => '/',
+        'route_methods' => 'GET|HEAD',
         'route_action' => 'HomeController@index',
         'status_code' => 200,
         'duration' => 100,
@@ -85,9 +86,9 @@ test('requests route view requires auth', function () {
 test('request index groups paths correctly', function () {
     $ctx = setupAnalyticsContext('req-paths-'.uniqid());
 
-    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET']);
-    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'status_code' => 500]);
-    insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'POST']);
+    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'route_methods' => 'GET|HEAD']);
+    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'route_methods' => 'GET|HEAD', 'status_code' => 500]);
+    insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'POST', 'route_methods' => 'POST']);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
@@ -95,7 +96,7 @@ test('request index groups paths correctly', function () {
     $response->assertInertia(fn ($page) => $page
         ->has('paths', 2)
         ->where('paths.0.path', '/api/users')
-        ->where('paths.0.methods', ['GET'])
+        ->where('paths.0.methods', ['GET', 'HEAD'])
         ->where('paths.0.total', 2)
         ->where('paths.0.5xx', 1)
         ->where('paths.1.path', '/api/posts')

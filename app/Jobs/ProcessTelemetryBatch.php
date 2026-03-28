@@ -102,6 +102,7 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'url' => $record['url'],
                 'route_name' => $record['route_name'] ?? null,
                 'route_path' => $record['route_path'] ?? null,
+                'route_methods' => $record['route_methods'] ?? null,
                 'route_action' => $record['route_action'] ?? null,
                 'status_code' => $record['status_code'],
                 'duration' => $record['duration'],

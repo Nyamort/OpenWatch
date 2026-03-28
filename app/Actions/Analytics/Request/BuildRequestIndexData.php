@@ -92,20 +92,14 @@ class BuildRequestIndexData
      */
     private function fetchPaths(Builder $base): array
     {
-        $methodsExpr = match (DB::getDriverName()) {
-            'pgsql' => "STRING_AGG(DISTINCT method, ',' ORDER BY method)",
-            'sqlite' => 'GROUP_CONCAT(method)',
-            default => "GROUP_CONCAT(DISTINCT method ORDER BY method SEPARATOR ',')",
-        };
-
-        $aggregates = "
+        $aggregates = '
             COUNT(*) AS total,
             SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
             SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
             SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
             CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg,
-            {$methodsExpr} AS methods
-        ";
+            MAX(route_methods) AS methods
+        ';
 
         if (DB::getDriverName() === 'sqlite') {
             $rows = (clone $base)
@@ -116,7 +110,7 @@ class BuildRequestIndexData
         } else {
             $inner = (clone $base)->select([
                 'route_path',
-                'method',
+                'route_methods',
                 'status_code',
                 'duration',
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY route_path ORDER BY duration) AS row_num'),
@@ -132,8 +126,8 @@ class BuildRequestIndexData
         }
 
         return $rows->map(fn ($row) => [
-            'methods' => $row->route_path === '' ? [] : array_values(array_unique(explode(',', $row->methods ?? ''))),
-            'path' => $row->route_path === '' ? null : $row->route_path,
+            'methods' => array_values(array_filter(explode('|', $row->methods ?? ''))),
+            'path' => $row->route_path ?: null,
             '2xx' => (int) ($row->{'2xx'} ?? 0),
             '4xx' => (int) ($row->{'4xx'} ?? 0),
             '5xx' => (int) ($row->{'5xx'} ?? 0),
