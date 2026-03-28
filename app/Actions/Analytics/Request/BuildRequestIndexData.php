@@ -133,7 +133,7 @@ class BuildRequestIndexData
 
         return $rows->map(fn ($row) => [
             'methods' => $row->route_path === '' ? [] : array_values(array_unique(explode(',', $row->methods ?? ''))),
-            'path' => $row->route_path,
+            'path' => $row->route_path === '' ? null : $row->route_path,
             '2xx' => (int) ($row->{'2xx'} ?? 0),
             '4xx' => (int) ($row->{'4xx'} ?? 0),
             '5xx' => (int) ($row->{'5xx'} ?? 0),
