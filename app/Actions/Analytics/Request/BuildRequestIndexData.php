@@ -67,8 +67,11 @@ class BuildRequestIndexData
             ];
         }
 
+        $paths = $this->fetchPaths($base);
+
         return [
             'graph' => $graph,
+            'paths' => $paths,
             'stats' => [
                 'count' => $totalCount,
                 '2xx' => (int) ($stats?->{'2xx'} ?? 0),
@@ -80,6 +83,64 @@ class BuildRequestIndexData
                 'p95' => $globalP95 ? (float) $globalP95 : null,
             ],
         ];
+    }
+
+    /**
+     * Fetch per-path aggregates grouped by route_path, ordered by total desc.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchPaths(Builder $base): array
+    {
+        $methodsExpr = match (DB::getDriverName()) {
+            'pgsql' => "STRING_AGG(DISTINCT method, ',' ORDER BY method)",
+            'sqlite' => 'GROUP_CONCAT(method)',
+            default => "GROUP_CONCAT(DISTINCT method ORDER BY method SEPARATOR ',')",
+        };
+
+        $aggregates = "
+            COUNT(*) AS total,
+            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
+            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
+            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg,
+            {$methodsExpr} AS methods
+        ";
+
+        if (DB::getDriverName() === 'sqlite') {
+            $rows = (clone $base)
+                ->selectRaw("route_path, {$aggregates}, NULL AS p95")
+                ->groupByRaw('route_path')
+                ->orderByDesc('total')
+                ->get();
+        } else {
+            $inner = (clone $base)->select([
+                'route_path',
+                'method',
+                'status_code',
+                'duration',
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY route_path ORDER BY duration) AS row_num'),
+                DB::raw('COUNT(*) OVER (PARTITION BY route_path) AS path_count'),
+            ]);
+
+            $rows = DB::query()
+                ->fromSub($inner, 'ranked')
+                ->selectRaw("route_path, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * path_count) THEN duration END) AS DOUBLE) AS p95")
+                ->groupByRaw('route_path')
+                ->orderByDesc('total')
+                ->get();
+        }
+
+        return $rows->map(fn ($row) => [
+            'methods' => array_values(array_unique(explode(',', $row->methods ?? ''))),
+            'path' => $row->route_path,
+            '2xx' => (int) ($row->{'2xx'} ?? 0),
+            '4xx' => (int) ($row->{'4xx'} ?? 0),
+            '5xx' => (int) ($row->{'5xx'} ?? 0),
+            'total' => (int) $row->total,
+            'avg' => $row->avg,
+            'p95' => $row->p95,
+        ])->all();
     }
 
     /**

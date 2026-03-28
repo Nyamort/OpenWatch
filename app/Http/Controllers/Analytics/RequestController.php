@@ -30,6 +30,7 @@ class RequestController extends AnalyticsController
         return Inertia::render('analytics/requests/index', [
             'graph' => $data['graph'],
             'stats' => $data['stats'],
+            'paths' => $data['paths'],
             'period' => $request->query('period', '24h'),
         ]);
     }

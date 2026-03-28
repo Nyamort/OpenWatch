@@ -3,6 +3,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'rec
 import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 
 interface GraphBucket {
@@ -28,9 +29,21 @@ interface Stats {
     p95: number | null;
 }
 
+interface PathRow {
+    methods: string[];
+    path: string;
+    '2xx': number;
+    '4xx': number;
+    '5xx': number;
+    total: number;
+    avg: number | null;
+    p95: number | null;
+}
+
 interface Props {
     graph: GraphBucket[];
     stats: Stats;
+    paths: PathRow[];
     period: string;
 }
 
@@ -59,7 +72,15 @@ function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: nu
     return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
 }
 
-export default function RequestsIndex({ graph, stats, period }: Props) {
+const METHOD_COLORS: Record<string, string> = {
+    GET: 'text-sky-500',
+    POST: 'text-green-500',
+    PUT: 'text-amber-500',
+    PATCH: 'text-orange-500',
+    DELETE: 'text-red-500',
+};
+
+export default function RequestsIndex({ graph, stats, paths, period }: Props) {
     const requestStats = (
         <div className="flex gap-4 text-sm">
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
@@ -181,6 +202,54 @@ export default function RequestsIndex({ graph, stats, period }: Props) {
                         </AreaChart>
                     )}
                 </ChartPanel>
+            </div>
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-20">Method</TableHead>
+                            <TableHead>Path</TableHead>
+                            <TableHead className="text-right">1/2/3xx</TableHead>
+                            <TableHead className="text-right">4xx</TableHead>
+                            <TableHead className="text-right">5xx</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                            <TableHead className="text-right">AVG</TableHead>
+                            <TableHead className="text-right">P95</TableHead>
+                            <TableHead className="w-10" />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paths.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={9} className="text-muted-foreground py-12 text-center text-sm">
+                                    No requests recorded for this period.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            paths.map((row, i) => (
+                                <TableRow key={i}>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {row.methods.map((m) => (
+                                                <span key={m} className={`font-mono text-xs font-semibold ${METHOD_COLORS[m] ?? 'text-muted-foreground'}`}>
+                                                    {m}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-mono text-sm">{row.path}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row['2xx'].toLocaleString()}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row['4xx'].toLocaleString()}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row['5xx'].toLocaleString()}</TableCell>
+                                    <TableCell className="text-right tabular-nums font-medium">{row.total.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{formatDuration(row.avg)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{formatDuration(row.p95)}</TableCell>
+                                    <TableCell />
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </AnalyticsLayout>
     );

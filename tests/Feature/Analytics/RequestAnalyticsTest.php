@@ -60,6 +60,7 @@ test('requests index returns graph and stats', function () {
         ->component('analytics/requests/index')
         ->has('graph')
         ->has('stats')
+        ->has('paths')
     );
 });
 
@@ -79,6 +80,28 @@ test('requests route view requires auth', function () {
     $response = $this->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
 
     $response->assertRedirect();
+});
+
+test('request index groups paths correctly', function () {
+    $ctx = setupAnalyticsContext('req-paths-'.uniqid());
+
+    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET']);
+    insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'status_code' => 500]);
+    insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'POST']);
+
+    $response = $this->actingAs($ctx['user'])
+        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+
+    $response->assertInertia(fn ($page) => $page
+        ->has('paths', 2)
+        ->where('paths.0.path', '/api/users')
+        ->where('paths.0.methods', ['GET'])
+        ->where('paths.0.total', 2)
+        ->where('paths.0.5xx', 1)
+        ->where('paths.1.path', '/api/posts')
+        ->where('paths.1.methods', ['POST'])
+        ->where('paths.1.total', 1)
+    );
 });
 
 test('request index returns correct total count in stats', function () {
