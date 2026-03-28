@@ -34,3 +34,10 @@ export interface PathRow {
 
 export type SortKey = 'method' | 'path' | '2xx' | '4xx' | '5xx' | 'total' | 'avg' | 'p95';
 export type SortDir = 'asc' | 'desc';
+
+export interface Pagination {
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+}

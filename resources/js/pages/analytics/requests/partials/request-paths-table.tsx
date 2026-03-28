@@ -1,10 +1,10 @@
 import { router, usePage } from '@inertiajs/react';
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, OctagonAlert, PanelRight, Search, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsUpDown, FolderClosed, Globe, OctagonAlert, PanelRight, Search, TriangleAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { PathRow, SortDir, SortKey } from '../types';
+import type { Pagination, PathRow, SortDir, SortKey } from '../types';
 import { formatDuration } from './request-charts';
 
 function SortIcon({ column, sort, direction }: { column: SortKey; sort: SortKey; direction: SortDir }) {
@@ -14,12 +14,13 @@ function SortIcon({ column, sort, direction }: { column: SortKey; sort: SortKey;
 
 interface RequestPathsTableProps {
     paths: PathRow[];
+    pagination: Pagination;
     sort: SortKey;
     direction: SortDir;
     search: string;
 }
 
-export function RequestPathsTable({ paths, sort, direction, search }: RequestPathsTableProps) {
+export function RequestPathsTable({ paths, pagination, sort, direction, search }: RequestPathsTableProps) {
     const { url } = usePage();
     const [searchValue, setSearchValue] = useState(search);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,9 +31,8 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
         debounceRef.current = setTimeout(() => {
             const urlObj = new URL(url, window.location.origin);
             urlObj.searchParams.set('search', value);
-            urlObj.searchParams.delete('sort');
-            urlObj.searchParams.delete('direction');
-            router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'sort', 'direction', 'search'] });
+            urlObj.searchParams.delete('page');
+            router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction', 'search'] });
         }, 300);
     }
 
@@ -42,12 +42,19 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
         return align === 'right' ? `${base} w-full justify-end ${active}` : `${base} ${active}`;
     }
 
+    function handlePage(page: number) {
+        const urlObj = new URL(url, window.location.origin);
+        urlObj.searchParams.set('page', String(page));
+        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction'] });
+    }
+
     function handleSort(key: SortKey) {
         const urlObj = new URL(url, window.location.origin);
         const newDir: SortDir = sort === key && direction === 'desc' ? 'asc' : 'desc';
         urlObj.searchParams.set('sort', key);
         urlObj.searchParams.set('direction', newDir);
-        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'sort', 'direction'] });
+        urlObj.searchParams.delete('page');
+        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction'] });
     }
 
     return (
@@ -55,7 +62,7 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium">
                 <Globe className="size-4 text-muted-foreground" />
-                <span>{paths.length} Routes</span>
+                <span>{pagination.total} Routes</span>
             </div>
             <div className="relative w-64">
                 <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -182,6 +189,30 @@ export function RequestPathsTable({ paths, sort, direction, search }: RequestPat
                 )}
             </TableBody>
         </Table>
+        {pagination.last_page > 1 && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                    {((pagination.current_page - 1) * pagination.per_page) + 1}–{Math.min(pagination.current_page * pagination.per_page, pagination.total)} of {pagination.total} routes
+                </span>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => handlePage(pagination.current_page - 1)}
+                        disabled={pagination.current_page === 1}
+                        className="flex size-7 items-center justify-center rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+                    >
+                        <ChevronLeft className="size-4" />
+                    </button>
+                    <span className="px-2 tabular-nums">{pagination.current_page} / {pagination.last_page}</span>
+                    <button
+                        onClick={() => handlePage(pagination.current_page + 1)}
+                        disabled={pagination.current_page === pagination.last_page}
+                        className="flex size-7 items-center justify-center rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+                    >
+                        <ChevronRight className="size-4" />
+                    </button>
+                </div>
+            </div>
+        )}
         </div>
     );
 }

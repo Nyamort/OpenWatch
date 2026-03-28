@@ -16,7 +16,7 @@ class BuildRequestIndexData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = ''): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         $base = DB::table('extraction_requests')
             ->where('organization_id', $ctx->organization->id)
@@ -67,11 +67,12 @@ class BuildRequestIndexData
             ];
         }
 
-        $paths = $this->fetchPaths($base, $sort, $direction, $search);
+        $paths = $this->fetchPaths($base, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
-            'paths' => $paths,
+            'paths' => $paths['data'],
+            'pagination' => $paths['pagination'],
             'stats' => [
                 'count' => $totalCount,
                 '2xx' => (int) ($stats?->{'2xx'} ?? 0),
@@ -90,8 +91,10 @@ class BuildRequestIndexData
      *
      * @return array<int, array<string, mixed>>
      */
-    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = ''): array
+    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
+        $perPage = 25;
+
         if ($search !== '') {
             $base = (clone $base)->where('route_path', 'like', '%'.$search.'%');
         }
@@ -109,11 +112,16 @@ class BuildRequestIndexData
             MAX(route_methods) AS methods
         ';
 
+        $totalRoutes = (clone $base)->distinct()->count('route_path');
+        $offset = ($page - 1) * $perPage;
+
         if (DB::getDriverName() === 'sqlite') {
             $rows = (clone $base)
                 ->selectRaw("route_path, {$aggregates}, NULL AS p95")
                 ->groupByRaw('route_path')
                 ->orderByRaw("{$orderCol} {$orderDir}")
+                ->limit($perPage)
+                ->offset($offset)
                 ->get();
         } else {
             $inner = (clone $base)->select([
@@ -130,10 +138,12 @@ class BuildRequestIndexData
                 ->selectRaw("route_path, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * path_count) THEN duration END) AS DOUBLE) AS p95")
                 ->groupByRaw('route_path')
                 ->orderByRaw("{$orderCol} {$orderDir}")
+                ->limit($perPage)
+                ->offset($offset)
                 ->get();
         }
 
-        return $rows->map(fn ($row) => [
+        $data = $rows->map(fn ($row) => [
             'methods' => array_values(array_filter(explode('|', $row->methods ?? ''))),
             'path' => $row->route_path ?: null,
             '2xx' => (int) ($row->{'2xx'} ?? 0),
@@ -143,6 +153,16 @@ class BuildRequestIndexData
             'avg' => $row->avg,
             'p95' => $row->p95,
         ])->all();
+
+        return [
+            'data' => $data,
+            'pagination' => [
+                'total' => $totalRoutes,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'last_page' => (int) ceil($totalRoutes / $perPage),
+            ],
+        ];
     }
 
     /**
