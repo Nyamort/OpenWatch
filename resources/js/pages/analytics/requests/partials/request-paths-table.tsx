@@ -24,7 +24,7 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
         const newDir: SortDir = sort === key && direction === 'desc' ? 'asc' : 'desc';
         urlObj.searchParams.set('sort', key);
         urlObj.searchParams.set('direction', newDir);
-        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true });
+        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'sort', 'direction'] });
     }
 
     return (
