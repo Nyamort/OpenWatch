@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { ArrowUpRight, FolderClosed, Globe, PanelRight } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
+import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -224,9 +225,7 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                                 className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
                             >
                                 <TableCell className="h-11 w-px whitespace-nowrap pl-5 pr-4">
-                                    <span className="font-mono text-xs font-semibold text-muted-foreground">
-                                        {row.methods.length === 0 ? 'ANY' : row.methods.join(' | ')}
-                                    </span>
+                                    <HttpMethodBadge methods={row.methods} />
                                 </TableCell>
                                 <TableCell className="h-11 overflow-hidden px-4">
                                     <div className="flex min-w-0 items-center gap-2">
