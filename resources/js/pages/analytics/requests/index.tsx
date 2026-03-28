@@ -31,7 +31,7 @@ interface Stats {
 
 interface PathRow {
     methods: string[];
-    path: string;
+    path: string | null;
     '2xx': number;
     '4xx': number;
     '5xx': number;
@@ -230,14 +230,18 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                                 <TableRow key={i}>
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
-                                            {row.methods.map((m) => (
+                                            {row.methods.length === 0 ? (
+                                                <span className="text-muted-foreground font-mono text-xs font-semibold">ANY</span>
+                                            ) : row.methods.map((m) => (
                                                 <span key={m} className={`font-mono text-xs font-semibold ${METHOD_COLORS[m] ?? 'text-muted-foreground'}`}>
                                                     {m}
                                                 </span>
                                             ))}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-sm">{row.path}</TableCell>
+                                    <TableCell className="font-mono text-sm">
+                                        {row.path || <span>Unmatched Route</span>}
+                                    </TableCell>
                                     <TableCell className="text-right tabular-nums">{row['2xx'].toLocaleString()}</TableCell>
                                     <TableCell className="text-right tabular-nums">{row['4xx'].toLocaleString()}</TableCell>
                                     <TableCell className="text-right tabular-nums">{row['5xx'].toLocaleString()}</TableCell>
