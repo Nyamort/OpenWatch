@@ -1,32 +1,28 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-}
+import { JobCharts } from './partials/job-charts';
+import { JobTable } from './partials/job-table';
+import type { JobGraphBucket, JobRow, JobSortKey, JobStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph: JobGraphBucket[];
+    stats: JobStats;
+    jobs: JobRow[];
+    pagination: Pagination;
     period: string;
+    sort: JobSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'name', label: 'Job' },
-    { key: 'queue', label: 'Queue' },
-    { key: 'total_attempts', label: 'Attempts' },
-    { key: 'processed_count', label: 'Processed' },
-    { key: 'failed_count', label: 'Failed' },
-    { key: 'avg_duration', label: 'Avg Duration (ms)' },
-];
+const breadcrumbs = [{ title: 'Jobs', href: '#' }];
 
-export default function JobsIndex({ analytics, period }: Props) {
+export default function JobsIndex({ graph, stats, jobs, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Job Analytics" period={period}>
-            <Head title="Job Analytics" />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+        <AnalyticsLayout title="Jobs" period={period} breadcrumbs={breadcrumbs}>
+            <Head title="Jobs" />
+            <JobCharts graph={graph} stats={stats} />
+            <JobTable jobs={jobs} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }

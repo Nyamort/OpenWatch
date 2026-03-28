@@ -52,7 +52,10 @@ test('jobs index shows job list', function () {
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/jobs/index')
-        ->has('analytics.rows', 2)
+        ->has('jobs', 2)
+        ->has('graph')
+        ->has('stats')
+        ->has('pagination')
     );
 });
 
