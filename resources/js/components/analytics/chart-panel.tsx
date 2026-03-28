@@ -5,7 +5,6 @@ export const tooltipProps = {
     isAnimationActive: false,
     wrapperStyle: { zIndex: 1000 },
     allowEscapeViewBox: { x: false, y: true },
-    cursor: <BarCursor />,
 } as const;
 
 export function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {

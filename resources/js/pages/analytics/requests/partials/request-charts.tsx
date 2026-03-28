@@ -1,5 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartPanel, isolatedDot, tooltipProps } from '@/components/analytics/chart-panel';
+import { BarCursor, ChartPanel, isolatedDot, tooltipProps } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import type { GraphBucket, Stats } from '../types';
@@ -73,6 +73,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
                         <YAxis hide />
                         <ChartTooltip
                             {...tooltipProps}
+                            cursor={<BarCursor />}
                             content={({ active, label, payload }) => (
                                 <AnalyticsTooltip
                                     active={active}
