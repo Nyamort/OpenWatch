@@ -68,7 +68,13 @@ class BuildJobsIndexData
             ];
         }
 
-        $jobs = $this->fetchJobs($base, $sort, $direction, $search, $page);
+        $queuedBase = DB::table('extraction_queued_jobs')
+            ->where('organization_id', $ctx->organization->id)
+            ->where('project_id', $ctx->project->id)
+            ->where('environment_id', $ctx->environment->id)
+            ->whereBetween('recorded_at', [$period->start, $period->end]);
+
+        $jobs = $this->fetchJobs($base, $queuedBase, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -92,13 +98,14 @@ class BuildJobsIndexData
      *
      * @return array<string, mixed>
      */
-    private function fetchJobs(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    private function fetchJobs(Builder $base, Builder $queuedBase, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         if ($search !== '') {
             $base = (clone $base)->where('name', 'like', '%'.$search.'%');
+            $queuedBase = (clone $queuedBase)->where('name', 'like', '%'.$search.'%');
         }
 
-        $allowedSorts = ['name' => 'name', 'total' => 'total', 'processed' => 'processed', 'failed' => 'failed', 'released' => 'released', 'avg' => 'avg', 'p95' => 'p95'];
+        $allowedSorts = ['name' => 'name', 'total' => 'total', 'queued' => 'queued', 'processed' => 'processed', 'failed' => 'failed', 'released' => 'released', 'avg' => 'avg', 'p95' => 'p95'];
         $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
@@ -110,13 +117,18 @@ class BuildJobsIndexData
             CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
         ";
 
+        $queuedSub = (clone $queuedBase)
+            ->select(['name', DB::raw('COUNT(*) AS queued')])
+            ->groupBy('name');
+
         $totalJobs = (clone $base)->distinct()->count('name');
         $offset = $this->pageOffset($page);
 
         if (DB::getDriverName() === 'sqlite') {
             $rows = (clone $base)
-                ->selectRaw("name, {$aggregates}, NULL AS p95")
-                ->groupByRaw('name')
+                ->leftJoinSub($queuedSub, 'q', 'extraction_job_attempts.name', '=', 'q.name')
+                ->selectRaw("extraction_job_attempts.name, {$aggregates}, COALESCE(q.queued, 0) AS queued, NULL AS p95")
+                ->groupByRaw('extraction_job_attempts.name')
                 ->orderByRaw("{$orderCol} {$orderDir}")
                 ->limit($this->analyticsPerPage)
                 ->offset($offset)
@@ -132,8 +144,9 @@ class BuildJobsIndexData
 
             $rows = DB::query()
                 ->fromSub($inner, 'ranked')
-                ->selectRaw("name, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * name_count) THEN duration END) AS DOUBLE) AS p95")
-                ->groupByRaw('name')
+                ->leftJoinSub($queuedSub, 'q', 'ranked.name', '=', 'q.name')
+                ->selectRaw("ranked.name, {$aggregates}, COALESCE(q.queued, 0) AS queued, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * name_count) THEN duration END) AS DOUBLE) AS p95")
+                ->groupByRaw('ranked.name')
                 ->orderByRaw("{$orderCol} {$orderDir}")
                 ->limit($this->analyticsPerPage)
                 ->offset($offset)
@@ -143,6 +156,7 @@ class BuildJobsIndexData
         $data = $rows->map(fn ($row) => [
             'name' => $row->name ?: null,
             'total' => (int) $row->total,
+            'queued' => (int) ($row->queued ?? 0),
             'processed' => (int) ($row->processed ?? 0),
             'failed' => (int) ($row->failed ?? 0),
             'released' => (int) ($row->released ?? 0),

@@ -68,6 +68,9 @@ export function JobTable({ jobs, pagination, sort, direction, search }: JobTable
                         <SortableHead column="total" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
                             Total
                         </SortableHead>
+                        <SortableHead column="queued" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                            Queued
+                        </SortableHead>
                         <SortableHead column="processed" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
                             Processed
                         </SortableHead>
@@ -88,7 +91,7 @@ export function JobTable({ jobs, pagination, sort, direction, search }: JobTable
                 <TableBody>
                     {jobs.length === 0 ? (
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                            <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                                 No jobs recorded for this period.
                             </TableCell>
                         </TableRow>
@@ -105,6 +108,9 @@ export function JobTable({ jobs, pagination, sort, direction, search }: JobTable
                                 </TableCell>
                                 <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
                                     {row.total.toLocaleString()}
+                                </TableCell>
+                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                    {row.queued.toLocaleString()}
                                 </TableCell>
                                 <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
                                     {row.processed.toLocaleString()}

@@ -22,6 +22,7 @@ export interface JobStats {
 export interface JobRow {
     name: string | null;
     total: number;
+    queued: number;
     processed: number;
     failed: number;
     released: number;
@@ -29,7 +30,7 @@ export interface JobRow {
     p95: number | null;
 }
 
-export type JobSortKey = 'name' | 'total' | 'processed' | 'failed' | 'released' | 'avg' | 'p95';
+export type JobSortKey = 'name' | 'total' | 'queued' | 'processed' | 'failed' | 'released' | 'avg' | 'p95';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';
