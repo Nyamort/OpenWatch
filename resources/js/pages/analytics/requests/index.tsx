@@ -1,5 +1,6 @@
+import { router, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
-import { ArrowUpRight, FolderClosed, Globe, PanelRight } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, FolderClosed, Globe, PanelRight } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartPanel, isolatedDot } from '@/components/analytics/chart-panel';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
@@ -47,6 +48,8 @@ interface Props {
     stats: Stats;
     paths: PathRow[];
     period: string;
+    sort: SortKey;
+    direction: SortDir;
 }
 
 const breadcrumbs = [{ title: 'Requests', href: '#' }];
@@ -69,12 +72,30 @@ function formatDuration(us: number | null): string {
     return `${ms.toFixed(2)}ms`;
 }
 
+type SortKey = 'path' | '2xx' | '4xx' | '5xx' | 'total' | 'avg' | 'p95';
+type SortDir = 'asc' | 'desc';
+
+function SortIcon({ column, sort, direction }: { column: SortKey; sort: SortKey; direction: SortDir }) {
+    if (sort !== column) return <ChevronsUpDown className="size-3 opacity-40" />;
+    return direction === 'asc' ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />;
+}
+
 function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
     if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
     return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
 }
 
-export default function RequestsIndex({ graph, stats, paths, period }: Props) {
+export default function RequestsIndex({ graph, stats, paths, period, sort, direction }: Props) {
+    const { url } = usePage();
+
+    function handleSort(key: SortKey) {
+        const urlObj = new URL(url, window.location.origin);
+        const newDir: SortDir = sort === key && direction === 'desc' ? 'asc' : 'desc';
+        urlObj.searchParams.set('sort', key);
+        urlObj.searchParams.set('direction', newDir);
+        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true });
+    }
+
     const requestStats = (
         <div className="flex gap-4 text-sm">
             {(['2xx', '4xx', '5xx'] as const).map((key) => (
@@ -201,13 +222,41 @@ export default function RequestsIndex({ graph, stats, paths, period }: Props) {
                 <TableHeader className="[&_tr]:border-0">
                     <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
                         <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">Method</TableHead>
-                        <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">Path</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">1/2/3xx</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">4xx</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">5xx</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">Total</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">AVG</TableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">P95</TableHead>
+                        <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('path')} className="flex cursor-pointer items-center gap-1 hover:text-foreground">
+                                Path <SortIcon column="path" sort={sort} direction={direction} />
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('2xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="2xx" sort={sort} direction={direction} /> 1/2/3xx
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('4xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="4xx" sort={sort} direction={direction} /> 4xx
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('5xx')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="5xx" sort={sort} direction={direction} /> 5xx
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('total')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="total" sort={sort} direction={direction} /> Total
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('avg')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="avg" sort={sort} direction={direction} /> AVG
+                            </button>
+                        </TableHead>
+                        <TableHead className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium uppercase tracking-wide">
+                            <button onClick={() => handleSort('p95')} className="flex w-full cursor-pointer items-center justify-end gap-1 hover:text-foreground">
+                                <SortIcon column="p95" sort={sort} direction={direction} /> P95
+                            </button>
+                        </TableHead>
                         <TableHead className="h-11 w-px pr-5" />
                     </TableRow>
                 </TableHeader>

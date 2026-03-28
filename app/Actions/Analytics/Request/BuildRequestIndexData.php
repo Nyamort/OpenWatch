@@ -16,7 +16,7 @@ class BuildRequestIndexData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc'): array
     {
         $base = DB::table('extraction_requests')
             ->where('organization_id', $ctx->organization->id)
@@ -67,7 +67,7 @@ class BuildRequestIndexData
             ];
         }
 
-        $paths = $this->fetchPaths($base);
+        $paths = $this->fetchPaths($base, $sort, $direction);
 
         return [
             'graph' => $graph,
@@ -90,8 +90,12 @@ class BuildRequestIndexData
      *
      * @return array<int, array<string, mixed>>
      */
-    private function fetchPaths(Builder $base): array
+    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc'): array
     {
+        $allowedSorts = ['path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
+        $orderCol = $allowedSorts[$sort] ?? 'total';
+        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+
         $aggregates = '
             COUNT(*) AS total,
             SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
@@ -105,7 +109,7 @@ class BuildRequestIndexData
             $rows = (clone $base)
                 ->selectRaw("route_path, {$aggregates}, NULL AS p95")
                 ->groupByRaw('route_path')
-                ->orderByDesc('total')
+                ->orderByRaw("{$orderCol} {$orderDir}")
                 ->get();
         } else {
             $inner = (clone $base)->select([
@@ -121,7 +125,7 @@ class BuildRequestIndexData
                 ->fromSub($inner, 'ranked')
                 ->selectRaw("route_path, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * path_count) THEN duration END) AS DOUBLE) AS p95")
                 ->groupByRaw('route_path')
-                ->orderByDesc('total')
+                ->orderByRaw("{$orderCol} {$orderDir}")
                 ->get();
         }
 

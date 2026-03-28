@@ -25,13 +25,18 @@ class RequestController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildIndex->handle(ctx: $ctx, period: $period);
+        $sort = (string) $request->query('sort', 'total');
+        $direction = (string) $request->query('direction', 'desc');
+
+        $data = $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction);
 
         return Inertia::render('analytics/requests/index', [
             'graph' => $data['graph'],
             'stats' => $data['stats'],
             'paths' => $data['paths'],
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 
