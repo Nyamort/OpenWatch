@@ -99,8 +99,8 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
                             <TableCell className="h-11 overflow-hidden px-4">
                                 <div className="flex min-w-0 items-center gap-2">
                                     {row.path
-                                        ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground" />
-                                        : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground" />
+                                        ? <Globe className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-green-500" />
+                                        : <FolderClosed className="size-4 shrink-0 stroke-1 text-muted-foreground transition-colors duration-150 group-hover/row:text-green-500" />
                                     }
                                     <span className="truncate font-mono text-sm">
                                         {row.path ?? 'Unmatched Route'}
