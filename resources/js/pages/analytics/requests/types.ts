@@ -1,0 +1,36 @@
+export interface GraphBucket {
+    bucket: string;
+    count: number;
+    '2xx': number;
+    '4xx': number;
+    '5xx': number;
+    min: number | null;
+    max: number | null;
+    avg: number | null;
+    p95: number | null;
+}
+
+export interface Stats {
+    count: number;
+    '2xx': number;
+    '4xx': number;
+    '5xx': number;
+    min: number | null;
+    max: number | null;
+    avg: number | null;
+    p95: number | null;
+}
+
+export interface PathRow {
+    methods: string[];
+    path: string | null;
+    '2xx': number;
+    '4xx': number;
+    '5xx': number;
+    total: number;
+    avg: number | null;
+    p95: number | null;
+}
+
+export type SortKey = 'path' | '2xx' | '4xx' | '5xx' | 'total' | 'avg' | 'p95';
+export type SortDir = 'asc' | 'desc';
