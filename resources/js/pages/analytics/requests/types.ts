@@ -32,5 +32,5 @@ export interface PathRow {
     p95: number | null;
 }
 
-export type SortKey = 'path' | '2xx' | '4xx' | '5xx' | 'total' | 'avg' | 'p95';
+export type SortKey = 'method' | 'path' | '2xx' | '4xx' | '5xx' | 'total' | 'avg' | 'p95';
 export type SortDir = 'asc' | 'desc';

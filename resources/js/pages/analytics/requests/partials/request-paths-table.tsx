@@ -31,7 +31,11 @@ export function RequestPathsTable({ paths, sort, direction }: RequestPathsTableP
         <Table className="border-separate border-spacing-y-1.5">
             <TableHeader className="[&_tr]:border-0">
                 <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
-                    <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">Method</TableHead>
+                    <TableHead className="h-11 w-px whitespace-nowrap pl-5 text-xs font-medium uppercase tracking-wide">
+                        <button onClick={() => handleSort('method')} className="flex cursor-pointer items-center gap-1 hover:text-foreground">
+                            Method <SortIcon column="method" sort={sort} direction={direction} />
+                        </button>
+                    </TableHead>
                     <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide">
                         <button onClick={() => handleSort('path')} className="flex cursor-pointer items-center gap-1 hover:text-foreground">
                             Path <SortIcon column="path" sort={sort} direction={direction} />

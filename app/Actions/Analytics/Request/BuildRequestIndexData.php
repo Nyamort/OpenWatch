@@ -92,7 +92,7 @@ class BuildRequestIndexData
      */
     private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc'): array
     {
-        $allowedSorts = ['path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
+        $allowedSorts = ['method' => 'methods', 'path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
         $orderCol = $allowedSorts[$sort] ?? 'total';
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
