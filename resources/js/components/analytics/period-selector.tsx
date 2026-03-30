@@ -91,7 +91,7 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
                 <button
                     key={p.value}
                     onClick={() => handleChange(p.value)}
-                    className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`cursor-pointer rounded px-3 py-1 text-sm font-medium transition-colors ${
                         current === p.value
                             ? 'bg-background text-foreground shadow-sm'
                             : 'text-muted-foreground hover:text-foreground'
@@ -104,7 +104,7 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <button
-                        className={`flex items-center gap-1.5 rounded px-2 py-1 text-sm font-medium transition-colors ${
+                        className={`cursor-pointer flex items-center gap-1.5 rounded px-2 py-1 text-sm font-medium transition-colors ${
                             isCustom
                                 ? 'bg-background text-foreground shadow-sm'
                                 : 'text-muted-foreground hover:text-foreground'
