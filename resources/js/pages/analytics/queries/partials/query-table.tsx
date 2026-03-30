@@ -1,10 +1,14 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowUpRight, Database } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Database } from 'lucide-react';
+import { format as formatSql } from 'sql-formatter';
+import { useRef, useState } from 'react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { show } from '@/routes/analytics/queries';
@@ -18,6 +22,62 @@ interface QueryTableProps {
     sort: QuerySortKey;
     direction: SortDir;
     search: string;
+}
+
+function QueryCell({ query }: { query: string }) {
+    const [open, setOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function handleMouseEnter() {
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+        openTimer.current = setTimeout(() => setOpen(true), 800);
+    }
+
+    function handleMouseLeave() {
+        if (openTimer.current) clearTimeout(openTimer.current);
+        closeTimer.current = setTimeout(() => setOpen(false), 150);
+    }
+
+    function handlePopoverEnter() {
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+    }
+
+    function handleCopy() {
+        navigator.clipboard.writeText(query);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                    <SqlSyntaxHighlighter className="overflow-hidden" wrapLongLines={false}>
+                        {query}
+                    </SqlSyntaxHighlighter>
+                </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-xl p-0" align="start">
+                <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                    <span className="text-sm font-medium">Query</span>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}>
+                        {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                    </Button>
+                </div>
+                <div
+                    className="max-h-64 overflow-y-auto p-3"
+                    onMouseEnter={handlePopoverEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <SqlSyntaxHighlighter wrapLongLines>
+                        {formatSql(query, { language: 'sql' })}
+                    </SqlSyntaxHighlighter>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
 }
 
 export function QueryTable({ queries, pagination, sort, direction, search }: QueryTableProps) {
@@ -126,9 +186,7 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                                 className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden px-5 md:max-w-px">
-                                    <SqlSyntaxHighlighter className="overflow-hidden" wrapLongLines={false}>
-                                        {row.query}
-                                    </SqlSyntaxHighlighter>
+                                    <QueryCell query={row.query} />
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                     <Badge
