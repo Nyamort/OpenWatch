@@ -19,13 +19,23 @@ import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
     const [wizardOpen, setWizardOpen] = useState(false);
-    const { activeOrganization, activeProject, activeEnvironment } = usePage().props as {
+    const { url, props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
         activeOrganization?: { slug: string } | null;
         activeProject?: { slug: string } | null;
         activeEnvironment?: { slug: string } | null;
     };
 
     const hasContext = !!(activeOrganization && activeProject && activeEnvironment);
+
+    const period = new URL(url, window.location.origin).searchParams.get('period');
+
+    function analyticsHref(base: string): string {
+        if (!period) return base;
+        const u = new URL(base, window.location.origin);
+        u.searchParams.set('period', period);
+        return u.pathname + u.search;
+    }
 
     const mainNavItems: NavItem[] = [
         {
@@ -36,29 +46,29 @@ export function AppSidebar() {
         ...(hasContext ? [
             {
                 title: 'Requests',
-                href: requestsIndex({
+                href: analyticsHref(requestsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: Globe,
             },
             {
                 title: 'Jobs',
-                href: jobsIndex({
+                href: analyticsHref(jobsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: BriefcaseBusiness,
             },
             {
                 title: 'Commands',
-                href: commandsIndex({
+                href: analyticsHref(commandsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: Terminal,
             },
         ] : []),
