@@ -23,7 +23,7 @@ class JobsController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $sort = (string) $request->query('sort', 'total');
+        $sort = (string) $request->query('sort', 'name');
         $direction = (string) $request->query('direction', 'desc');
         $search = (string) $request->query('search', '');
         $page = max(1, (int) $request->query('page', 1));

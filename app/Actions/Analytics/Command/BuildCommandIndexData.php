@@ -19,7 +19,7 @@ class BuildCommandIndexData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'name', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         $base = DB::table('extraction_commands')
             ->where('organization_id', $ctx->organization->id)
@@ -89,7 +89,7 @@ class BuildCommandIndexData
      *
      * @return array<string, mixed>
      */
-    private function fetchCommands(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    private function fetchCommands(Builder $base, string $sort = 'name', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         if ($search !== '') {
             $base = (clone $base)->where('name', 'like', '%'.$search.'%');

@@ -19,7 +19,7 @@ class BuildJobsIndexData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'name', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         $base = DB::table('extraction_job_attempts')
             ->where('organization_id', $ctx->organization->id)
@@ -98,7 +98,7 @@ class BuildJobsIndexData
      *
      * @return array<string, mixed>
      */
-    private function fetchJobs(Builder $base, Builder $queuedBase, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    private function fetchJobs(Builder $base, Builder $queuedBase, string $sort = 'name', string $direction = 'desc', string $search = '', int $page = 1): array
     {
         if ($search !== '') {
             $base = (clone $base)->where('name', 'like', '%'.$search.'%');
