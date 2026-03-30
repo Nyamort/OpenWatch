@@ -8,6 +8,16 @@ const PERIODS = [
     { value: '30d', label: '30D' },
 ] as const;
 
+const STORAGE_KEY = 'analytics_period';
+
+export function getStoredPeriod(): string | null {
+    try {
+        return localStorage.getItem(STORAGE_KEY);
+    } catch {
+        return null;
+    }
+}
+
 interface PeriodSelectorProps {
     current: string;
 }
@@ -16,6 +26,11 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
     const { url } = usePage();
 
     function handleChange(period: string) {
+        try {
+            localStorage.setItem(STORAGE_KEY, period);
+        } catch {
+            // localStorage unavailable, continue without persisting
+        }
         const urlObj = new URL(url, window.location.origin);
         urlObj.searchParams.set('period', period);
         router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true });
