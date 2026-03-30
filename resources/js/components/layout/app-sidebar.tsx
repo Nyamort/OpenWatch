@@ -11,6 +11,7 @@ import {
     SidebarFooter,
     SidebarHeader,
 } from '@/components/ui/sidebar';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { dashboard } from '@/routes';
 import { index as commandsIndex } from '@/routes/analytics/commands';
 import { index as jobsIndex } from '@/routes/analytics/jobs';
@@ -28,6 +29,8 @@ export function AppSidebar() {
 
     const hasContext = !!(activeOrganization && activeProject && activeEnvironment);
 
+    const analyticsHref = useAnalyticsHref();
+
     const mainNavItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -37,29 +40,29 @@ export function AppSidebar() {
         ...(hasContext ? [
             {
                 title: 'Requests',
-                href: requestsIndex({
+                href: analyticsHref(requestsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: Globe,
             },
             {
                 title: 'Jobs',
-                href: jobsIndex({
+                href: analyticsHref(jobsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: BriefcaseBusiness,
             },
             {
                 title: 'Commands',
-                href: commandsIndex({
+                href: analyticsHref(commandsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
-                }),
+                })),
                 icon: Terminal,
             },
         ] : []),
