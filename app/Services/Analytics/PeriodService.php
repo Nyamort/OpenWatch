@@ -82,7 +82,7 @@ class PeriodService
             throw new InvalidArgumentException('Custom period must not exceed 90 days.');
         }
 
-        $totalSeconds = $end->diffInSeconds($start);
+        $totalSeconds = $start->diffInSeconds($end);
 
         // Auto-compute bucket size for ≤300 points
         $bucketSeconds = (int) ceil($totalSeconds / 300);
