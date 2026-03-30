@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { BriefcaseBusiness, LayoutGrid, Network } from 'lucide-react';
+import { BriefcaseBusiness, Globe, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
 import { NavUser } from '@/components/layout/nav-user';
@@ -40,7 +40,7 @@ export function AppSidebar() {
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
                 }),
-                icon: Network,
+                icon: Globe,
             },
             {
                 title: 'Jobs',
