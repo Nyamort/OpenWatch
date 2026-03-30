@@ -1,10 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Database } from 'lucide-react';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-sql';
-import { useEffect, useRef } from 'react';
-
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
+import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +11,6 @@ import { show } from '@/routes/analytics/queries';
 import { formatDuration } from '../../requests/partials/request-charts';
 import type { Pagination, QueryRow, QuerySortKey, SortDir } from '../types';
 
-function SqlSnippet({ sql }: { sql: string }) {
-    const ref = useRef<HTMLElement>(null);
-    useEffect(() => {
-        if (ref.current) Prism.highlightElement(ref.current);
-    }, [sql]);
-    return (
-        <code ref={ref} className="language-sql truncate text-sm">
-            {sql}
-        </code>
-    );
-}
 
 interface QueryTableProps {
     queries: QueryRow[];
@@ -140,7 +126,9 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                                 className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden px-5 md:max-w-px">
-                                    <SqlSnippet sql={row.query} />
+                                    <SqlSyntaxHighlighter className="truncate">
+                                        {row.query}
+                                    </SqlSyntaxHighlighter>
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                     <Badge
