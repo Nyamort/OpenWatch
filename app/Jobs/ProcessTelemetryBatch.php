@@ -67,7 +67,9 @@ class ProcessTelemetryBatch implements ShouldQueue
                 ]);
 
                 $this->insertExtractionRecord($type, $telemetryRecord->id, $organizationId, $projectId, $record, $recordedAt);
-            } catch (InvalidArgumentException) {
+            } catch (InvalidArgumentException $e) {
+                report($e);
+
                 // Unknown type — skip
                 continue;
             }
@@ -139,7 +141,6 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'class' => $record['class'] ?? null,
                 'exit_code' => $record['exit_code'] ?? null,
                 'duration' => $record['duration'] ?? null,
-                'status' => $record['status'] ?? 'pending',
             ],
             'log' => [
                 'level' => $record['level'],

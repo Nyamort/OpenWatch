@@ -32,7 +32,6 @@ function insertCommand(array $ctx, array $overrides = []): void
         'class' => 'App\\Console\\Commands\\ProcessCommand',
         'exit_code' => 0,
         'duration' => 500,
-        'status' => 'success',
         'recorded_at' => now(),
     ], $overrides));
 }
