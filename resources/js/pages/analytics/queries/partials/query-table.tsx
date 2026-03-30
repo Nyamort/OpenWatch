@@ -3,6 +3,7 @@ import { ArrowUpRight, Database } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-sql';
 import { useEffect, useRef } from 'react';
+
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';

@@ -2,6 +2,8 @@
 
 @import 'tw-animate-css';
 
+@import 'prismjs/themes/prism.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -146,10 +148,13 @@
     }
 }
 
-/* Prism SQL syntax highlighting — semantic tokens for dark/light compatibility */
-code.language-sql .token.keyword { color: hsl(210 80% 60%); }
-code.language-sql .token.function { color: hsl(30 90% 55%); }
-code.language-sql .token.string,
-code.language-sql .token.number { color: hsl(140 60% 50%); }
-code.language-sql .token.operator,
-code.language-sql .token.punctuation { color: var(--muted-foreground); }
+/* Prism dark mode overrides (okaidia palette) */
+.dark code[class*="language-"],
+.dark pre[class*="language-"] { color: #f8f8f2; background: none; text-shadow: none; }
+.dark .token.comment { color: #8292a2; }
+.dark .token.keyword { color: #66d9ef; }
+.dark .token.string, .dark .token.inserted { color: #a6e22e; }
+.dark .token.number, .dark .token.boolean { color: #ae81ff; }
+.dark .token.function, .dark .token.attr-value { color: #e6db74; }
+.dark .token.operator, .dark .token.punctuation { color: #f8f8f2; }
+.dark .token.property, .dark .token.constant { color: #f92672; }
