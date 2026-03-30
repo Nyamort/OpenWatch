@@ -145,3 +145,11 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Prism SQL syntax highlighting — semantic tokens for dark/light compatibility */
+code.language-sql .token.keyword { color: hsl(210 80% 60%); }
+code.language-sql .token.function { color: hsl(30 90% 55%); }
+code.language-sql .token.string,
+code.language-sql .token.number { color: hsl(140 60% 50%); }
+code.language-sql .token.operator,
+code.language-sql .token.punctuation { color: var(--muted-foreground); }
