@@ -23,15 +23,29 @@ class ExceptionController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
+        $sort = (string) $request->query('sort', 'last_seen');
+        $direction = (string) $request->query('direction', 'desc');
+        $search = (string) $request->query('search', '');
+        $page = max(1, (int) $request->query('page', 1));
+
         $data = $this->buildIndex->handle(
             ctx: $ctx,
             period: $period,
-            search: $request->query('search'),
+            sort: $sort,
+            direction: $direction,
+            search: $search,
+            page: $page,
         );
 
         return Inertia::render('analytics/exceptions/index', [
-            'analytics' => $data,
+            'graph' => $data['graph'],
+            'stats' => $data['stats'],
+            'exceptions' => $data['exceptions'],
+            'pagination' => $data['pagination'],
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
+            'search' => $search,
         ]);
     }
 

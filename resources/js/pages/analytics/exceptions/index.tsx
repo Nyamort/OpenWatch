@@ -1,33 +1,28 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-    filters_applied: { search?: string };
-}
+import { ExceptionCharts } from './partials/exception-charts';
+import { ExceptionTable } from './partials/exception-table';
+import type { ExceptionGraphBucket, ExceptionRow, ExceptionSortKey, ExceptionStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph: ExceptionGraphBucket[];
+    stats: ExceptionStats;
+    exceptions: ExceptionRow[];
+    pagination: Pagination;
     period: string;
+    sort: ExceptionSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'class', label: 'Exception' },
-    { key: 'total', label: 'Count' },
-    { key: 'handled_count', label: 'Handled' },
-    { key: 'unhandled_count', label: 'Unhandled' },
-    { key: 'first_seen', label: 'First Seen' },
-    { key: 'last_seen', label: 'Last Seen' },
-];
+const breadcrumbs = [{ title: 'Exceptions', href: '#' }];
 
-export default function ExceptionsIndex({ analytics, period }: Props) {
+export default function ExceptionsIndex({ graph, stats, exceptions, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Exception Analytics" period={period}>
-            <Head title="Exception Analytics" />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+        <AnalyticsLayout title="Exceptions" period={period} breadcrumbs={breadcrumbs}>
+            <Head title="Exceptions" />
+            <ExceptionCharts graph={graph} stats={stats} />
+            <ExceptionTable exceptions={exceptions} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }
