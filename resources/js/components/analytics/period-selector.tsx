@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { format, parseISO } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 import { useState } from 'react';
 import { type DateRange } from 'react-day-picker';
@@ -54,6 +54,7 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
     const [dateRange, setDateRange] = useState<DateRange | undefined>(parsed?.range);
     const [fromTime, setFromTime] = useState(parsed?.fromTime ?? '00:00');
     const [toTime, setToTime] = useState(parsed?.toTime ?? '23:59');
+    const [rangeError, setRangeError] = useState<string | null>(null);
 
     function handleChange(period: string) {
         try {
@@ -68,6 +69,12 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
 
     function handleApply() {
         if (!dateRange?.from || !dateRange?.to) return;
+        const diffDays = Math.round((dateRange.to.getTime() - dateRange.from.getTime()) / 86_400_000);
+        if (diffDays > 90) {
+            setRangeError('The date range cannot exceed 90 days.');
+            return;
+        }
+        setRangeError(null);
         const fromDate = format(dateRange.from, 'yyyy-MM-dd');
         const toDate = format(dateRange.to, 'yyyy-MM-dd');
         setOpen(false);
@@ -113,12 +120,17 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
                     <Calendar
                         mode="range"
                         selected={dateRange}
-                        onSelect={setDateRange}
+                        onSelect={(r) => { setDateRange(r); setRangeError(null); }}
                         numberOfMonths={2}
                         defaultMonth={dateRange?.from}
-                        disabled={(date) => date > new Date()}
+                        disabled={(date) => {
+                            return date > new Date();
+                        }}
                     />
                     <Separator />
+                    {rangeError && (
+                        <p className="px-3 pt-2 text-xs text-destructive">{rangeError}</p>
+                    )}
                     <div className="flex items-end gap-3 p-3">
                         <div className="flex flex-1 flex-col gap-1.5">
                             <label className="text-xs font-medium text-muted-foreground">

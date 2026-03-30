@@ -8,6 +8,8 @@ use App\Services\Analytics\AnalyticsContextResolver;
 use App\Services\Analytics\PeriodResult;
 use App\Services\Analytics\PeriodService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 abstract class AnalyticsController extends Controller
 {
@@ -29,6 +31,10 @@ abstract class AnalyticsController extends Controller
     {
         $period = $request->query('period', '24h');
 
-        return app(PeriodService::class)->parse((string) $period);
+        try {
+            return app(PeriodService::class)->parse((string) $period);
+        } catch (InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['period' => $e->getMessage()]);
+        }
     }
 }

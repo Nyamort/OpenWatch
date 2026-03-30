@@ -84,9 +84,15 @@ class PeriodService
 
         $totalSeconds = $start->diffInSeconds($end);
 
-        // Auto-compute bucket size for ≤300 points
-        $bucketSeconds = (int) ceil($totalSeconds / 300);
-        $bucketSeconds = max(1, $bucketSeconds);
+        // Snap to nearest round bucket size that keeps ≤300 data points
+        $niceBuckets = [30, 60, 300, 900, 1_800, 3_600, 7_200, 14_400, 21_600, 43_200, 86_400];
+        $bucketSeconds = $niceBuckets[array_key_last($niceBuckets)];
+        foreach ($niceBuckets as $candidate) {
+            if ($totalSeconds / $candidate <= 300) {
+                $bucketSeconds = $candidate;
+                break;
+            }
+        }
 
         $label = $start->toDateString().' – '.$end->toDateString();
 
