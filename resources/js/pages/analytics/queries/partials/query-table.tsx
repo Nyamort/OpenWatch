@@ -45,23 +45,63 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
             />
             <Table className="border-separate border-spacing-y-1.5">
                 <TableHeader className="[&_tr]:border-0">
-                    <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
-                        <SortableHead column="query" sort={sort} direction={direction} onSort={onSort} className="h-11 px-5 text-xs font-medium">
+                    <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
+                        <SortableHead
+                            column="query"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            className="h-11 px-5 text-xs font-medium"
+                        >
                             Query
                         </SortableHead>
-                        <SortableHead column="connection" sort={sort} direction={direction} onSort={onSort} className="h-11 w-px whitespace-nowrap px-4 text-xs font-medium">
+                        <SortableHead
+                            column="connection"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap"
+                        >
                             Connection
                         </SortableHead>
-                        <SortableHead column="calls" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="calls"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Calls
                         </SortableHead>
-                        <SortableHead column="total" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="total"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Total
                         </SortableHead>
-                        <SortableHead column="avg" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="avg"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             AVG
                         </SortableHead>
-                        <SortableHead column="p95" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="p95"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             P95
                         </SortableHead>
                         <TableHead className="h-11 w-px pr-5" />
@@ -70,7 +110,10 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                 <TableBody>
                     {queries.length === 0 ? (
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                            <TableCell
+                                colSpan={7}
+                                className="py-12 text-center text-sm text-muted-foreground"
+                            >
                                 No queries recorded for this period.
                             </TableCell>
                         </TableRow>
@@ -78,35 +121,42 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                         queries.map((row) => (
                             <TableRow
                                 key={row.sql_hash}
-                                className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
+                                className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
-                                <TableCell className="h-11 overflow-hidden px-5">
-                                    <span className="truncate font-mono text-sm">{row.query}</span>
+                                <TableCell className="h-11 overflow-hidden px-5 md:max-w-px">
+                                    <span className="truncate font-mono text-sm">
+                                        {row.query}
+                                    </span>
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4">
-                                    <Badge variant="outline" className="font-mono text-xs">
+                                <TableCell className="h-11 w-px px-4 whitespace-nowrap">
+                                    <Badge
+                                        variant="outline"
+                                        className="font-mono text-xs"
+                                    >
                                         {row.connection}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
+                                <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
                                     {row.calls.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.total)}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.avg)}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.p95)}
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
                                         <Link
                                             href={show.url({
-                                                organization: activeOrganization.slug,
+                                                organization:
+                                                    activeOrganization.slug,
                                                 project: activeProject.slug,
-                                                environment: activeEnvironment.slug,
+                                                environment:
+                                                    activeEnvironment.slug,
                                                 query: row.sql_hash,
                                             })}
                                             className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500"
