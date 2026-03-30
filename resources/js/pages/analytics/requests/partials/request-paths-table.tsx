@@ -1,11 +1,10 @@
-import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, FolderClosed, Globe, OctagonAlert, PanelRight, TriangleAlert } from 'lucide-react';
-import { useRef, useState } from 'react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import type { Pagination, PathRow, SortDir, SortKey } from '../types';
 import { formatDuration } from './request-charts';
 
@@ -18,37 +17,12 @@ interface RequestPathsTableProps {
 }
 
 export function RequestPathsTable({ paths, pagination, sort, direction, search }: RequestPathsTableProps) {
-    const { url } = usePage();
-    const [searchValue, setSearchValue] = useState(search);
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { searchValue, handleSearch, handlePage, handleSort } = useAnalyticsTable<SortKey>({
+        search,
+        only: ['paths', 'pagination', 'sort', 'direction'],
+    });
 
-    function handleSearch(value: string) {
-        setSearchValue(value);
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            const urlObj = new URL(url, window.location.origin);
-            urlObj.searchParams.set('search', value);
-            urlObj.searchParams.delete('page');
-            router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction', 'search'] });
-        }, 300);
-    }
-
-    function handlePage(page: number) {
-        const urlObj = new URL(url, window.location.origin);
-        urlObj.searchParams.set('page', String(page));
-        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction'] });
-    }
-
-    function handleSort(key: SortKey) {
-        const urlObj = new URL(url, window.location.origin);
-        const newDir: SortDir = sort === key && direction === 'desc' ? 'asc' : 'desc';
-        urlObj.searchParams.set('sort', key);
-        urlObj.searchParams.set('direction', newDir);
-        urlObj.searchParams.delete('page');
-        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true, only: ['paths', 'pagination', 'sort', 'direction'] });
-    }
-
-    const onSort = (col: string) => handleSort(col as SortKey);
+    const onSort = (col: string) => handleSort(col as SortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
