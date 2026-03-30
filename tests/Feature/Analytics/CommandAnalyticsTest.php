@@ -40,10 +40,10 @@ function insertCommand(array $ctx, array $overrides = []): void
 test('commands index groups by name with status counters', function () {
     $ctx = setupCommandContext(uniqid());
 
-    insertCommand($ctx, ['name' => 'app:sync', 'status' => 'success', 'duration' => 100]);
-    insertCommand($ctx, ['name' => 'app:sync', 'status' => 'success', 'duration' => 200]);
-    insertCommand($ctx, ['name' => 'app:sync', 'status' => 'failed', 'duration' => 50]);
-    insertCommand($ctx, ['name' => 'app:import', 'status' => 'success', 'duration' => 1000]);
+    insertCommand($ctx, ['name' => 'app:sync', 'exit_code' => 0, 'duration' => 100]);
+    insertCommand($ctx, ['name' => 'app:sync', 'exit_code' => 0, 'duration' => 200]);
+    insertCommand($ctx, ['name' => 'app:sync', 'exit_code' => 1, 'duration' => 50]);
+    insertCommand($ctx, ['name' => 'app:import', 'exit_code' => 0, 'duration' => 1000]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/commands");

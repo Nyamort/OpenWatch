@@ -28,14 +28,14 @@ class BuildCommandIndexData
             ->whereBetween('recorded_at', [$period->start, $period->end]);
 
         // Global stats
-        $stats = (clone $base)->selectRaw("
+        $stats = (clone $base)->selectRaw('
             COUNT(*) as count,
-            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
-            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+            SUM(CASE WHEN exit_code = 0 THEN 1 ELSE 0 END) as successful,
+            SUM(CASE WHEN exit_code != 0 THEN 1 ELSE 0 END) as failed,
             CAST(MIN(duration) AS DOUBLE) as min,
             CAST(MAX(duration) AS DOUBLE) as max,
             CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg
-        ")->first();
+        ')->first();
 
         $totalCount = (int) ($stats->count ?? 0);
         $globalP95 = null;
@@ -99,12 +99,12 @@ class BuildCommandIndexData
         $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
-        $aggregates = "
+        $aggregates = '
             COUNT(*) AS total,
-            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful,
-            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+            SUM(CASE WHEN exit_code = 0 THEN 1 ELSE 0 END) AS successful,
+            SUM(CASE WHEN exit_code != 0 THEN 1 ELSE 0 END) AS failed,
             CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
-        ";
+        ';
 
         $totalCommands = (clone $base)->distinct()->count('name');
         $offset = $this->pageOffset($page);
@@ -120,7 +120,7 @@ class BuildCommandIndexData
         } else {
             $inner = (clone $base)->select([
                 'name',
-                'status',
+                'exit_code',
                 'duration',
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY name ORDER BY duration) AS row_num'),
                 DB::raw('COUNT(*) OVER (PARTITION BY name) AS name_count'),
@@ -171,12 +171,12 @@ class BuildCommandIndexData
      */
     private function fetchBuckets(Builder $base, string $slotExpr): Collection
     {
-        $aggregates = "
+        $aggregates = '
             COUNT(*) AS count,
-            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful,
-            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+            SUM(CASE WHEN exit_code = 0 THEN 1 ELSE 0 END) AS successful,
+            SUM(CASE WHEN exit_code != 0 THEN 1 ELSE 0 END) AS failed,
             CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
-        ";
+        ';
 
         if (DB::getDriverName() === 'sqlite') {
             return (clone $base)
@@ -187,7 +187,7 @@ class BuildCommandIndexData
         }
 
         $inner = (clone $base)->select([
-            'status',
+            'exit_code',
             'duration',
             DB::raw("{$slotExpr} AS bucket_slot"),
             DB::raw("ROW_NUMBER() OVER (PARTITION BY {$slotExpr} ORDER BY duration) AS row_num"),
