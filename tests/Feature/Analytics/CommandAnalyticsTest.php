@@ -50,11 +50,14 @@ test('commands index groups by name with status counters', function () {
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/commands/index')
-        ->has('analytics.rows', 2)
-        ->where('analytics.rows.0.name', 'app:sync')
-        ->where('analytics.rows.0.total', 3)
-        ->where('analytics.rows.0.success_count', 2)
-        ->where('analytics.rows.0.failed_count', 1)
+        ->has('commands', 2)
+        ->has('graph')
+        ->has('stats')
+        ->has('pagination')
+        ->where('commands.0.name', 'app:sync')
+        ->where('commands.0.total', 3)
+        ->where('commands.0.successful', 2)
+        ->where('commands.0.failed', 1)
     );
 });
 

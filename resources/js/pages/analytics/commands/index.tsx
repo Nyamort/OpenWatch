@@ -1,32 +1,28 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-}
+import { CommandCharts } from './partials/command-charts';
+import { CommandTable } from './partials/command-table';
+import type { CommandGraphBucket, CommandRow, CommandSortKey, CommandStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph: CommandGraphBucket[];
+    stats: CommandStats;
+    commands: CommandRow[];
+    pagination: Pagination;
     period: string;
+    sort: CommandSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'name', label: 'Command' },
-    { key: 'total', label: 'Total' },
-    { key: 'success_count', label: 'Success' },
-    { key: 'failed_count', label: 'Failed' },
-    { key: 'pending_count', label: 'Pending' },
-    { key: 'avg_duration', label: 'Avg Duration (ms)' },
-];
+const breadcrumbs = [{ title: 'Commands', href: '#' }];
 
-export default function CommandsIndex({ analytics, period }: Props) {
+export default function CommandsIndex({ graph, stats, commands, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Command Analytics" period={period}>
-            <Head title="Command Analytics" />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+        <AnalyticsLayout title="Commands" period={period} breadcrumbs={breadcrumbs}>
+            <Head title="Commands" />
+            <CommandCharts graph={graph} stats={stats} />
+            <CommandTable commands={commands} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }

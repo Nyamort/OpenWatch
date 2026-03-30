@@ -2,47 +2,203 @@
 
 namespace App\Actions\Analytics\Command;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
-use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
+use Carbon\Carbon;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BuildCommandIndexData
 {
+    use PaginatesAnalyticsQuery;
+
     /**
-     * Build command analytics grouped by name with status counters.
+     * Build graph buckets, global stats and paginated command table.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $rows = DB::table('extraction_commands')
+        $base = DB::table('extraction_commands')
             ->where('organization_id', $ctx->organization->id)
             ->where('project_id', $ctx->project->id)
             ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->select([
-                'name',
-                DB::raw('COUNT(*) as total'),
-                DB::raw("CAST(SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS UNSIGNED) as success_count"),
-                DB::raw("CAST(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS UNSIGNED) as failed_count"),
-                DB::raw("CAST(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS UNSIGNED) as pending_count"),
-                DB::raw("CAST(ROUND(AVG(CASE WHEN status != 'pending' THEN duration END) , 2) AS DOUBLE) as avg_duration"),
-            ])
-            ->groupBy('name')
-            ->orderBy('total', 'desc')
-            ->paginate(50);
+            ->whereBetween('recorded_at', [$period->start, $period->end]);
 
-        return (new AnalyticsResponseBuilder)
-            ->withSummary(['period_label' => $period->label])
-            ->withRows($rows->items())
-            ->withPagination([
-                'current_page' => $rows->currentPage(),
-                'last_page' => $rows->lastPage(),
-                'per_page' => $rows->perPage(),
-                'total' => $rows->total(),
-            ])
-            ->withConfig(['period' => $period->label])
-            ->build();
+        // Global stats
+        $stats = (clone $base)->selectRaw("
+            COUNT(*) as count,
+            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
+            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+            CAST(MIN(duration) AS DOUBLE) as min,
+            CAST(MAX(duration) AS DOUBLE) as max,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg
+        ")->first();
+
+        $totalCount = (int) ($stats->count ?? 0);
+        $globalP95 = null;
+
+        if ($totalCount > 0) {
+            $p95Offset = max(0, (int) ceil($totalCount * 0.95) - 1);
+            $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
+        }
+
+        // Time-bucketed graph data
+        $bucketSeconds = $period->bucketSeconds;
+        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
+        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+
+        $graph = [];
+        $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
+        $endSlot = (int) floor(Carbon::parse($period->end)->utc()->timestamp / $bucketSeconds);
+
+        for ($slot = $startSlot; $slot <= $endSlot; $slot++) {
+            $row = $bucketMap->get($slot);
+            $graph[] = [
+                'bucket' => Carbon::createFromTimestampUTC($slot * $bucketSeconds)->format('Y-m-d H:i:s'),
+                'count' => (int) ($row?->count ?? 0),
+                'successful' => (int) ($row?->successful ?? 0),
+                'failed' => (int) ($row?->failed ?? 0),
+                'avg' => $row?->avg,
+                'p95' => $row?->p95,
+            ];
+        }
+
+        $commands = $this->fetchCommands($base, $sort, $direction, $search, $page);
+
+        return [
+            'graph' => $graph,
+            'commands' => $commands['data'],
+            'pagination' => $commands['pagination'],
+            'stats' => [
+                'count' => $totalCount,
+                'successful' => (int) ($stats?->successful ?? 0),
+                'failed' => (int) ($stats?->failed ?? 0),
+                'min' => $stats->min ?? null,
+                'max' => $stats->max ?? null,
+                'avg' => $stats->avg ?? null,
+                'p95' => $globalP95 ? (float) $globalP95 : null,
+            ],
+        ];
+    }
+
+    /**
+     * Fetch per-command aggregates grouped by name.
+     *
+     * @return array<string, mixed>
+     */
+    private function fetchCommands(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    {
+        if ($search !== '') {
+            $base = (clone $base)->where('name', 'like', '%'.$search.'%');
+        }
+
+        $allowedSorts = ['name' => 'name', 'total' => 'total', 'successful' => 'successful', 'failed' => 'failed', 'avg' => 'avg', 'p95' => 'p95'];
+        $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
+        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+
+        $aggregates = "
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful,
+            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
+        ";
+
+        $totalCommands = (clone $base)->distinct()->count('name');
+        $offset = $this->pageOffset($page);
+
+        if (DB::getDriverName() === 'sqlite') {
+            $rows = (clone $base)
+                ->selectRaw("name, {$aggregates}, NULL AS p95")
+                ->groupByRaw('name')
+                ->orderByRaw("{$orderCol} {$orderDir}")
+                ->limit($this->analyticsPerPage)
+                ->offset($offset)
+                ->get();
+        } else {
+            $inner = (clone $base)->select([
+                'name',
+                'status',
+                'duration',
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY name ORDER BY duration) AS row_num'),
+                DB::raw('COUNT(*) OVER (PARTITION BY name) AS name_count'),
+            ]);
+
+            $rows = DB::query()
+                ->fromSub($inner, 'ranked')
+                ->selectRaw("name, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * name_count) THEN duration END) AS DOUBLE) AS p95")
+                ->groupByRaw('name')
+                ->orderByRaw("{$orderCol} {$orderDir}")
+                ->limit($this->analyticsPerPage)
+                ->offset($offset)
+                ->get();
+        }
+
+        $data = $rows->map(fn ($row) => [
+            'name' => $row->name ?: null,
+            'total' => (int) $row->total,
+            'successful' => (int) ($row->successful ?? 0),
+            'failed' => (int) ($row->failed ?? 0),
+            'avg' => $row->avg,
+            'p95' => $row->p95,
+        ])->all();
+
+        return [
+            'data' => $data,
+            'pagination' => $this->buildPaginationMeta($totalCommands, $page),
+        ];
+    }
+
+    /**
+     * Driver-aware SQL expression for the integer bucket slot from recorded_at.
+     */
+    private function bucketSlotExpression(int $bucketSeconds): string
+    {
+        $epoch = match (DB::getDriverName()) {
+            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
+            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
+            default => 'UNIX_TIMESTAMP(recorded_at)',
+        };
+
+        return "FLOOR({$epoch} / {$bucketSeconds})";
+    }
+
+    /**
+     * Fetch per-bucket aggregates.
+     * Uses window functions for p95 on MySQL/PostgreSQL; returns NULL on SQLite.
+     */
+    private function fetchBuckets(Builder $base, string $slotExpr): Collection
+    {
+        $aggregates = "
+            COUNT(*) AS count,
+            SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful,
+            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
+        ";
+
+        if (DB::getDriverName() === 'sqlite') {
+            return (clone $base)
+                ->selectRaw("{$slotExpr} AS bucket_slot, {$aggregates}, NULL AS p95")
+                ->groupByRaw($slotExpr)
+                ->orderByRaw($slotExpr)
+                ->get();
+        }
+
+        $inner = (clone $base)->select([
+            'status',
+            'duration',
+            DB::raw("{$slotExpr} AS bucket_slot"),
+            DB::raw("ROW_NUMBER() OVER (PARTITION BY {$slotExpr} ORDER BY duration) AS row_num"),
+            DB::raw("COUNT(*) OVER (PARTITION BY {$slotExpr}) AS bucket_count"),
+        ]);
+
+        return DB::query()
+            ->fromSub($inner, 'ranked')
+            ->selectRaw("bucket_slot, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END) AS DOUBLE) AS p95")
+            ->groupBy('bucket_slot')
+            ->orderBy('bucket_slot')
+            ->get();
     }
 }

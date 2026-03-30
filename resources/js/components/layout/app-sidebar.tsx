@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { BriefcaseBusiness, Globe, LayoutGrid } from 'lucide-react';
+import { BriefcaseBusiness, Globe, LayoutGrid, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
 import { NavUser } from '@/components/layout/nav-user';
@@ -12,6 +12,7 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as commandsIndex } from '@/routes/analytics/commands';
 import { index as jobsIndex } from '@/routes/analytics/jobs';
 import { index as requestsIndex } from '@/routes/analytics/requests';
 import type { NavItem } from '@/types/navigation';
@@ -50,6 +51,15 @@ export function AppSidebar() {
                     environment: activeEnvironment!.slug,
                 }),
                 icon: BriefcaseBusiness,
+            },
+            {
+                title: 'Commands',
+                href: commandsIndex({
+                    organization: activeOrganization!.slug,
+                    project: activeProject!.slug,
+                    environment: activeEnvironment!.slug,
+                }),
+                icon: Terminal,
             },
         ] : []),
     ];
