@@ -33,8 +33,8 @@ export function CommandTable({ commands, pagination, sort, direction, search }: 
                 searchPlaceholder="Search commands..."
                 onSearch={handleSearch}
             />
-            <Table className="border-separate border-spacing-y-1.5">
-                <TableHeader className="[&_tr]:border-0">
+            <Table className="border-separate border-spacing-y-1.5" containerClassName="overflow-x-visible">
+                <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                     <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
                         <SortableHead column="name" sort={sort} direction={direction} onSort={onSort} className="h-11 px-5 text-xs font-medium">
                             Command

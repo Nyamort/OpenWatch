@@ -105,8 +105,8 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                 searchPlaceholder="Search queries..."
                 onSearch={handleSearch}
             />
-            <Table className="border-separate border-spacing-y-1.5">
-                <TableHeader className="[&_tr]:border-0">
+            <Table className="border-separate border-spacing-y-1.5" containerClassName="overflow-x-visible">
+                <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                     <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
                         <SortableHead
                             column="query"
