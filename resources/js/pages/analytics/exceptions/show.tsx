@@ -32,8 +32,8 @@ export default function ExceptionShow({ analytics, period }: Props) {
     const { summary } = analytics;
 
     return (
-        <AnalyticsLayout title={summary.class} period={period}>
-            <Head title={`Exception: ${summary.class}`} />
+        <AnalyticsLayout period={period}>
+            <Head />
             <div className="rounded-lg border bg-card p-4 text-sm space-y-2">
                 <p className="text-muted-foreground">
                     {summary.file}:{summary.line}

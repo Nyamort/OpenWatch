@@ -60,7 +60,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel
                 config={requestChartConfig}
-                title="Requests"
+               
                 heroValue={stats.count.toLocaleString()}
                 legendStats={requestStats}
                 firstBucket={graph[0]?.bucket}
@@ -104,7 +104,7 @@ export function RequestCharts({ graph, stats }: RequestChartsProps) {
 
             <ChartPanel
                 config={durationChartConfig}
-                title="Duration"
+               
                 heroValue={stats.min !== null && stats.max !== null ? `${formatDuration(stats.min)} – ${formatDuration(stats.max)}` : '—'}
                 legendStats={durationStats}
                 firstBucket={graph[0]?.bucket}

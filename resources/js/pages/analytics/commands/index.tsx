@@ -19,8 +19,8 @@ const breadcrumbs = [{ title: 'Commands', href: '#' }];
 
 export default function CommandsIndex({ graph, stats, commands, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Commands" period={period} breadcrumbs={breadcrumbs}>
-            <Head title="Commands" />
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
+            <Head />
             <CommandCharts graph={graph} stats={stats} />
             <CommandTable commands={commands} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>

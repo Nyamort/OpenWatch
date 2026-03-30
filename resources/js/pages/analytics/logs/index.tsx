@@ -40,8 +40,8 @@ const columns = [
 
 export default function LogsIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Log Feed" period={period}>
-            <Head title="Log Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

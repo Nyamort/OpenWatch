@@ -14,7 +14,7 @@ export default function MailShow({ analytics }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Mail Detail" />
+            <Head />
             <div className="flex flex-col gap-6 p-6">
                 <h1 className="text-xl font-semibold">Mail Detail</h1>
                 <div className="rounded-lg border bg-card p-4">

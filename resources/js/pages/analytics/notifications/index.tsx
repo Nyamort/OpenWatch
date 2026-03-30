@@ -24,8 +24,8 @@ const columns = [
 
 export default function NotificationsIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Notification Analytics" period={period}>
-            <Head title="Notification Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

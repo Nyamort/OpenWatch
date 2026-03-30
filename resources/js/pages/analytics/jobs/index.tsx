@@ -19,8 +19,8 @@ const breadcrumbs = [{ title: 'Jobs', href: '#' }];
 
 export default function JobsIndex({ graph, stats, jobs, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Jobs" period={period} breadcrumbs={breadcrumbs}>
-            <Head title="Jobs" />
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
+            <Head />
             <JobCharts graph={graph} stats={stats} />
             <JobTable jobs={jobs} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>

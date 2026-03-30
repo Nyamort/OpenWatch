@@ -29,8 +29,8 @@ const columns = [
 
 export default function QueryShow({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Query Detail" period={period}>
-            <Head title="Query Detail" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <div className="rounded-lg border bg-card p-4">
                 <pre className="overflow-x-auto text-xs">{analytics.summary.sql_preview}</pre>
                 <div className="mt-4 grid grid-cols-3 gap-4 text-sm">

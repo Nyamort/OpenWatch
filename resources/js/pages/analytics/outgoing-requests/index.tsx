@@ -26,8 +26,8 @@ const columns = [
 
 export default function OutgoingRequestsIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Outgoing Request Analytics" period={period}>
-            <Head title="Outgoing Request Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

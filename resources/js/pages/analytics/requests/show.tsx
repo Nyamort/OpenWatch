@@ -19,7 +19,7 @@ export default function RequestShow({ analytics }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Request Detail" />
+            <Head />
             <div className="flex flex-col gap-6 p-6">
                 <h1 className="text-xl font-semibold">Request Detail</h1>
                 <div className="rounded-lg border bg-card p-4">

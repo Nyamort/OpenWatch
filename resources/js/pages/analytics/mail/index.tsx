@@ -23,8 +23,8 @@ const columns = [
 
 export default function MailIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Mail Analytics" period={period}>
-            <Head title="Mail Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

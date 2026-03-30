@@ -25,8 +25,8 @@ const columns = [
 
 export default function ScheduledTasksIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Scheduled Task Analytics" period={period}>
-            <Head title="Scheduled Task Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

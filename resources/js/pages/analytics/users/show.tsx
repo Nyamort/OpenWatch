@@ -45,8 +45,8 @@ const jobColumns = [
 
 export default function UserShow({ analytics, user_value, period }: Props) {
     return (
-        <AnalyticsLayout title={`User: ${user_value}`} period={period}>
-            <Head title={`User: ${user_value}`} />
+        <AnalyticsLayout period={period}>
+            <Head />
             <div className="grid grid-cols-3 gap-4">
                 {[
                     { label: 'Requests', value: analytics.summary.request_count },

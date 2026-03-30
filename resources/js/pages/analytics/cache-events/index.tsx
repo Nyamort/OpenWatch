@@ -47,8 +47,8 @@ const columns = [
 
 export default function CacheEventsIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="Cache Event Analytics" period={period}>
-            <Head title="Cache Event Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

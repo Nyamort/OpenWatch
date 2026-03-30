@@ -22,8 +22,8 @@ const columns = [
 
 export default function UsersIndex({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title="User Analytics" period={period}>
-            <Head title="User Analytics" />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

@@ -19,8 +19,8 @@ const breadcrumbs = [{ title: 'Requests', href: '#' }];
 
 export default function RequestsIndex({ graph, stats, paths, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Requests" period={period} breadcrumbs={breadcrumbs}>
-            <Head title="Requests" />
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
+            <Head />
             <RequestCharts graph={graph} stats={stats} />
             <RequestPathsTable paths={paths} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>

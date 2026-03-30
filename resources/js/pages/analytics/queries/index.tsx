@@ -19,8 +19,8 @@ const breadcrumbs = [{ title: 'Queries', href: '#' }];
 
 export default function QueriesIndex({ graph, stats, queries, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Queries" period={period} breadcrumbs={breadcrumbs}>
-            <Head title="Queries" />
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
+            <Head />
             <QueryCharts graph={graph} stats={stats} />
             <QueryTable queries={queries} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>

@@ -23,8 +23,8 @@ const columns = [
 
 export default function OutgoingRequestsHost({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title={`Requests to ${analytics.summary.host}`} period={period}>
-            <Head title={`Host: ${analytics.summary.host}`} />
+        <AnalyticsLayout period={period}>
+            <Head />
             <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
         </AnalyticsLayout>
     );

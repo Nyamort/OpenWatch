@@ -21,8 +21,8 @@ const columns = [
 
 export default function ScheduledTaskShow({ analytics, period }: Props) {
     return (
-        <AnalyticsLayout title={`${analytics.summary.name} runs`} period={period}>
-            <Head title={`Scheduled Task: ${analytics.summary.name}`} />
+        <AnalyticsLayout period={period}>
+            <Head />
             <div className="rounded-lg border bg-card p-4 text-sm">
                 <span className="text-muted-foreground">Schedule: </span>
                 <code className="font-mono">{analytics.summary.cron}</code>

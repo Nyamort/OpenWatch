@@ -23,8 +23,8 @@ export default function RequestsRoute({ analytics, period }: Props) {
     const { summary } = analytics;
 
     return (
-        <AnalyticsLayout title={`${summary.method} ${summary.route_path}`} period={period}>
-            <Head title={`Route: ${summary.route_path}`} />
+        <AnalyticsLayout period={period}>
+            <Head />
             <div className="grid grid-cols-4 gap-4">
                 {[
                     { label: 'Total', value: summary.total },

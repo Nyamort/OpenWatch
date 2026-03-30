@@ -19,8 +19,8 @@ const breadcrumbs = [{ title: 'Exceptions', href: '#' }];
 
 export default function ExceptionsIndex({ graph, stats, exceptions, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout title="Exceptions" period={period} breadcrumbs={breadcrumbs}>
-            <Head title="Exceptions" />
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
+            <Head />
             <ExceptionCharts graph={graph} stats={stats} />
             <ExceptionTable exceptions={exceptions} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
