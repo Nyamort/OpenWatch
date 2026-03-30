@@ -27,6 +27,9 @@ export default function SqlSyntaxHighlighter({ children, className = '', wrapLon
         lineHeight: 2,
         background: 'none',
         border: 'none',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap' as const,
     }), []);
 
     return (
