@@ -32,7 +32,7 @@ export function ExceptionCharts({ graph, stats }: ExceptionChartsProps) {
     return (
         <ChartPanel
             config={chartConfig}
-           
+            title="Occurrences"
             heroValue={stats.count.toLocaleString()}
             legendStats={legendStats}
             firstBucket={graph[0]?.bucket}

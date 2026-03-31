@@ -53,7 +53,7 @@ export function CommandCharts({ graph, stats }: CommandChartsProps) {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel
                 config={callsChartConfig}
-               
+                title="Calls"
                 heroValue={stats.count.toLocaleString()}
                 legendStats={callsStats}
                 firstBucket={graph[0]?.bucket}
@@ -95,7 +95,7 @@ export function CommandCharts({ graph, stats }: CommandChartsProps) {
 
             <ChartPanel
                 config={durationChartConfig}
-               
+                title="Duration"
                 heroValue={stats.min !== null && stats.max !== null ? `${formatDuration(stats.min)} – ${formatDuration(stats.max)}` : '—'}
                 legendStats={durationStats}
                 firstBucket={graph[0]?.bucket}

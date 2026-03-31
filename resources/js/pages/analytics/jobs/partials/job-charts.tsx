@@ -54,7 +54,7 @@ export function JobCharts({ graph, stats }: JobChartsProps) {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel
                 config={attemptsChartConfig}
-               
+                title="Attempts"
                 heroValue={stats.count.toLocaleString()}
                 legendStats={attemptsStats}
                 firstBucket={graph[0]?.bucket}
@@ -98,7 +98,7 @@ export function JobCharts({ graph, stats }: JobChartsProps) {
 
             <ChartPanel
                 config={durationChartConfig}
-               
+                title="Duration"
                 heroValue={stats.min !== null && stats.max !== null ? `${formatDuration(stats.min)} – ${formatDuration(stats.max)}` : '—'}
                 legendStats={durationStats}
                 firstBucket={graph[0]?.bucket}
