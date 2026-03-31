@@ -1,4 +1,4 @@
-import { OctagonAlert, Terminal } from 'lucide-react';
+import { ArrowUpRight, OctagonAlert, Terminal } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -93,8 +93,14 @@ export function CommandTable({ commands, pagination, sort, direction, search }: 
                                 <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
                                     {formatDuration(row.p95)}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap pr-5 text-right">
-                                    <Terminal className="text-muted-foreground group-hover/row:text-emerald-500 size-4 transition-colors duration-150" />
+                                <TableCell className="h-11 w-px pr-5">
+                                    <div className="flex items-center justify-end">
+                                        <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
+                                            <span className="flex size-6 items-center justify-center">
+                                                <ArrowUpRight className="size-4" />
+                                            </span>
+                                        </div>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))

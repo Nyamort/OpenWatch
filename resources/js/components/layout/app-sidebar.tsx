@@ -72,15 +72,6 @@ export function AppSidebar() {
                 icon: Terminal,
             },
             {
-                title: 'Queries',
-                href: analyticsHref(queriesIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Database,
-            },
-            {
                 title: 'Exceptions',
                 href: analyticsHref(exceptionsIndex.url({
                     organization: activeOrganization!.slug,
@@ -90,22 +81,22 @@ export function AppSidebar() {
                 icon: AlertCircle,
             },
             {
-                title: 'Outgoing Requests',
-                href: analyticsHref(outgoingRequestsIndex.url({
+                title: 'Queries',
+                href: analyticsHref(queriesIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
                 })),
-                icon: ArrowUpRight,
+                icon: Database,
             },
             {
-                title: 'Cache',
-                href: analyticsHref(cacheEventsIndex.url({
+                title: 'Notifications',
+                href: analyticsHref(notificationsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
                 })),
-                icon: HardDrive,
+                icon: Bell,
             },
             {
                 title: 'Mails',
@@ -117,13 +108,22 @@ export function AppSidebar() {
                 icon: Mail,
             },
             {
-                title: 'Notifications',
-                href: analyticsHref(notificationsIndex.url({
+                title: 'Cache',
+                href: analyticsHref(cacheEventsIndex.url({
                     organization: activeOrganization!.slug,
                     project: activeProject!.slug,
                     environment: activeEnvironment!.slug,
                 })),
-                icon: Bell,
+                icon: HardDrive,
+            },
+            {
+                title: 'Outgoing Requests',
+                href: analyticsHref(outgoingRequestsIndex.url({
+                    organization: activeOrganization!.slug,
+                    project: activeProject!.slug,
+                    environment: activeEnvironment!.slug,
+                })),
+                icon: ArrowUpRight,
             },
         ] : []),
     ];
