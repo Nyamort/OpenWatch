@@ -23,11 +23,29 @@ class NotificationController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildIndex->handle($ctx, $period);
+        $sort = (string) $request->query('sort', 'count');
+        $direction = (string) $request->query('direction', 'desc');
+        $search = (string) $request->query('search', '');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = $this->buildIndex->handle(
+            ctx: $ctx,
+            period: $period,
+            sort: $sort,
+            direction: $direction,
+            search: $search,
+            page: $page,
+        );
 
         return Inertia::render('analytics/notifications/index', [
-            'analytics' => $data,
+            'graph' => $data['graph'],
+            'stats' => $data['stats'],
+            'notifications' => $data['notifications'],
+            'pagination' => $data['pagination'],
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
+            'search' => $search,
         ]);
     }
 
