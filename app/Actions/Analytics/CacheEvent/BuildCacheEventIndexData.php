@@ -99,7 +99,7 @@ class BuildCacheEventIndexData
         }
 
         $allowedSorts = [
-            'key' => 'key',
+            'key' => '`key`',
             'hit_pct' => 'hit_pct',
             'hits' => 'hits',
             'misses' => 'misses',
@@ -111,12 +111,12 @@ class BuildCacheEventIndexData
         $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
-        $totalKeys = (clone $base)->distinct()->count('key');
+        $totalKeys = (clone $base)->distinct()->count('`key`');
         $offset = $this->pageOffset($page);
 
         $rows = (clone $base)
             ->selectRaw("
-                key,
+                `key`,
                 COUNT(*) AS total,
                 CAST(SUM(CASE WHEN type = 'hit' THEN 1 ELSE 0 END) AS UNSIGNED) AS hits,
                 CAST(SUM(CASE WHEN type = 'miss' THEN 1 ELSE 0 END) AS UNSIGNED) AS misses,
@@ -128,7 +128,7 @@ class BuildCacheEventIndexData
                     / NULLIF(SUM(CASE WHEN type IN ('hit','miss') THEN 1 ELSE 0 END), 0)
                 , 1) AS DOUBLE) AS hit_pct
             ")
-            ->groupBy('key')
+            ->groupByRaw('`key`')
             ->orderByRaw("{$orderCol} {$orderDir}")
             ->limit($this->analyticsPerPage)
             ->offset($offset)
