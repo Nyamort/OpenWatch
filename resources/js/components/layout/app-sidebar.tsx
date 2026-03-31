@@ -52,112 +52,121 @@ export function AppSidebar() {
 
     const analyticsHref = useAnalyticsHref();
 
-    const mainNavItems: NavItem[] = [
+    const navGroups: { label?: string; items: NavItem[] }[] = [
         {
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
+            items: [
+                {
+                    title: 'Dashboard',
+                    href: dashboard(),
+                    icon: LayoutGrid,
+                },
+            ],
         },
         ...(hasContext
             ? [
                   {
-                      title: 'Requests',
-                      href: analyticsHref(
-                          requestsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: Globe,
-                  },
-                  {
-                      title: 'Jobs',
-                      href: analyticsHref(
-                          jobsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: BriefcaseBusiness,
-                  },
-                  {
-                      title: 'Commands',
-                      href: analyticsHref(
-                          commandsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: Terminal,
-                  },
-                  {
-                      title: 'Exceptions',
-                      href: analyticsHref(
-                          exceptionsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: AlertCircle,
-                  },
-                  {
-                      title: 'Queries',
-                      href: analyticsHref(
-                          queriesIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: Database,
-                  },
-                  {
-                      title: 'Notifications',
-                      href: analyticsHref(
-                          notificationsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: Bell,
-                  },
-                  {
-                      title: 'Mails',
-                      href: analyticsHref(
-                          mailIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: Mail,
-                  },
-                  {
-                      title: 'Cache',
-                      href: analyticsHref(
-                          cacheEventsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: HardDrive,
-                  },
-                  {
-                      title: 'Outgoing Requests',
-                      href: analyticsHref(
-                          outgoingRequestsIndex.url({
-                              organization: activeOrganization!.slug,
-                              project: activeProject!.slug,
-                              environment: activeEnvironment!.slug,
-                          }),
-                      ),
-                      icon: ArrowUpRight,
+                      label: 'Analytics',
+                      items: [
+                          {
+                              title: 'Requests',
+                              href: analyticsHref(
+                                  requestsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Globe,
+                          },
+                          {
+                              title: 'Jobs',
+                              href: analyticsHref(
+                                  jobsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: BriefcaseBusiness,
+                          },
+                          {
+                              title: 'Commands',
+                              href: analyticsHref(
+                                  commandsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Terminal,
+                          },
+                          {
+                              title: 'Exceptions',
+                              href: analyticsHref(
+                                  exceptionsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: AlertCircle,
+                          },
+                          {
+                              title: 'Queries',
+                              href: analyticsHref(
+                                  queriesIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Database,
+                          },
+                          {
+                              title: 'Notifications',
+                              href: analyticsHref(
+                                  notificationsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Bell,
+                          },
+                          {
+                              title: 'Mails',
+                              href: analyticsHref(
+                                  mailIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Mail,
+                          },
+                          {
+                              title: 'Cache',
+                              href: analyticsHref(
+                                  cacheEventsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: HardDrive,
+                          },
+                          {
+                              title: 'Outgoing Requests',
+                              href: analyticsHref(
+                                  outgoingRequestsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: ArrowUpRight,
+                          },
+                      ],
                   },
               ]
             : []),
@@ -174,7 +183,13 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <NavMain items={mainNavItems} />
+                    {navGroups.map((group) => (
+                        <NavMain
+                            key={group.label}
+                            label={group.label}
+                            items={group.items}
+                        />
+                    ))}
                 </SidebarContent>
 
                 <SidebarFooter>
