@@ -23,24 +23,25 @@ class OutgoingRequestController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildIndex->handle(
-            ctx: $ctx,
-            period: $period,
-            sort: (string) $request->query('sort', 'total'),
-            direction: (string) $request->query('direction', 'desc'),
-            search: (string) $request->query('search', ''),
-            page: (int) $request->query('page', 1),
-        );
+        $sort = (string) $request->query('sort', 'total');
+        $direction = (string) $request->query('direction', 'desc');
+        $search = (string) $request->query('search', '');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $sort, $direction, $search, $page): array {
+            return $data ??= $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction, search: $search, page: $page);
+        };
 
         return Inertia::render('analytics/outgoing-requests/index', [
-            'graph' => $data['graph'],
-            'stats' => $data['stats'],
-            'hosts' => $data['hosts'],
-            'pagination' => $data['pagination'],
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'hosts' => Inertia::defer(fn () => $resolve()['hosts']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
             'period' => $request->query('period', '24h'),
-            'sort' => $request->query('sort', 'total'),
-            'direction' => $request->query('direction', 'desc'),
-            'search' => $request->query('search', ''),
+            'sort' => $sort,
+            'direction' => $direction,
+            'search' => $search,
         ]);
     }
 

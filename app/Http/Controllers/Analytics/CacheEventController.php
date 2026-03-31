@@ -26,21 +26,17 @@ class CacheEventController extends AnalyticsController
         $search = (string) $request->query('search', '');
         $page = max(1, (int) $request->query('page', 1));
 
-        $data = $this->buildIndex->handle(
-            ctx: $ctx,
-            period: $period,
-            sort: $sort,
-            direction: $direction,
-            search: $search,
-            page: $page,
-        );
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $sort, $direction, $search, $page): array {
+            return $data ??= $this->buildIndex->handle(ctx: $ctx, period: $period, sort: $sort, direction: $direction, search: $search, page: $page);
+        };
 
         return Inertia::render('analytics/cache-events/index', [
-            'events_graph' => $data['events_graph'],
-            'failures_graph' => $data['failures_graph'],
-            'stats' => $data['stats'],
-            'keys' => $data['keys'],
-            'pagination' => $data['pagination'],
+            'events_graph' => Inertia::defer(fn () => $resolve()['events_graph']),
+            'failures_graph' => Inertia::defer(fn () => $resolve()['failures_graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'keys' => Inertia::defer(fn () => $resolve()['keys']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
             'period' => $request->query('period', '24h'),
             'sort' => $sort,
             'direction' => $direction,
