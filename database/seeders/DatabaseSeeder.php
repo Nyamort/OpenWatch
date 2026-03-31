@@ -42,7 +42,6 @@ class DatabaseSeeder extends Seeder
         $org = app(CreateOrganization::class)->handle($admin, [
             'name' => 'Acme Corp',
             'slug' => 'acme',
-            'timezone' => 'UTC',
         ]);
 
         // Add developer and viewer members

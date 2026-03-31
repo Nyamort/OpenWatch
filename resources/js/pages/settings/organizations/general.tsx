@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { DangerZone } from '@/components/danger-zone';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import { TimezoneSelect } from '@/components/timezone-select';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -25,7 +24,6 @@ interface Organization {
     id: number;
     name: string;
     slug: string;
-    timezone: string;
     logo_url: string;
 }
 
@@ -35,10 +33,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function OrganizationGeneral({
     organization,
-    timezones,
 }: {
     organization: Organization;
-    timezones: string[];
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(
@@ -50,12 +46,10 @@ export default function OrganizationGeneral({
 
     const form = useForm<{
         name: string;
-        timezone: string;
         logo: File | null;
         remove_logo: boolean;
     }>({
         name: organization.name,
-        timezone: organization.timezone ?? '',
         logo: null,
         remove_logo: false,
     });
@@ -236,17 +230,6 @@ export default function OrganizationGeneral({
                                 required
                             />
                             <InputError message={form.errors.name} />
-                        </div>
-
-                        {/* Timezone */}
-                        <div className="grid gap-2">
-                            <Label>Timezone</Label>
-                            <TimezoneSelect
-                                timezones={timezones}
-                                value={form.data.timezone}
-                                onChange={(tz) => form.setData('timezone', tz)}
-                            />
-                            <InputError message={form.errors.timezone} />
                         </div>
 
                         <div className="flex items-center gap-4">

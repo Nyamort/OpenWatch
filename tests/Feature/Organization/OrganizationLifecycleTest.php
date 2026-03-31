@@ -50,12 +50,10 @@ test('it updates organization fields', function () {
     $updated = (new UpdateOrganization)->handle($org, [
         'name' => 'New Name',
         'slug' => 'new-slug',
-        'timezone' => 'America/New_York',
     ]);
 
     expect($updated->name)->toBe('New Name')
-        ->and($updated->slug)->toBe('new-slug')
-        ->and($updated->timezone)->toBe('America/New_York');
+        ->and($updated->slug)->toBe('new-slug');
 });
 
 test('it soft-deletes organization', function () {

@@ -23,7 +23,6 @@ class OrganizationFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name).'-'.fake()->unique()->randomNumber(4),
             'logo_url' => null,
-            'timezone' => fake()->randomElement(['UTC', 'America/New_York', 'America/Chicago', 'Europe/London', 'Asia/Tokyo']),
         ];
     }
 }

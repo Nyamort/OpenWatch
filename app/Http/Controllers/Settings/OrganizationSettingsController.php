@@ -39,10 +39,8 @@ class OrganizationSettingsController extends Controller
                 'id' => $organization->id,
                 'name' => $organization->name,
                 'slug' => $organization->slug,
-                'timezone' => $organization->timezone,
                 'logo_url' => $organization->getFirstMediaUrl('logo'),
             ],
-            'timezones' => timezone_identifiers_list(),
         ]);
     }
 

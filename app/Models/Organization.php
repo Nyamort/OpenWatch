@@ -30,7 +30,6 @@ class Organization extends Model implements HasMedia
         'name',
         'slug',
         'logo_url',
-        'timezone',
     ];
 
     /**
