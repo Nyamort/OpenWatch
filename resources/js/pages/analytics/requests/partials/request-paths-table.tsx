@@ -3,7 +3,6 @@ import {
     FolderClosed,
     Globe,
     OctagonAlert,
-    PanelRight,
     TriangleAlert,
 } from 'lucide-react';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
@@ -207,14 +206,11 @@ export function RequestPathsTable({
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
-                                        <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 uppercase transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
-                                            <button className="flex size-6 items-center justify-center">
-                                                <PanelRight className="size-3" />
-                                            </button>
-                                            <a className="-ml-1 flex size-6 items-center justify-center">
+                                        <a className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
+                                            <span className="flex size-6 items-center justify-center">
                                                 <ArrowUpRight className="size-4" />
-                                            </a>
-                                        </div>
+                                            </span>
+                                        </a>
                                     </div>
                                 </TableCell>
                             </TableRow>
