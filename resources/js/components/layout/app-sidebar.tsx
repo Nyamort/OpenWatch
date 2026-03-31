@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { AlertCircle, Bell, BriefcaseBusiness, Database, Globe, LayoutGrid, Mail, Terminal } from 'lucide-react';
+import { AlertCircle, Bell, BriefcaseBusiness, Database, Globe, HardDrive, LayoutGrid, Mail, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
 import { NavUser } from '@/components/layout/nav-user';
@@ -15,6 +15,7 @@ import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { dashboard } from '@/routes';
 import { index as commandsIndex } from '@/routes/analytics/commands';
 import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
+import { index as cacheEventsIndex } from '@/routes/analytics/cache-events';
 import { index as mailIndex } from '@/routes/analytics/mail';
 import { index as notificationsIndex } from '@/routes/analytics/notifications';
 import { index as queriesIndex } from '@/routes/analytics/queries';
@@ -86,6 +87,15 @@ export function AppSidebar() {
                     environment: activeEnvironment!.slug,
                 })),
                 icon: AlertCircle,
+            },
+            {
+                title: 'Cache',
+                href: analyticsHref(cacheEventsIndex.url({
+                    organization: activeOrganization!.slug,
+                    project: activeProject!.slug,
+                    environment: activeEnvironment!.slug,
+                })),
+                icon: HardDrive,
             },
             {
                 title: 'Mails',
