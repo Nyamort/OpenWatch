@@ -20,18 +20,6 @@ interface NotificationChartsProps {
 }
 
 export function NotificationCharts({ graph, stats }: NotificationChartsProps) {
-    const notificationsStats = (
-        <div className="flex gap-4 text-sm">
-            <div className="flex flex-col items-end gap-0.5">
-                <span className="text-muted-foreground flex items-center gap-1">
-                    <span className="inline-block h-3 w-1 rounded-sm" style={{ backgroundColor: notificationsChartConfig.count.color }} />
-                    Total
-                </span>
-                <span className="font-medium tabular-nums">{stats.count.toLocaleString()}</span>
-            </div>
-        </div>
-    );
-
     const durationStats = (
         <div className="flex gap-4 text-sm">
             {(['avg', 'p95'] as const).map((key) => (
@@ -52,7 +40,6 @@ export function NotificationCharts({ graph, stats }: NotificationChartsProps) {
                 config={notificationsChartConfig}
                 title="Notifications"
                 heroValue={stats.count.toLocaleString()}
-                legendStats={notificationsStats}
                 firstBucket={graph[0]?.bucket}
                 lastBucket={graph[graph.length - 1]?.bucket}
             >
