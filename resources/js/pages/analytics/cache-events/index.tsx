@@ -1,55 +1,29 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Row {
-    store: string;
-    key: string;
-    total_ops: number;
-    hit_count: number;
-    miss_count: number;
-    hit_rate_pct: number;
-    hit_rate_color: 'green' | 'yellow' | 'red';
-    [key: string]: unknown;
-}
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Row[];
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-}
+import { CacheCharts } from './partials/cache-charts';
+import { CacheTable } from './partials/cache-table';
+import type { CacheEventsGraphBucket, CacheFailuresGraphBucket, CacheKeyRow, CacheSortKey, CacheStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    events_graph: CacheEventsGraphBucket[];
+    failures_graph: CacheFailuresGraphBucket[];
+    stats: CacheStats;
+    keys: CacheKeyRow[];
+    pagination: Pagination;
     period: string;
+    sort: CacheSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const COLOR_MAP = {
-    green: 'text-green-600',
-    yellow: 'text-yellow-600',
-    red: 'text-red-600',
-} as const;
+const breadcrumbs = [{ title: 'Cache', href: '#' }];
 
-const columns = [
-    { key: 'store', label: 'Store' },
-    { key: 'key', label: 'Key' },
-    { key: 'total_ops', label: 'Total Ops' },
-    { key: 'hit_count', label: 'Hits' },
-    { key: 'miss_count', label: 'Misses' },
-    {
-        key: 'hit_rate_pct',
-        label: 'Hit Rate',
-        render: (value: unknown, row: Row) => (
-            <span className={COLOR_MAP[row.hit_rate_color] ?? ''}>{String(value)}%</span>
-        ),
-    },
-];
-
-export default function CacheEventsIndex({ analytics, period }: Props) {
+export default function CacheEventsIndex({ events_graph, failures_graph, stats, keys, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <CacheCharts eventsGraph={events_graph} failuresGraph={failures_graph} stats={stats} />
+            <CacheTable keys={keys} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }
