@@ -30,12 +30,14 @@ export function useCurrentUrl(): UseCurrentUrlReturn {
         const urlToCompare = currentUrl ?? currentUrlPath;
         const urlString = toUrl(urlToCheck);
 
+        let absoluteUrl: URL;
         if (!urlString.startsWith('http')) {
-            return urlString === urlToCompare;
+            absoluteUrl = new URL(urlString, window?.location.origin);
+        }else{
+            absoluteUrl = new URL(urlString);
         }
 
         try {
-            const absoluteUrl = new URL(urlString);
             return absoluteUrl.pathname === urlToCompare;
         } catch {
             return false;
