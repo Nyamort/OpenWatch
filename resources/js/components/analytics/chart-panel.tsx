@@ -33,7 +33,7 @@ interface ChartPanelProps {
     config: ChartConfig;
     title: string;
     heroValue: ReactNode;
-    legendStats: ReactNode;
+    legendStats?: ReactNode;
     firstBucket?: string;
     lastBucket?: string;
     children: (legendContent: () => ReactNode) => ReactNode;
