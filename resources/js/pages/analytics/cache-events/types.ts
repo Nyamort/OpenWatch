@@ -19,6 +19,8 @@ export interface CacheStats {
     writes: number;
     deletes: number;
     failures: number;
+    write_failures: number;
+    delete_failures: number;
 }
 
 export interface CacheKeyRow {

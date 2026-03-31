@@ -39,7 +39,9 @@ class BuildCacheEventIndexData
             CAST(SUM(CASE WHEN type = 'miss' THEN 1 ELSE 0 END) AS UNSIGNED) as misses,
             CAST(SUM(CASE WHEN type = 'write' THEN 1 ELSE 0 END) AS UNSIGNED) as writes,
             CAST(SUM(CASE WHEN type = 'delete' THEN 1 ELSE 0 END) AS UNSIGNED) as deletes,
-            CAST(SUM(CASE WHEN type IN ('write-failure','delete-failure') THEN 1 ELSE 0 END) AS UNSIGNED) as failures
+            CAST(SUM(CASE WHEN type IN ('write-failure','delete-failure') THEN 1 ELSE 0 END) AS UNSIGNED) as failures,
+            CAST(SUM(CASE WHEN type = 'write-failure' THEN 1 ELSE 0 END) AS UNSIGNED) as write_failures,
+            CAST(SUM(CASE WHEN type = 'delete-failure' THEN 1 ELSE 0 END) AS UNSIGNED) as delete_failures
         ")->first();
 
         // Time-bucketed graph data
@@ -81,6 +83,8 @@ class BuildCacheEventIndexData
                 'writes' => (int) ($stats->writes ?? 0),
                 'deletes' => (int) ($stats->deletes ?? 0),
                 'failures' => (int) ($stats->failures ?? 0),
+                'write_failures' => (int) ($stats->write_failures ?? 0),
+                'delete_failures' => (int) ($stats->delete_failures ?? 0),
             ],
             'keys' => $keys['data'],
             'pagination' => $keys['pagination'],

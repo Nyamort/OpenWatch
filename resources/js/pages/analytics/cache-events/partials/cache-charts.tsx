@@ -42,9 +42,16 @@ export function CacheCharts({ eventsGraph, failuresGraph, stats }: CacheChartsPr
             <div className="flex flex-col items-end gap-0.5">
                 <span className="text-muted-foreground flex items-center gap-1">
                     <span className="inline-block h-3 w-1 rounded-sm" style={{ backgroundColor: failuresChartConfig.write_failures.color }} />
-                    Total
+                    Write
                 </span>
-                <span className="font-medium tabular-nums">{stats.failures.toLocaleString()}</span>
+                <span className="font-medium tabular-nums">{stats.write_failures.toLocaleString()}</span>
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+                <span className="text-muted-foreground flex items-center gap-1">
+                    <span className="inline-block h-3 w-1 rounded-sm" style={{ backgroundColor: failuresChartConfig.delete_failures.color }} />
+                    Delete
+                </span>
+                <span className="font-medium tabular-nums">{stats.delete_failures.toLocaleString()}</span>
             </div>
         </div>
     );
