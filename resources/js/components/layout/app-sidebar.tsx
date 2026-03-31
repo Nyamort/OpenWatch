@@ -67,7 +67,7 @@ export function AppSidebar() {
         ...(hasContext
             ? [
                   {
-                      label: 'Analytics',
+                      label: 'Activity',
                       items: [
                           {
                               title: 'Requests',
