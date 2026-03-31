@@ -1,32 +1,28 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-}
+import { NotificationCharts } from './partials/notification-charts';
+import { NotificationTable } from './partials/notification-table';
+import type { NotificationGraphBucket, NotificationRow, NotificationSortKey, NotificationStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph: NotificationGraphBucket[];
+    stats: NotificationStats;
+    notifications: NotificationRow[];
+    pagination: Pagination;
     period: string;
+    sort: NotificationSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'class', label: 'Class' },
-    { key: 'channel_group', label: 'Channel' },
-    { key: 'total', label: 'Total' },
-    { key: 'sent_count', label: 'Sent' },
-    { key: 'failed_count', label: 'Failed' },
-    { key: 'failed_rate', label: 'Fail Rate %' },
-];
+const breadcrumbs = [{ title: 'Notifications', href: '#' }];
 
-export default function NotificationsIndex({ analytics, period }: Props) {
+export default function NotificationsIndex({ graph, stats, notifications, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <NotificationCharts graph={graph} stats={stats} />
+            <NotificationTable notifications={notifications} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }
