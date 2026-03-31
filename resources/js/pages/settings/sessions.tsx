@@ -44,7 +44,7 @@ function parseUserAgent(userAgent: string): string {
     return userAgent.slice(0, 40) + (userAgent.length > 40 ? '…' : '');
 }
 
-export default function Sessions({ sessions, currentSessionId }: Props) {
+export default function Sessions({ sessions }: Props) {
     function revokeSession(sessionId: string) {
         router.delete(`/settings/sessions/${sessionId}`, {
             preserveScroll: true,

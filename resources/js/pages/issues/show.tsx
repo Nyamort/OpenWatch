@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { CommentComposer } from '@/components/issues/comment-composer';
 import { SnapshotRenderer } from '@/components/issues/snapshot-renderer';
 import { Badge } from '@/components/ui/badge';
@@ -129,8 +129,6 @@ export default function IssueShow({
         { title: 'Issues', href: baseUrl },
         { title: `#${issue.id}`, href: issueUrl },
     ];
-
-    const statusForm = useForm({ status: issue.status });
 
     function changeStatus(newStatus: string) {
         router.patch(

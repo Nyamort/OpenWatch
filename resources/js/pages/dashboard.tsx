@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -100,9 +100,10 @@ export default function Dashboard({
     ];
 
     const changePeriod = (p: string) => {
-        const url = new URL(window.location.href);
-        url.searchParams.set('period', p);
-        window.location.href = url.toString();
+        router.visit(window.location.pathname, {
+            data: { period: p },
+            preserveScroll: true,
+        });
     };
 
     return (

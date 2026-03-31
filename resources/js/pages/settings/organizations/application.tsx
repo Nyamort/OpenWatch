@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/danger-zone';
 import { AddEnvironmentDialog } from '@/components/environments/add-environment-dialog';
@@ -53,18 +53,7 @@ export default function ApplicationEdit({
     );
     const [addEnvOpen, setAddEnvOpen] = useState(false);
     const [deleteAppOpen, setDeleteAppOpen] = useState(false);
-    const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-    const [displayedToken, setDisplayedToken] = useState<string | null>(null);
-    const [displayedTokenEnvName, setDisplayedTokenEnvName] =
-        useState<string>('');
-
-    useEffect(() => {
-        if (newToken) {
-            setDisplayedToken(newToken);
-            setDisplayedTokenEnvName(newTokenEnvironmentName ?? '');
-            setTokenDialogOpen(true);
-        }
-    }, [newToken]);
+    const [tokenDialogOpen, setTokenDialogOpen] = useState(Boolean(newToken));
 
     const form = useForm<{
         name: string;
@@ -113,12 +102,12 @@ export default function ApplicationEdit({
 
             <h1 className="sr-only">Application Settings</h1>
 
-            {displayedToken && (
+            {newToken && (
                 <TokenDialog
                     open={tokenDialogOpen}
                     onOpenChange={setTokenDialogOpen}
-                    token={displayedToken}
-                    environmentName={displayedTokenEnvName}
+                    token={newToken}
+                    environmentName={newTokenEnvironmentName ?? ''}
                 />
             )}
 

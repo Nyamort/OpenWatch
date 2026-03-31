@@ -39,10 +39,7 @@ type NotificationsProps = {
     status?: string;
 };
 
-export default function Notifications({
-    categories,
-    status,
-}: NotificationsProps) {
+export default function Notifications({ categories }: NotificationsProps) {
     const initialData: Record<string, { enabled: boolean }> = {};
 
     for (const [category, pref] of Object.entries(categories)) {

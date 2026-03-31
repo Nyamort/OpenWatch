@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { CreateOrganizationDialog } from '@/components/organizations/create-organization-dialog';
@@ -66,18 +66,10 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const urlSection = orgUrlMatch?.[2] ?? null;
 
     const [createOrgOpen, setCreateOrgOpen] = useState(false);
-    const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>(
-        urlOrgSlug ?? activeOrganization?.slug ?? organizations[0]?.slug ?? '',
-    );
-
-    useEffect(() => {
-        if (urlOrgSlug) {
-            setSelectedOrgSlug(urlOrgSlug);
-        }
-    }, [urlOrgSlug]);
+    const selectedOrgSlug =
+        urlOrgSlug ?? activeOrganization?.slug ?? organizations[0]?.slug ?? '';
 
     function handleOrgChange(slug: string) {
-        setSelectedOrgSlug(slug);
         if (urlSection) {
             router.visit(`/settings/organizations/${slug}/${urlSection}`);
         }

@@ -43,7 +43,7 @@ const jobColumns = [
     { key: 'recorded_at', label: 'Time' },
 ];
 
-export default function UserShow({ analytics, user_value, period }: Props) {
+export default function UserShow({ analytics, period }: Props) {
     return (
         <AnalyticsLayout period={period}>
             <Head />

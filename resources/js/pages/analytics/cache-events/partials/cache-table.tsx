@@ -1,4 +1,3 @@
-import { usePage } from '@inertiajs/react';
 import { HardDrive } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
@@ -7,7 +6,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
