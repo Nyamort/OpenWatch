@@ -23,8 +23,8 @@ class MailController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $sort = (string) $request->query('sort', 'count');
-        $direction = (string) $request->query('direction', 'desc');
+        $sort = (string) $request->query('sort', 'mail');
+        $direction = (string) $request->query('direction', 'asc');
         $search = (string) $request->query('search', '');
         $page = max(1, (int) $request->query('page', 1));
 
