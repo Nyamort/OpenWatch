@@ -111,7 +111,7 @@ class BuildCacheEventIndexData
         $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
         $orderDir = $direction === 'asc' ? 'asc' : 'desc';
 
-        $totalKeys = (clone $base)->distinct()->count('`key`');
+        $totalKeys = (clone $base)->selectRaw('COUNT(DISTINCT `key`) as agg')->value('agg') ?? 0;
         $offset = $this->pageOffset($page);
 
         $rows = (clone $base)
