@@ -69,10 +69,10 @@ export function ScheduledTaskTable({
                         >
                             Task
                         </SortableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
                             Schedule
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
                             Next Run
                         </TableHead>
                         <SortableHead
