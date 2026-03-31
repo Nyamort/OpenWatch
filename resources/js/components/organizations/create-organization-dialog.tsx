@@ -17,7 +17,9 @@ interface Props {
 }
 
 function xsrfToken(): string {
-    return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
+    return decodeURIComponent(
+        document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+    );
 }
 
 export function CreateOrganizationDialog({ open, onOpenChange }: Props) {
@@ -43,7 +45,7 @@ export function CreateOrganizationDialog({ open, onOpenChange }: Props) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'X-XSRF-TOKEN': xsrfToken(),
                 },
                 body: JSON.stringify({ name }),
@@ -52,14 +54,28 @@ export function CreateOrganizationDialog({ open, onOpenChange }: Props) {
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data.errors?.name?.[0] ?? data.errors?.slug?.[0] ?? 'An error occurred.');
+                setError(
+                    data.errors?.name?.[0] ??
+                        data.errors?.slug?.[0] ??
+                        'An error occurred.',
+                );
                 return;
             }
 
             handleOpenChange(false);
-            router.visit(`/settings/organizations/${data.organization.slug}/general`, {
-                onFinish: () => router.reload({ only: ['organizations', 'activeOrganization', 'projectGroups'] }),
-            });
+            router.visit(
+                `/settings/organizations/${data.organization.slug}/general`,
+                {
+                    onFinish: () =>
+                        router.reload({
+                            only: [
+                                'organizations',
+                                'activeOrganization',
+                                'projectGroups',
+                            ],
+                        }),
+                },
+            );
         } catch {
             setError('An unexpected error occurred.');
         } finally {
@@ -85,15 +101,26 @@ export function CreateOrganizationDialog({ open, onOpenChange }: Props) {
                             autoFocus
                             required
                         />
-                        {error && <p className="text-sm text-destructive">{error}</p>}
+                        {error && (
+                            <p className="text-sm text-destructive">{error}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={loading || !name.trim()}>
-                            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+                        <Button
+                            type="submit"
+                            disabled={loading || !name.trim()}
+                        >
+                            {loading && (
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                            )}
                             Create
                         </Button>
                     </div>

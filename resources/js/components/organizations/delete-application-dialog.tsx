@@ -45,7 +45,10 @@ export function DeleteApplicationDialog({
                 <DialogHeader>
                     <DialogTitle>Delete application</DialogTitle>
                     <DialogDescription>
-                        This will permanently delete <strong>{application.name}</strong> and all its environments and data. Type <strong>{application.name}</strong> to confirm.
+                        This will permanently delete{' '}
+                        <strong>{application.name}</strong> and all its
+                        environments and data. Type{' '}
+                        <strong>{application.name}</strong> to confirm.
                     </DialogDescription>
                 </DialogHeader>
                 <Input
@@ -54,13 +57,22 @@ export function DeleteApplicationDialog({
                     placeholder={application.name}
                 />
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => handleOpenChange(false)}>
+                    <Button
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                    >
                         Cancel
                     </Button>
                     <Button
                         variant="destructive"
-                        disabled={confirm !== application.name || form.processing}
-                        onClick={() => form.delete(`/settings/organizations/${organization.slug}/applications/${application.slug}`)}
+                        disabled={
+                            confirm !== application.name || form.processing
+                        }
+                        onClick={() =>
+                            form.delete(
+                                `/settings/organizations/${organization.slug}/applications/${application.slug}`,
+                            )
+                        }
                     >
                         Delete
                     </Button>

@@ -23,7 +23,13 @@ export interface QueryRow {
     p95: number | null;
 }
 
-export type QuerySortKey = 'query' | 'connection' | 'calls' | 'total' | 'avg' | 'p95';
+export type QuerySortKey =
+    | 'query'
+    | 'connection'
+    | 'calls'
+    | 'total'
+    | 'avg'
+    | 'p95';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

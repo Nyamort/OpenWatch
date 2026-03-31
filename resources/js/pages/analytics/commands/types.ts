@@ -26,7 +26,13 @@ export interface CommandRow {
     p95: number | null;
 }
 
-export type CommandSortKey = 'name' | 'total' | 'successful' | 'failed' | 'avg' | 'p95';
+export type CommandSortKey =
+    | 'name'
+    | 'total'
+    | 'successful'
+    | 'failed'
+    | 'avg'
+    | 'p95';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

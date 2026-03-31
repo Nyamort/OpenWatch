@@ -1,5 +1,13 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Check, ChevronRight, ChevronsUpDown, Network, Plus, Search, Settings } from 'lucide-react';
+import {
+    Check,
+    ChevronRight,
+    ChevronsUpDown,
+    Network,
+    Plus,
+    Search,
+    Settings,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
 import { store as switchOrg } from '@/actions/App/Http/Controllers/Organization/OrganizationSwitcherController';
 import { store as switchEnvironment } from '@/actions/App/Http/Controllers/Project/EnvironmentSwitcherController';
@@ -51,9 +59,17 @@ function avatarColor(name: string): string {
     return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
-export function ContextSelector({ onNewApplication }: { onNewApplication?: () => void }) {
-    const { activeOrganization, activeProject, activeEnvironment, projectGroups } =
-        usePage().props as unknown as SharedProps;
+export function ContextSelector({
+    onNewApplication,
+}: {
+    onNewApplication?: () => void;
+}) {
+    const {
+        activeOrganization,
+        activeProject,
+        activeEnvironment,
+        projectGroups,
+    } = usePage().props as unknown as SharedProps;
 
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -82,7 +98,9 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
         const targetProject = previewProject ?? activeProject;
         if (!targetProject) return;
 
-        const group = allGroups.find((g) => g.projects.some((p) => p.id === targetProject.id));
+        const group = allGroups.find((g) =>
+            g.projects.some((p) => p.id === targetProject.id),
+        );
         const targetOrg = group?.organization;
 
         const finish = () => {
@@ -92,16 +110,33 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
         };
 
         const switchEnvFn = () =>
-            router.post(switchEnvironment().url, { environment_id: env.id }, { onFinish: finish });
+            router.post(
+                switchEnvironment().url,
+                { environment_id: env.id },
+                { onFinish: finish },
+            );
 
         const switchProjectFn = () =>
-            router.post(switchProject().url, { project_id: targetProject.id }, { onSuccess: switchEnvFn });
+            router.post(
+                switchProject().url,
+                { project_id: targetProject.id },
+                { onSuccess: switchEnvFn },
+            );
 
-        const needsOrgSwitch = targetOrg && targetOrg.id !== activeOrganization?.id;
+        const needsOrgSwitch =
+            targetOrg && targetOrg.id !== activeOrganization?.id;
         const needsProjectSwitch = targetProject.id !== activeProject?.id;
 
         if (needsOrgSwitch) {
-            router.post(switchOrg().url, { organization_id: targetOrg!.id }, { onSuccess: needsProjectSwitch ? switchProjectFn : switchEnvFn });
+            router.post(
+                switchOrg().url,
+                { organization_id: targetOrg!.id },
+                {
+                    onSuccess: needsProjectSwitch
+                        ? switchProjectFn
+                        : switchEnvFn,
+                },
+            );
         } else if (needsProjectSwitch) {
             switchProjectFn();
         } else {
@@ -127,24 +162,36 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
     return (
         <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2.5 overflow-hidden rounded-lg px-2 py-2 text-left transition-[padding,gap] duration-200 ease-linear hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0">
+                <button className="flex w-full items-center gap-2.5 overflow-hidden rounded-lg px-2 py-2 text-left transition-[padding,gap] duration-200 ease-linear group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0 hover:bg-sidebar-accent focus-visible:ring-1 focus-visible:ring-sidebar-ring focus-visible:outline-none">
                     <div
                         className={`flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-bold text-white ${
-                            activeProject && !activeProject.logo_url ? avatarColor(activeProject.name) : 'bg-muted'
+                            activeProject && !activeProject.logo_url
+                                ? avatarColor(activeProject.name)
+                                : 'bg-muted'
                         }`}
                     >
                         {activeProject?.logo_url ? (
-                            <img src={activeProject.logo_url} alt={activeProject.name} className="size-full object-cover" />
+                            <img
+                                src={activeProject.logo_url}
+                                alt={activeProject.name}
+                                className="size-full object-cover"
+                            />
+                        ) : activeProject ? (
+                            activeProject.name.charAt(0).toUpperCase()
                         ) : (
-                            activeProject ? activeProject.name.charAt(0).toUpperCase() : '?'
+                            '?'
                         )}
                     </div>
                     <div className="grid flex-1 overflow-hidden leading-tight transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0">
                         <span className="truncate text-sm font-semibold text-sidebar-foreground">
-                            {activeProject ? activeProject.name : 'Select application'}
+                            {activeProject
+                                ? activeProject.name
+                                : 'Select application'}
                         </span>
                         <span className="truncate text-xs text-sidebar-foreground/50">
-                            {activeEnvironment ? activeEnvironment.name : 'No environment'}
+                            {activeEnvironment
+                                ? activeEnvironment.name
+                                : 'No environment'}
                         </span>
                     </div>
                     <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/40 transition-opacity duration-200 ease-linear group-data-[collapsible=icon]:opacity-0" />
@@ -160,7 +207,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                 onCloseAutoFocus={(e) => e.preventDefault()}
             >
                 {/* Left panel — Application selector */}
-                <div className="flex w-56 flex-col border-r border-border max-h-80">
+                <div className="flex max-h-80 w-56 flex-col border-r border-border">
                     {/* Search */}
                     <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                         <Search className="size-3.5 shrink-0 text-muted-foreground" />
@@ -179,7 +226,7 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                             <div key={group.organization.id}>
                                 {/* Org header */}
                                 <div className="flex items-center justify-between px-3 py-1.5">
-                                    <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className="flex min-w-0 items-center gap-1.5">
                                         <Network className="size-3 shrink-0 text-muted-foreground" />
                                         <span className="truncate text-xs font-medium text-muted-foreground">
                                             {group.organization.name}
@@ -197,13 +244,17 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
 
                                 {/* Applications */}
                                 {group.projects.map((project) => {
-                                    const isActive = project.id === activeProject?.id;
-                                    const isPreviewed = project.id === currentPreview?.id;
+                                    const isActive =
+                                        project.id === activeProject?.id;
+                                    const isPreviewed =
+                                        project.id === currentPreview?.id;
 
                                     return (
                                         <button
                                             key={project.id}
-                                            onClick={() => handleSelectProject(project)}
+                                            onClick={() =>
+                                                handleSelectProject(project)
+                                            }
                                             className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent ${
                                                 isPreviewed ? 'bg-accent' : ''
                                             }`}
@@ -212,12 +263,20 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                                 className={`flex size-5 shrink-0 items-center justify-center overflow-hidden rounded text-xs font-bold text-white ${!project.logo_url ? avatarColor(project.name) : 'bg-muted'}`}
                                             >
                                                 {project.logo_url ? (
-                                                    <img src={project.logo_url} alt={project.name} className="size-full object-cover" />
+                                                    <img
+                                                        src={project.logo_url}
+                                                        alt={project.name}
+                                                        className="size-full object-cover"
+                                                    />
                                                 ) : (
-                                                    project.name.charAt(0).toUpperCase()
+                                                    project.name
+                                                        .charAt(0)
+                                                        .toUpperCase()
                                                 )}
                                             </div>
-                                            <span className="flex-1 truncate">{project.name}</span>
+                                            <span className="flex-1 truncate">
+                                                {project.name}
+                                            </span>
                                             {isActive && !isPreviewed && (
                                                 <Check className="size-3.5 shrink-0 text-primary" />
                                             )}
@@ -227,13 +286,17 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                 })}
 
                                 {group.projects.length === 0 && (
-                                    <p className="px-3 py-2 text-xs text-muted-foreground">No applications</p>
+                                    <p className="px-3 py-2 text-xs text-muted-foreground">
+                                        No applications
+                                    </p>
                                 )}
                             </div>
                         ))}
 
                         {filteredGroups.length === 0 && (
-                            <p className="px-3 py-3 text-center text-xs text-muted-foreground">No results</p>
+                            <p className="px-3 py-3 text-center text-xs text-muted-foreground">
+                                No results
+                            </p>
                         )}
                     </div>
 
@@ -250,9 +313,11 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                 </div>
 
                 {/* Right panel — Environment selector */}
-                <div className="flex w-44 flex-col max-h-80">
+                <div className="flex max-h-80 w-44 flex-col">
                     <div className="border-b border-border px-3 py-2">
-                        <p className="text-xs font-medium text-muted-foreground">Environments</p>
+                        <p className="text-xs font-medium text-muted-foreground">
+                            Environments
+                        </p>
                     </div>
 
                     <div className="flex-1 overflow-y-auto py-1">
@@ -266,11 +331,17 @@ export function ContextSelector({ onNewApplication }: { onNewApplication?: () =>
                                     return (
                                         <button
                                             key={env.id}
-                                            onClick={() => handleSelectEnvironment(env)}
+                                            onClick={() =>
+                                                handleSelectEnvironment(env)
+                                            }
                                             className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
                                         >
-                                            <span className="flex-1 truncate">{env.name}</span>
-                                            {isActive && <Check className="size-3.5 shrink-0 text-primary" />}
+                                            <span className="flex-1 truncate">
+                                                {env.name}
+                                            </span>
+                                            {isActive && (
+                                                <Check className="size-3.5 shrink-0 text-primary" />
+                                            )}
                                         </button>
                                     );
                                 })

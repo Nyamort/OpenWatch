@@ -3,7 +3,14 @@ import { HardDrive } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import type { CacheKeyRow, CacheSortKey, Pagination, SortDir } from '../types';
 
@@ -17,17 +24,30 @@ interface CacheTableProps {
 
 function HitPct({ value }: { value: number | null }) {
     if (value === null) return <span className="text-muted-foreground">—</span>;
-    const color = value >= 80 ? 'text-emerald-600' : value >= 50 ? 'text-yellow-600' : 'text-red-500';
+    const color =
+        value >= 80
+            ? 'text-emerald-600'
+            : value >= 50
+              ? 'text-yellow-600'
+              : 'text-red-500';
     return <span className={color}>{value.toFixed(1)}%</span>;
 }
 
-export function CacheTable({ keys, pagination, sort, direction, search }: CacheTableProps) {
-    const { searchValue, handleSearch, handlePage, handleSort } = useAnalyticsTable<CacheSortKey>({
-        search,
-        only: ['keys', 'pagination', 'sort', 'direction'],
-    });
+export function CacheTable({
+    keys,
+    pagination,
+    sort,
+    direction,
+    search,
+}: CacheTableProps) {
+    const { searchValue, handleSearch, handlePage, handleSort } =
+        useAnalyticsTable<CacheSortKey>({
+            search,
+            only: ['keys', 'pagination', 'sort', 'direction'],
+        });
 
-    const onSort = (col: string) => handleSort(col as CacheSortKey, sort, direction);
+    const onSort = (col: string) =>
+        handleSort(col as CacheSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
@@ -39,31 +59,89 @@ export function CacheTable({ keys, pagination, sort, direction, search }: CacheT
                 searchPlaceholder="Search keys..."
                 onSearch={handleSearch}
             />
-            <Table className="border-separate border-spacing-y-1.5" containerClassName="overflow-x-visible">
+            <Table
+                className="border-separate border-spacing-y-1.5"
+                containerClassName="overflow-x-visible"
+            >
                 <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
-                    <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
-                        <SortableHead column="key" sort={sort} direction={direction} onSort={onSort} className="h-11 px-5 text-xs font-medium">
+                    <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
+                        <SortableHead
+                            column="key"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            className="h-11 px-5 text-xs font-medium"
+                        >
                             Key
                         </SortableHead>
-                        <SortableHead column="hit_pct" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="hit_pct"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Hit %
                         </SortableHead>
-                        <SortableHead column="hits" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="hits"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Hits
                         </SortableHead>
-                        <SortableHead column="misses" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="misses"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Misses
                         </SortableHead>
-                        <SortableHead column="writes" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="writes"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Writes
                         </SortableHead>
-                        <SortableHead column="deletes" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="deletes"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Deletes
                         </SortableHead>
-                        <SortableHead column="failures" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="failures"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Failures
                         </SortableHead>
-                        <SortableHead column="total" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap pr-5 text-right text-xs font-medium">
+                        <SortableHead
+                            column="total"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px pr-5 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Total
                         </SortableHead>
                     </TableRow>
@@ -71,7 +149,10 @@ export function CacheTable({ keys, pagination, sort, direction, search }: CacheT
                 <TableBody>
                     {keys.length === 0 ? (
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
+                            <TableCell
+                                colSpan={8}
+                                className="py-12 text-center text-sm text-muted-foreground"
+                            >
                                 No cache events recorded for this period.
                             </TableCell>
                         </TableRow>
@@ -79,33 +160,38 @@ export function CacheTable({ keys, pagination, sort, direction, search }: CacheT
                         keys.map((row) => (
                             <TableRow
                                 key={row.key}
-                                className="bg-surface group/row border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
+                                className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden px-5 md:max-w-px">
-                                    <span className="truncate font-mono text-sm">{row.key}</span>
+                                    <span className="truncate font-mono text-sm">
+                                        {row.key}
+                                    </span>
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
+                                <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
                                     <HitPct value={row.hit_pct} />
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row.hits.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row.misses.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row.writes.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row.deletes.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
-                                    {row.failures > 0
-                                        ? <span className="text-red-500">{row.failures.toLocaleString()}</span>
-                                        : row.failures.toLocaleString()
-                                    }
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
+                                    {row.failures > 0 ? (
+                                        <span className="text-red-500">
+                                            {row.failures.toLocaleString()}
+                                        </span>
+                                    ) : (
+                                        row.failures.toLocaleString()
+                                    )}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap pr-5 text-right tabular-nums font-medium">
+                                <TableCell className="h-11 w-px pr-5 text-right font-medium whitespace-nowrap tabular-nums">
                                     {row.total.toLocaleString()}
                                 </TableCell>
                             </TableRow>

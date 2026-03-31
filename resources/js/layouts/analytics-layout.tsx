@@ -9,12 +9,17 @@ interface AnalyticsLayoutProps {
     breadcrumbs?: BreadcrumbItem[];
 }
 
-export default function AnalyticsLayout({ children, period, breadcrumbs = [] }: AnalyticsLayoutProps) {
+export default function AnalyticsLayout({
+    children,
+    period,
+    breadcrumbs = [],
+}: AnalyticsLayoutProps) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs} actions={<PeriodSelector current={period} />}>
-            <div className="flex flex-col gap-6 p-6">
-                {children}
-            </div>
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            actions={<PeriodSelector current={period} />}
+        >
+            <div className="flex flex-col gap-6 p-6">{children}</div>
         </AppLayout>
     );
 }

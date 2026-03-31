@@ -1,5 +1,16 @@
 import { usePage } from '@inertiajs/react';
-import { AlertCircle, ArrowUpRight, Bell, BriefcaseBusiness, Database, Globe, HardDrive, LayoutGrid, Mail, Terminal } from 'lucide-react';
+import {
+    AlertCircle,
+    ArrowUpRight,
+    Bell,
+    BriefcaseBusiness,
+    Database,
+    Globe,
+    HardDrive,
+    LayoutGrid,
+    Mail,
+    Terminal,
+} from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
 import { NavUser } from '@/components/layout/nav-user';
@@ -33,7 +44,11 @@ export function AppSidebar() {
         activeEnvironment?: { slug: string } | null;
     };
 
-    const hasContext = !!(activeOrganization && activeProject && activeEnvironment);
+    const hasContext = !!(
+        activeOrganization &&
+        activeProject &&
+        activeEnvironment
+    );
 
     const analyticsHref = useAnalyticsHref();
 
@@ -43,107 +58,129 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
-        ...(hasContext ? [
-            {
-                title: 'Requests',
-                href: analyticsHref(requestsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Globe,
-            },
-            {
-                title: 'Jobs',
-                href: analyticsHref(jobsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: BriefcaseBusiness,
-            },
-            {
-                title: 'Commands',
-                href: analyticsHref(commandsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Terminal,
-            },
-            {
-                title: 'Exceptions',
-                href: analyticsHref(exceptionsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: AlertCircle,
-            },
-            {
-                title: 'Queries',
-                href: analyticsHref(queriesIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Database,
-            },
-            {
-                title: 'Notifications',
-                href: analyticsHref(notificationsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Bell,
-            },
-            {
-                title: 'Mails',
-                href: analyticsHref(mailIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: Mail,
-            },
-            {
-                title: 'Cache',
-                href: analyticsHref(cacheEventsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: HardDrive,
-            },
-            {
-                title: 'Outgoing Requests',
-                href: analyticsHref(outgoingRequestsIndex.url({
-                    organization: activeOrganization!.slug,
-                    project: activeProject!.slug,
-                    environment: activeEnvironment!.slug,
-                })),
-                icon: ArrowUpRight,
-            },
-        ] : []),
+        ...(hasContext
+            ? [
+                  {
+                      title: 'Requests',
+                      href: analyticsHref(
+                          requestsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: Globe,
+                  },
+                  {
+                      title: 'Jobs',
+                      href: analyticsHref(
+                          jobsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: BriefcaseBusiness,
+                  },
+                  {
+                      title: 'Commands',
+                      href: analyticsHref(
+                          commandsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: Terminal,
+                  },
+                  {
+                      title: 'Exceptions',
+                      href: analyticsHref(
+                          exceptionsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: AlertCircle,
+                  },
+                  {
+                      title: 'Queries',
+                      href: analyticsHref(
+                          queriesIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: Database,
+                  },
+                  {
+                      title: 'Notifications',
+                      href: analyticsHref(
+                          notificationsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: Bell,
+                  },
+                  {
+                      title: 'Mails',
+                      href: analyticsHref(
+                          mailIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: Mail,
+                  },
+                  {
+                      title: 'Cache',
+                      href: analyticsHref(
+                          cacheEventsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: HardDrive,
+                  },
+                  {
+                      title: 'Outgoing Requests',
+                      href: analyticsHref(
+                          outgoingRequestsIndex.url({
+                              organization: activeOrganization!.slug,
+                              project: activeProject!.slug,
+                              environment: activeEnvironment!.slug,
+                          }),
+                      ),
+                      icon: ArrowUpRight,
+                  },
+              ]
+            : []),
     ];
 
     return (
         <>
-        <SetupWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <ContextSelector onNewApplication={() => setWizardOpen(true)} />
-            </SidebarHeader>
+            <SetupWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
+            <Sidebar collapsible="icon" variant="inset">
+                <SidebarHeader>
+                    <ContextSelector
+                        onNewApplication={() => setWizardOpen(true)}
+                    />
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+                <SidebarContent>
+                    <NavMain items={mainNavItems} />
+                </SidebarContent>
 
-            <SidebarFooter>
-                <NavUser />
-            </SidebarFooter>
-        </Sidebar>
+                <SidebarFooter>
+                    <NavUser />
+                </SidebarFooter>
+            </Sidebar>
         </>
     );
 }

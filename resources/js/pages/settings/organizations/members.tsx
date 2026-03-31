@@ -69,13 +69,16 @@ function InviteDialog({
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        form.post(`/settings/organizations/${organization.slug}/members/invitations`, {
-            onSuccess: () => {
-                toast.success('Invitation sent');
-                setOpen(false);
-                form.reset();
+        form.post(
+            `/settings/organizations/${organization.slug}/members/invitations`,
+            {
+                onSuccess: () => {
+                    toast.success('Invitation sent');
+                    setOpen(false);
+                    form.reset();
+                },
             },
-        });
+        );
     }
 
     return (
@@ -98,7 +101,9 @@ function InviteDialog({
                         <Input
                             id="invite-name"
                             value={form.data.name}
-                            onChange={(e) => form.setData('name', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('name', e.target.value)
+                            }
                             placeholder="Full name"
                             required
                         />
@@ -111,7 +116,9 @@ function InviteDialog({
                             id="invite-email"
                             type="email"
                             value={form.data.email}
-                            onChange={(e) => form.setData('email', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('email', e.target.value)
+                            }
                             placeholder="email@example.com"
                             required
                         />
@@ -122,20 +129,27 @@ function InviteDialog({
                         <Label htmlFor="invite-role">Role</Label>
                         <Select
                             value={form.data.organization_role_id}
-                            onValueChange={(v) => form.setData('organization_role_id', v)}
+                            onValueChange={(v) =>
+                                form.setData('organization_role_id', v)
+                            }
                         >
                             <SelectTrigger id="invite-role">
                                 <SelectValue placeholder="Select a role" />
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((role) => (
-                                    <SelectItem key={role.id} value={String(role.id)}>
+                                    <SelectItem
+                                        key={role.id}
+                                        value={String(role.id)}
+                                    >
                                         {role.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        <InputError message={form.errors.organization_role_id} />
+                        <InputError
+                            message={form.errors.organization_role_id}
+                        />
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2">
@@ -207,7 +221,10 @@ export default function OrganizationMembers({
                                 title="Members"
                                 description="Manage who has access to this organization"
                             />
-                            <InviteDialog organization={organization} roles={roles} />
+                            <InviteDialog
+                                organization={organization}
+                                roles={roles}
+                            />
                         </div>
 
                         <div className="divide-y divide-border rounded-lg border">
@@ -217,7 +234,8 @@ export default function OrganizationMembers({
                                 </p>
                             ) : (
                                 members.map((member) => {
-                                    const isSelf = member.id === currentMemberId;
+                                    const isSelf =
+                                        member.id === currentMemberId;
 
                                     return (
                                         <div
@@ -230,7 +248,10 @@ export default function OrganizationMembers({
                                                         {member.user.name}
                                                     </p>
                                                     {isSelf && (
-                                                        <Badge variant="secondary" className="text-xs">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="text-xs"
+                                                        >
                                                             You
                                                         </Badge>
                                                     )}
@@ -242,26 +263,44 @@ export default function OrganizationMembers({
 
                                             <div className="flex shrink-0 items-center gap-2">
                                                 {isSelf ? (
-                                                    <Badge variant="outline">{member.role?.name}</Badge>
+                                                    <Badge variant="outline">
+                                                        {member.role?.name}
+                                                    </Badge>
                                                 ) : (
                                                     <Select
-                                                        value={String(member.role?.id ?? '')}
-                                                        onValueChange={(value) =>
-                                                            updateRole(member.id, value)
+                                                        value={String(
+                                                            member.role?.id ??
+                                                                '',
+                                                        )}
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
+                                                            updateRole(
+                                                                member.id,
+                                                                value,
+                                                            )
                                                         }
                                                     >
                                                         <SelectTrigger className="h-8 w-32 text-xs">
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {roles.map((role) => (
-                                                                <SelectItem
-                                                                    key={role.id}
-                                                                    value={String(role.id)}
-                                                                >
-                                                                    {role.name}
-                                                                </SelectItem>
-                                                            ))}
+                                                            {roles.map(
+                                                                (role) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            role.id
+                                                                        }
+                                                                        value={String(
+                                                                            role.id,
+                                                                        )}
+                                                                    >
+                                                                        {
+                                                                            role.name
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
                                                         </SelectContent>
                                                     </Select>
                                                 )}
@@ -270,7 +309,11 @@ export default function OrganizationMembers({
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"
-                                                        onClick={() => removeMember(member.id)}
+                                                        onClick={() =>
+                                                            removeMember(
+                                                                member.id,
+                                                            )
+                                                        }
                                                     >
                                                         Remove
                                                     </Button>
@@ -311,12 +354,18 @@ export default function OrganizationMembers({
 
                                         <div className="flex shrink-0 items-center gap-2">
                                             {invitation.role && (
-                                                <Badge variant="outline">{invitation.role.name}</Badge>
+                                                <Badge variant="outline">
+                                                    {invitation.role.name}
+                                                </Badge>
                                             )}
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => revokeInvitation(invitation.id)}
+                                                onClick={() =>
+                                                    revokeInvitation(
+                                                        invitation.id,
+                                                    )
+                                                }
                                             >
                                                 Revoke
                                             </Button>

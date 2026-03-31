@@ -17,10 +17,16 @@ export function useAnalyticsTable<TSortKey extends string>({
     function navigate(overrides: Record<string, string | undefined>) {
         const base = new URL(url, window.location.origin);
         const params = Object.fromEntries(
-            Object.entries({ ...Object.fromEntries(base.searchParams), ...overrides })
-                .filter(([, v]) => v !== undefined),
+            Object.entries({
+                ...Object.fromEntries(base.searchParams),
+                ...overrides,
+            }).filter(([, v]) => v !== undefined),
         );
-        router.get(base.pathname, params, { preserveScroll: true, preserveState: true, only });
+        router.get(base.pathname, params, {
+            preserveScroll: true,
+            preserveState: true,
+            only,
+        });
     }
 
     const handleSearch = useDebounceCallback((value: string) => {
@@ -36,10 +42,20 @@ export function useAnalyticsTable<TSortKey extends string>({
         navigate({ page: String(page) });
     }
 
-    function handleSort(key: TSortKey, currentSort: TSortKey, currentDirection: 'asc' | 'desc') {
-        const dir = currentSort === key && currentDirection === 'desc' ? 'asc' : 'desc';
+    function handleSort(
+        key: TSortKey,
+        currentSort: TSortKey,
+        currentDirection: 'asc' | 'desc',
+    ) {
+        const dir =
+            currentSort === key && currentDirection === 'desc' ? 'asc' : 'desc';
         navigate({ sort: key, direction: dir, page: undefined });
     }
 
-    return { searchValue, handleSearch: handleSearchChange, handlePage, handleSort };
+    return {
+        searchValue,
+        handleSearch: handleSearchChange,
+        handlePage,
+        handleSort,
+    };
 }

@@ -2,7 +2,14 @@ import { ArrowUpRight, OctagonAlert, Terminal } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import type { CommandRow, CommandSortKey, Pagination, SortDir } from '../types';
@@ -15,13 +22,21 @@ interface CommandTableProps {
     search: string;
 }
 
-export function CommandTable({ commands, pagination, sort, direction, search }: CommandTableProps) {
-    const { searchValue, handleSearch, handlePage, handleSort } = useAnalyticsTable<CommandSortKey>({
-        search,
-        only: ['commands', 'pagination', 'sort', 'direction'],
-    });
+export function CommandTable({
+    commands,
+    pagination,
+    sort,
+    direction,
+    search,
+}: CommandTableProps) {
+    const { searchValue, handleSearch, handlePage, handleSort } =
+        useAnalyticsTable<CommandSortKey>({
+            search,
+            only: ['commands', 'pagination', 'sort', 'direction'],
+        });
 
-    const onSort = (col: string) => handleSort(col as CommandSortKey, sort, direction);
+    const onSort = (col: string) =>
+        handleSort(col as CommandSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
@@ -33,34 +48,81 @@ export function CommandTable({ commands, pagination, sort, direction, search }: 
                 searchPlaceholder="Search commands..."
                 onSearch={handleSearch}
             />
-            <Table className="border-separate border-spacing-y-1.5" containerClassName="overflow-x-visible">
+            <Table
+                className="border-separate border-spacing-y-1.5"
+                containerClassName="overflow-x-visible"
+            >
                 <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
-                    <TableRow className="border-0 hover:bg-transparent shadow-sm shadow-black/4 [&_th]:border-y [&_th]:border-border [&_th:first-child]:border-l [&_th:first-child]:rounded-l-lg [&_th:last-child]:border-r [&_th:last-child]:rounded-r-lg [&_th]:bg-muted/50">
-                        <SortableHead column="name" sort={sort} direction={direction} onSort={onSort} className="h-11 px-5 text-xs font-medium">
+                    <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
+                        <SortableHead
+                            column="name"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            className="h-11 px-5 text-xs font-medium"
+                        >
                             Command
                         </SortableHead>
-                        <SortableHead column="successful" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="successful"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Success
                         </SortableHead>
-                        <SortableHead column="failed" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="failed"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Failed
                         </SortableHead>
-                        <SortableHead column="total" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="total"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             Total
                         </SortableHead>
-                        <SortableHead column="avg" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="avg"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             AVG
                         </SortableHead>
-                        <SortableHead column="p95" sort={sort} direction={direction} onSort={onSort} align="right" className="h-11 w-px whitespace-nowrap px-4 text-right text-xs font-medium">
+                        <SortableHead
+                            column="p95"
+                            sort={sort}
+                            direction={direction}
+                            onSort={onSort}
+                            align="right"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                        >
                             P95
                         </SortableHead>
-                        <TableHead className="h-11 w-px whitespace-nowrap rounded-r-lg border-y border-r border-border bg-muted/50 pr-5" />
+                        <TableHead className="h-11 w-px rounded-r-lg border-y border-r border-border bg-muted/50 pr-5 whitespace-nowrap" />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {commands.length === 0 ? (
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                            <TableCell
+                                colSpan={7}
+                                className="py-12 text-center text-sm text-muted-foreground"
+                            >
                                 No commands recorded for this period.
                             </TableCell>
                         </TableRow>
@@ -68,29 +130,33 @@ export function CommandTable({ commands, pagination, sort, direction, search }: 
                         commands.map((row, i) => (
                             <TableRow
                                 key={i}
-                                className="bg-surface group/row border-0 hover:bg-transparent cursor-pointer shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td:first-child]:border-l [&_td:first-child]:rounded-l-lg [&_td:last-child]:border-r [&_td:last-child]:rounded-r-lg [&_td]:bg-surface hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td]:transition-colors [&_td]:duration-150"
+                                className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden px-5">
                                     <span className="truncate font-mono text-sm">
                                         {row.name ?? 'Unknown Command'}
                                     </span>
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row.successful.toLocaleString()}
                                 </TableCell>
-                                <TableCell className={`h-11 w-px whitespace-nowrap px-4 text-right tabular-nums ${row.failed === 0 ? 'text-muted-foreground' : 'text-red-500'}`}>
+                                <TableCell
+                                    className={`h-11 w-px px-4 text-right whitespace-nowrap tabular-nums ${row.failed === 0 ? 'text-muted-foreground' : 'text-red-500'}`}
+                                >
                                     <div className="flex items-center justify-end gap-1">
-                                        {row.failed > 0 && <OctagonAlert className="size-3 shrink-0" />}
+                                        {row.failed > 0 && (
+                                            <OctagonAlert className="size-3 shrink-0" />
+                                        )}
                                         {row.failed.toLocaleString()}
                                     </div>
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums font-medium">
+                                <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
                                     {row.total.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.avg)}
                                 </TableCell>
-                                <TableCell className="h-11 w-px whitespace-nowrap px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.p95)}
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">

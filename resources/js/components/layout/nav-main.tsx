@@ -27,9 +27,21 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                             >
                                 <Link href={item.href} prefetch>
                                     {item.icon && (
-                                        <item.icon className={active ? 'text-emerald-500' : 'text-muted-foreground'} />
+                                        <item.icon
+                                            className={
+                                                active
+                                                    ? 'text-emerald-500'
+                                                    : 'text-muted-foreground'
+                                            }
+                                        />
                                     )}
-                                    <span className={active ? 'text-white' : 'text-muted-foreground'}>
+                                    <span
+                                        className={
+                                            active
+                                                ? 'text-white'
+                                                : 'text-muted-foreground'
+                                        }
+                                    >
                                         {item.title}
                                     </span>
                                 </Link>

@@ -5,7 +5,12 @@ import AnalyticsLayout from '@/layouts/analytics-layout';
 interface Analytics {
     summary: { name: string; cron: string; period_label: string };
     rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    } | null;
 }
 
 interface Props {
@@ -27,7 +32,11 @@ export default function ScheduledTaskShow({ analytics, period }: Props) {
                 <span className="text-muted-foreground">Schedule: </span>
                 <code className="font-mono">{analytics.summary.cron}</code>
             </div>
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <DataTable
+                columns={columns}
+                rows={analytics.rows}
+                pagination={analytics.pagination}
+            />
         </AnalyticsLayout>
     );
 }

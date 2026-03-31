@@ -63,28 +63,47 @@ interface Props {
     filters: Filters;
 }
 
-const statusVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const statusVariantMap: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     open: 'destructive',
     resolved: 'secondary',
     ignored: 'outline',
 };
 
-const priorityVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const priorityVariantMap: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     critical: 'destructive',
     high: 'default',
     medium: 'secondary',
     low: 'outline',
 };
 
-export default function IssuesIndex({ organization, project, environment, issues, pagination, filters }: Props) {
+export default function IssuesIndex({
+    organization,
+    project,
+    environment,
+    issues,
+    pagination,
+    filters,
+}: Props) {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [search, setSearch] = useState(filters.search ?? '');
 
     const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/issues`;
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: organization.name, href: `/organizations/${organization.slug}` },
-        { title: project.name, href: `/organizations/${organization.slug}/projects/${project.slug}` },
+        {
+            title: organization.name,
+            href: `/organizations/${organization.slug}`,
+        },
+        {
+            title: project.name,
+            href: `/organizations/${organization.slug}/projects/${project.slug}`,
+        },
         { title: environment.name, href: baseUrl },
         { title: 'Issues', href: baseUrl },
     ];
@@ -94,16 +113,26 @@ export default function IssuesIndex({ organization, project, environment, issues
     }
 
     function filterByPriority(priority: string) {
-        router.get(baseUrl, { ...filters, priority: priority || undefined }, { preserveState: true });
+        router.get(
+            baseUrl,
+            { ...filters, priority: priority || undefined },
+            { preserveState: true },
+        );
     }
 
     function submitSearch(e: React.FormEvent) {
         e.preventDefault();
-        router.get(baseUrl, { ...filters, search: search || undefined }, { preserveState: true });
+        router.get(
+            baseUrl,
+            { ...filters, search: search || undefined },
+            { preserveState: true },
+        );
     }
 
     function toggleSelect(id: number) {
-        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+        );
     }
 
     function toggleAll() {
@@ -162,7 +191,9 @@ export default function IssuesIndex({ organization, project, environment, issues
                     >
                         {priorities.map((p) => (
                             <option key={p} value={p}>
-                                {p ? p.charAt(0).toUpperCase() + p.slice(1) : 'All priorities'}
+                                {p
+                                    ? p.charAt(0).toUpperCase() + p.slice(1)
+                                    : 'All priorities'}
                             </option>
                         ))}
                     </select>
@@ -182,57 +213,98 @@ export default function IssuesIndex({ organization, project, environment, issues
                             <tr>
                                 <th className="w-8 px-4 py-3">
                                     <Checkbox
-                                        checked={selectedIds.length === issues.length && issues.length > 0}
+                                        checked={
+                                            selectedIds.length ===
+                                                issues.length &&
+                                            issues.length > 0
+                                        }
                                         onCheckedChange={toggleAll}
                                     />
                                 </th>
-                                <th className="px-4 py-3 text-left font-medium">Issue</th>
-                                <th className="px-4 py-3 text-left font-medium">Type</th>
-                                <th className="px-4 py-3 text-left font-medium">Priority</th>
-                                <th className="px-4 py-3 text-left font-medium">Status</th>
-                                <th className="px-4 py-3 text-right font-medium">Count</th>
-                                <th className="px-4 py-3 text-right font-medium">Last Seen</th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Issue
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Type
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Priority
+                                </th>
+                                <th className="px-4 py-3 text-left font-medium">
+                                    Status
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Count
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
+                                    Last Seen
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
                             {issues.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                                    <td
+                                        colSpan={7}
+                                        className="px-4 py-8 text-center text-muted-foreground"
+                                    >
                                         No issues found.
                                     </td>
                                 </tr>
                             )}
                             {issues.map((issue) => (
-                                <tr key={issue.id} className="hover:bg-muted/20">
+                                <tr
+                                    key={issue.id}
+                                    className="hover:bg-muted/20"
+                                >
                                     <td className="px-4 py-3">
                                         <Checkbox
-                                            checked={selectedIds.includes(issue.id)}
-                                            onCheckedChange={() => toggleSelect(issue.id)}
+                                            checked={selectedIds.includes(
+                                                issue.id,
+                                            )}
+                                            onCheckedChange={() =>
+                                                toggleSelect(issue.id)
+                                            }
                                         />
                                     </td>
                                     <td className="px-4 py-3">
                                         <a
                                             href={`${baseUrl}/${issue.id}`}
-                                            className="font-medium hover:underline line-clamp-1"
+                                            className="line-clamp-1 font-medium hover:underline"
                                         >
                                             {issue.title}
                                         </a>
                                         {issue.assignee && (
                                             <p className="text-xs text-muted-foreground">
-                                                Assigned to {issue.assignee.name}
+                                                Assigned to{' '}
+                                                {issue.assignee.name}
                                             </p>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <Badge variant="outline">{issue.type}</Badge>
+                                        <Badge variant="outline">
+                                            {issue.type}
+                                        </Badge>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <Badge variant={priorityVariantMap[issue.priority] ?? 'outline'}>
+                                        <Badge
+                                            variant={
+                                                priorityVariantMap[
+                                                    issue.priority
+                                                ] ?? 'outline'
+                                            }
+                                        >
                                             {issue.priority}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <Badge variant={statusVariantMap[issue.status] ?? 'outline'}>
+                                        <Badge
+                                            variant={
+                                                statusVariantMap[
+                                                    issue.status
+                                                ] ?? 'outline'
+                                            }
+                                        >
                                             {issue.status}
                                         </Badge>
                                     </td>
@@ -240,7 +312,9 @@ export default function IssuesIndex({ organization, project, environment, issues
                                         {issue.occurrence_count.toLocaleString()}
                                     </td>
                                     <td className="px-4 py-3 text-right text-muted-foreground">
-                                        {new Date(issue.last_seen_at).toLocaleDateString()}
+                                        {new Date(
+                                            issue.last_seen_at,
+                                        ).toLocaleDateString()}
                                     </td>
                                 </tr>
                             ))}
@@ -252,7 +326,8 @@ export default function IssuesIndex({ organization, project, environment, issues
                 {pagination.last_page > 1 && (
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <p>
-                            Showing page {pagination.current_page} of {pagination.last_page} ({pagination.total} total)
+                            Showing page {pagination.current_page} of{' '}
+                            {pagination.last_page} ({pagination.total} total)
                         </p>
                         <div className="flex gap-2">
                             {pagination.current_page > 1 && (
@@ -260,7 +335,10 @@ export default function IssuesIndex({ organization, project, environment, issues
                                     size="sm"
                                     variant="outline"
                                     onClick={() =>
-                                        router.get(baseUrl, { ...filters, page: pagination.current_page - 1 })
+                                        router.get(baseUrl, {
+                                            ...filters,
+                                            page: pagination.current_page - 1,
+                                        })
                                     }
                                 >
                                     Previous
@@ -271,7 +349,10 @@ export default function IssuesIndex({ organization, project, environment, issues
                                     size="sm"
                                     variant="outline"
                                     onClick={() =>
-                                        router.get(baseUrl, { ...filters, page: pagination.current_page + 1 })
+                                        router.get(baseUrl, {
+                                            ...filters,
+                                            page: pagination.current_page + 1,
+                                        })
                                     }
                                 >
                                     Next

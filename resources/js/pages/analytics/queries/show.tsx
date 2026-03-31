@@ -13,7 +13,12 @@ interface Analytics {
         period_label: string;
     };
     rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    } | null;
 }
 
 interface Props {
@@ -32,7 +37,9 @@ export default function QueryShow({ analytics, period }: Props) {
         <AnalyticsLayout period={period}>
             <Head />
             <div className="rounded-lg border bg-card p-4">
-                <pre className="overflow-x-auto text-xs">{analytics.summary.sql_preview}</pre>
+                <pre className="overflow-x-auto text-xs">
+                    {analytics.summary.sql_preview}
+                </pre>
                 <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                     <div>
                         <p className="text-muted-foreground">Total</p>
@@ -40,15 +47,23 @@ export default function QueryShow({ analytics, period }: Props) {
                     </div>
                     <div>
                         <p className="text-muted-foreground">Avg (ms)</p>
-                        <p className="font-medium">{analytics.summary.avg_duration_ms}</p>
+                        <p className="font-medium">
+                            {analytics.summary.avg_duration_ms}
+                        </p>
                     </div>
                     <div>
                         <p className="text-muted-foreground">P95 (ms)</p>
-                        <p className="font-medium">{analytics.summary.p95_duration_ms}</p>
+                        <p className="font-medium">
+                            {analytics.summary.p95_duration_ms}
+                        </p>
                     </div>
                 </div>
             </div>
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <DataTable
+                columns={columns}
+                rows={analytics.rows}
+                pagination={analytics.pagination}
+            />
         </AnalyticsLayout>
     );
 }

@@ -39,7 +39,10 @@ interface Filters {
     date_to?: string;
 }
 
-const EVENT_TYPE_COLORS: Record<string, 'default' | 'destructive' | 'secondary' | 'outline'> = {
+const EVENT_TYPE_COLORS: Record<
+    string,
+    'default' | 'destructive' | 'secondary' | 'outline'
+> = {
     organization_created: 'default',
     organization_updated: 'secondary',
     organization_deleted: 'destructive',
@@ -102,14 +105,22 @@ export default function OrganizationAudit({
                         description="Immutable record of all critical actions"
                     />
 
-                    <form onSubmit={applyFilters} className="grid grid-cols-2 gap-3">
+                    <form
+                        onSubmit={applyFilters}
+                        className="grid grid-cols-2 gap-3"
+                    >
                         <div className="space-y-1">
                             <Label htmlFor="event_type">Event type</Label>
                             <Input
                                 id="event_type"
                                 placeholder="e.g. member_invited"
                                 value={form.event_type}
-                                onChange={(e) => setForm({ ...form, event_type: e.target.value })}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        event_type: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div className="space-y-1">
@@ -119,7 +130,12 @@ export default function OrganizationAudit({
                                 type="number"
                                 placeholder="User ID"
                                 value={form.actor_id}
-                                onChange={(e) => setForm({ ...form, actor_id: e.target.value })}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        actor_id: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div className="space-y-1">
@@ -128,7 +144,12 @@ export default function OrganizationAudit({
                                 id="date_from"
                                 type="date"
                                 value={form.date_from}
-                                onChange={(e) => setForm({ ...form, date_from: e.target.value })}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        date_from: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div className="space-y-1">
@@ -137,18 +158,30 @@ export default function OrganizationAudit({
                                 id="date_to"
                                 type="date"
                                 value={form.date_to}
-                                onChange={(e) => setForm({ ...form, date_to: e.target.value })}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        date_to: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div className="col-span-2 flex gap-2">
-                            <Button type="submit" size="sm">Apply</Button>
-                            <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
+                            <Button type="submit" size="sm">
+                                Apply
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearFilters}
+                            >
                                 Clear
                             </Button>
                         </div>
                     </form>
 
-                    <div className="divide-y divide-border rounded-lg border overflow-hidden">
+                    <div className="divide-y divide-border overflow-hidden rounded-lg border">
                         {events.data.length === 0 ? (
                             <p className="py-8 text-center text-sm text-muted-foreground">
                                 No audit events found.
@@ -161,22 +194,35 @@ export default function OrganizationAudit({
                                 >
                                     <div className="space-y-0.5">
                                         <Badge
-                                            variant={EVENT_TYPE_COLORS[event.event_type] ?? 'outline'}
+                                            variant={
+                                                EVENT_TYPE_COLORS[
+                                                    event.event_type
+                                                ] ?? 'outline'
+                                            }
                                         >
-                                            {event.event_type.replace(/_/g, ' ')}
+                                            {event.event_type.replace(
+                                                /_/g,
+                                                ' ',
+                                            )}
                                         </Badge>
-                                        {event.target_type && event.target_id && (
-                                            <p className="text-xs text-muted-foreground">
-                                                {event.target_type} #{event.target_id}
-                                            </p>
-                                        )}
+                                        {event.target_type &&
+                                            event.target_id && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    {event.target_type} #
+                                                    {event.target_id}
+                                                </p>
+                                            )}
                                     </div>
-                                    <div className="text-right space-y-0.5">
+                                    <div className="space-y-0.5 text-right">
                                         <p className="text-xs text-muted-foreground">
-                                            {event.actor_id ? `User #${event.actor_id}` : 'anonymized'}
+                                            {event.actor_id
+                                                ? `User #${event.actor_id}`
+                                                : 'anonymized'}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
-                                            {new Date(event.created_at).toLocaleString()}
+                                            {new Date(
+                                                event.created_at,
+                                            ).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
@@ -187,21 +233,26 @@ export default function OrganizationAudit({
                     {events.last_page > 1 && (
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
                             <span>
-                                Page {events.current_page} of {events.last_page} — {events.total} events
+                                Page {events.current_page} of {events.last_page}{' '}
+                                — {events.total} events
                             </span>
                             <div className="flex gap-1">
                                 {events.links.map((link, i) => (
                                     <button
                                         key={i}
                                         disabled={!link.url}
-                                        onClick={() => link.url && router.get(link.url)}
+                                        onClick={() =>
+                                            link.url && router.get(link.url)
+                                        }
                                         className={[
-                                            'px-3 py-1 rounded border text-xs',
+                                            'rounded border px-3 py-1 text-xs',
                                             link.active
-                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                ? 'border-primary bg-primary text-primary-foreground'
                                                 : 'border hover:bg-muted/40 disabled:opacity-40',
                                         ].join(' ')}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
                                     />
                                 ))}
                             </div>

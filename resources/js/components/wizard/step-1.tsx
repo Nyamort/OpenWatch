@@ -42,7 +42,9 @@ export function WizardStep1({
     const isEditing = created !== null;
 
     function xsrfToken(): string {
-        return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
+        return decodeURIComponent(
+            document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '',
+        );
     }
 
     async function handleCreate() {
@@ -52,7 +54,11 @@ export function WizardStep1({
         try {
             const res = await fetch('/wizard/app', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrfToken(), Accept: 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': xsrfToken(),
+                    Accept: 'application/json',
+                },
                 body: JSON.stringify({
                     organization_id: organizationId,
                     app_name: appName,
@@ -69,10 +75,20 @@ export function WizardStep1({
             }
 
             const data: CreatedData = await res.json();
-            router.reload({ only: ['activeOrganization', 'activeProject', 'activeEnvironment', 'projectGroups', 'organizations'] });
+            router.reload({
+                only: [
+                    'activeOrganization',
+                    'activeProject',
+                    'activeEnvironment',
+                    'projectGroups',
+                    'organizations',
+                ],
+            });
             onCreated(data);
         } catch {
-            setErrors({ app_name: 'An unexpected error occurred. Please try again.' });
+            setErrors({
+                app_name: 'An unexpected error occurred. Please try again.',
+            });
         } finally {
             setLoading(false);
         }
@@ -86,7 +102,11 @@ export function WizardStep1({
         try {
             const res = await fetch(`/wizard/app/${created.project.slug}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrfToken(), Accept: 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': xsrfToken(),
+                    Accept: 'application/json',
+                },
                 body: JSON.stringify({
                     app_name: appName,
                     env_id: created.environment.id,
@@ -102,16 +122,27 @@ export function WizardStep1({
             }
 
             const data = await res.json();
-            router.reload({ only: ['activeOrganization', 'activeProject', 'activeEnvironment', 'projectGroups', 'organizations'] });
+            router.reload({
+                only: [
+                    'activeOrganization',
+                    'activeProject',
+                    'activeEnvironment',
+                    'projectGroups',
+                    'organizations',
+                ],
+            });
             onCreated({ ...data, token: created.token });
         } catch {
-            setErrors({ app_name: 'An unexpected error occurred. Please try again.' });
+            setErrors({
+                app_name: 'An unexpected error occurred. Please try again.',
+            });
         } finally {
             setLoading(false);
         }
     }
 
-    const colorClass = ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
+    const colorClass =
+        ENV_COLORS.find((c) => c.value === envColor)?.class ?? 'bg-emerald-500';
 
     return (
         <div className="mt-4 space-y-4">
@@ -121,37 +152,55 @@ export function WizardStep1({
                     value={appName}
                     onChange={(e) => setAppName(e.target.value)}
                     placeholder="My Application"
-                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
+                    className="border-zinc-700 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                 />
-                {errors.app_name && <p className="text-xs text-rose-400">{errors.app_name}</p>}
+                {errors.app_name && (
+                    <p className="text-xs text-rose-400">{errors.app_name}</p>
+                )}
             </div>
 
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">
+            <div className="space-y-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                 <div>
                     <p className="text-sm font-medium text-zinc-200">
-                        {isEditing ? 'Environment' : 'Add your first environment'}
+                        {isEditing
+                            ? 'Environment'
+                            : 'Add your first environment'}
                     </p>
                     {!isEditing && (
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            You can setup additional environments after your initial setup.
+                        <p className="mt-0.5 text-xs text-zinc-500">
+                            You can setup additional environments after your
+                            initial setup.
                         </p>
                     )}
                 </div>
 
                 <div className="grid gap-1.5">
-                    <Label className="text-zinc-400 text-xs">Environment name</Label>
+                    <Label className="text-xs text-zinc-400">
+                        Environment name
+                    </Label>
                     <Input
                         value={envName}
                         onChange={(e) => setEnvName(e.target.value)}
-                        className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
+                        className="border-zinc-700 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                     />
-                    {errors.env_name && <p className="text-xs text-rose-400">{errors.env_name}</p>}
+                    {errors.env_name && (
+                        <p className="text-xs text-rose-400">
+                            {errors.env_name}
+                        </p>
+                    )}
                 </div>
 
                 <div className="grid gap-1.5">
-                    <Label className="text-zinc-400 text-xs">Environment color</Label>
+                    <Label className="text-xs text-zinc-400">
+                        Environment color
+                    </Label>
                     <div className="flex items-center gap-2">
-                        <div className={cn('size-4 rounded-full shrink-0', colorClass)} />
+                        <div
+                            className={cn(
+                                'size-4 shrink-0 rounded-full',
+                                colorClass,
+                            )}
+                        />
                         <Select value={envColor} onValueChange={setEnvColor}>
                             <SelectTrigger className="flex-1 border-zinc-700 bg-zinc-900 text-zinc-100 focus:ring-zinc-600">
                                 <SelectValue />
@@ -168,14 +217,15 @@ export function WizardStep1({
                 </div>
 
                 <div className="grid gap-1.5">
-                    <Label className="text-zinc-400 text-xs">
-                        Environment URL <span className="text-zinc-600">(optional)</span>
+                    <Label className="text-xs text-zinc-400">
+                        Environment URL{' '}
+                        <span className="text-zinc-600">(optional)</span>
                     </Label>
                     <Input
                         value={envUrl}
                         onChange={(e) => setEnvUrl(e.target.value)}
                         placeholder="https://example.com"
-                        className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
+                        className="border-zinc-700 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-zinc-600"
                     />
                 </div>
             </div>
@@ -184,9 +234,11 @@ export function WizardStep1({
                 <Button
                     onClick={isEditing ? handleUpdate : handleCreate}
                     disabled={loading || !appName}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                 >
-                    {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+                    {loading && (
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                    )}
                     {isEditing ? 'Update' : 'Create'}
                 </Button>
             </div>

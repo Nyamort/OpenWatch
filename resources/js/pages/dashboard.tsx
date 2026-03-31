@@ -2,10 +2,17 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+];
 
 interface Metrics {
-    requests: { total: number; error_count: number; error_rate: number; p95_duration: number };
+    requests: {
+        total: number;
+        error_count: number;
+        error_rate: number;
+        p95_duration: number;
+    };
     exceptions: { total: number; unhandled: number };
     jobs: { total: number; failed: number; failure_rate: number };
     users: { authenticated: number };
@@ -58,19 +65,32 @@ function MetricCard({
     color?: string;
 }) {
     return (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="rounded-lg border bg-card p-6">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className={`text-3xl font-bold mt-1 text-${color}-600 dark:text-${color}-400`}>{value}</p>
-            {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+            <p
+                className={`mt-1 text-3xl font-bold text-${color}-600 dark:text-${color}-400`}
+            >
+                {value}
+            </p>
+            {subtitle && (
+                <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            )}
         </div>
     );
 }
 
 function SectionSkeleton() {
-    return <div className="animate-pulse bg-muted rounded-lg h-24" />;
+    return <div className="h-24 animate-pulse rounded-lg bg-muted" />;
 }
 
-export default function Dashboard({ hasContext, period, context, metrics, alerts, recentIssues }: Props) {
+export default function Dashboard({
+    hasContext,
+    period,
+    context,
+    metrics,
+    alerts,
+    recentIssues,
+}: Props) {
     const periods = [
         { value: '1h', label: '1h' },
         { value: '24h', label: '24h' },
@@ -92,23 +112,26 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">
+                            Dashboard
+                        </h1>
                         {context && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {context.org} / {context.project} / {context.env}
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {context.org} / {context.project} /{' '}
+                                {context.env}
                             </p>
                         )}
                     </div>
                     {/* Period selector */}
-                    <div className="flex gap-1 bg-muted rounded-lg p-1">
+                    <div className="flex gap-1 rounded-lg bg-muted p-1">
                         {periods.map((p) => (
                             <button
                                 key={p.value}
                                 onClick={() => changePeriod(p.value)}
-                                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                                     period === p.value
                                         ? 'bg-background text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground '
+                                        : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
                                 {p.label}
@@ -118,9 +141,12 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                 </div>
 
                 {!hasContext ? (
-                    <div className="text-center py-20 text-muted-foreground">
+                    <div className="py-20 text-center text-muted-foreground">
                         <p className="text-lg">No project configured yet.</p>
-                        <p className="text-sm mt-2">Create an organization and project to start monitoring.</p>
+                        <p className="mt-2 text-sm">
+                            Create an organization and project to start
+                            monitoring.
+                        </p>
                     </div>
                 ) : (
                     <>
@@ -128,16 +154,21 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                         {alerts === null || alerts === undefined ? (
                             <SectionSkeleton />
                         ) : alerts.count > 0 ? (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                                        ⚠ {alerts.count} Active Alert{alerts.count !== 1 ? 's' : ''}
+                                    <span className="font-semibold text-red-600 dark:text-red-400">
+                                        ⚠ {alerts.count} Active Alert
+                                        {alerts.count !== 1 ? 's' : ''}
                                     </span>
                                 </div>
                                 <ul className="mt-2 space-y-1">
                                     {alerts.alerts.map((alert) => (
-                                        <li key={alert.id} className="text-sm text-red-700 dark:text-red-300">
-                                            {alert.name} — {alert.metric} {alert.condition}
+                                        <li
+                                            key={alert.id}
+                                            className="text-sm text-red-700 dark:text-red-300"
+                                        >
+                                            {alert.name} — {alert.metric}{' '}
+                                            {alert.condition}
                                         </li>
                                     ))}
                                 </ul>
@@ -146,13 +177,13 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
 
                         {/* Metric Cards */}
                         {metrics === null || metrics === undefined ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 {[...Array(4)].map((_, i) => (
                                     <SectionSkeleton key={i} />
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <MetricCard
                                     title="Requests"
                                     value={metrics.requests.total.toLocaleString()}
@@ -163,13 +194,21 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                                     title="Exceptions"
                                     value={metrics.exceptions.total.toLocaleString()}
                                     subtitle={`${metrics.exceptions.unhandled} unhandled`}
-                                    color={metrics.exceptions.unhandled > 0 ? 'red' : 'green'}
+                                    color={
+                                        metrics.exceptions.unhandled > 0
+                                            ? 'red'
+                                            : 'green'
+                                    }
                                 />
                                 <MetricCard
                                     title="Jobs"
                                     value={metrics.jobs.total.toLocaleString()}
                                     subtitle={`${metrics.jobs.failure_rate}% failure rate`}
-                                    color={metrics.jobs.failed > 0 ? 'orange' : 'green'}
+                                    color={
+                                        metrics.jobs.failed > 0
+                                            ? 'orange'
+                                            : 'green'
+                                    }
                                 />
                                 <MetricCard
                                     title="Users"
@@ -181,47 +220,66 @@ export default function Dashboard({ hasContext, period, context, metrics, alerts
                         )}
 
                         {/* Recent Issues */}
-                        <div className="bg-card rounded-lg border border">
-                            <div className="px-6 py-4 border-b border flex justify-between items-center">
-                                <h2 className="text-base font-semibold text-foreground">Recent Issues</h2>
+                        <div className="rounded-lg border bg-card">
+                            <div className="flex items-center justify-between border border-b px-6 py-4">
+                                <h2 className="text-base font-semibold text-foreground">
+                                    Recent Issues
+                                </h2>
                                 {context && (
                                     <a
                                         href={`/organizations/${context.org}/projects/${context.project}/environments/${context.env}/issues`}
-                                        className="text-sm text-primary  hover:underline"
+                                        className="text-sm text-primary hover:underline"
                                     >
                                         View all →
                                     </a>
                                 )}
                             </div>
                             <div className="divide-y divide-border">
-                                {recentIssues === null || recentIssues === undefined ? (
+                                {recentIssues === null ||
+                                recentIssues === undefined ? (
                                     <div className="p-6">
                                         <SectionSkeleton />
                                     </div>
                                 ) : recentIssues.count === 0 ? (
-                                    <div className="px-6 py-8 text-center text-muted-foreground text-sm">No open issues. 🎉</div>
+                                    <div className="px-6 py-8 text-center text-sm text-muted-foreground">
+                                        No open issues. 🎉
+                                    </div>
                                 ) : (
                                     recentIssues.issues.map((issue) => (
-                                        <div key={issue.id} className="px-6 py-3 flex items-center justify-between">
+                                        <div
+                                            key={issue.id}
+                                            className="flex items-center justify-between px-6 py-3"
+                                        >
                                             <div>
-                                                <p className="text-sm font-medium text-foreground">{issue.title}</p>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                <p className="text-sm font-medium text-foreground">
+                                                    {issue.title}
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-muted-foreground">
                                                     <span
-                                                        className={`inline-block px-1.5 py-0.5 rounded text-xs mr-2 ${
-                                                            issue.priority === 'critical'
+                                                        className={`mr-2 inline-block rounded px-1.5 py-0.5 text-xs ${
+                                                            issue.priority ===
+                                                            'critical'
                                                                 ? 'bg-red-100 text-red-700'
-                                                                : issue.priority === 'high'
+                                                                : issue.priority ===
+                                                                    'high'
                                                                   ? 'bg-orange-100 text-orange-700'
                                                                   : 'bg-muted text-foreground'
                                                         }`}
                                                     >
                                                         {issue.priority}
                                                     </span>
-                                                    {issue.occurrence_count} occurrence{issue.occurrence_count !== 1 ? 's' : ''}
+                                                    {issue.occurrence_count}{' '}
+                                                    occurrence
+                                                    {issue.occurrence_count !==
+                                                    1
+                                                        ? 's'
+                                                        : ''}
                                                 </p>
                                             </div>
                                             <span className="text-xs text-muted-foreground">
-                                                {new Date(issue.last_seen_at).toLocaleDateString()}
+                                                {new Date(
+                                                    issue.last_seen_at,
+                                                ).toLocaleDateString()}
                                             </span>
                                         </div>
                                     ))

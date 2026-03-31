@@ -17,14 +17,18 @@ export function WizardStep2({
     return (
         <div className="mt-4 space-y-5">
             <div>
-                <p className="text-xs font-semibold text-zinc-400 mb-2">Install the Nightwatch package</p>
+                <p className="mb-2 text-xs font-semibold text-zinc-400">
+                    Install the Nightwatch package
+                </p>
                 <CodeBlock onCopy="composer require laravel/nightwatch">
-                    <span className="text-zinc-100">composer require laravel/nightwatch</span>
+                    <span className="text-zinc-100">
+                        composer require laravel/nightwatch
+                    </span>
                 </CodeBlock>
             </div>
 
             <div>
-                <p className="text-xs font-semibold text-zinc-400 mb-2">
+                <p className="mb-2 text-xs font-semibold text-zinc-400">
                     Add the token to your environment variables
                 </p>
                 <CodeBlock onCopy={`NIGHTWATCH_TOKEN=${token}`}>
@@ -33,17 +37,19 @@ export function WizardStep2({
             </div>
 
             <div>
-                <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold text-zinc-400">Configure Nightwatch to capture logs</p>
+                <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-semibold text-zinc-400">
+                        Configure Nightwatch to capture logs
+                    </p>
                     <span className="text-xs text-zinc-600">Optional</span>
                 </div>
-                <div className="flex gap-4 mb-2 border-b border-zinc-800">
+                <div className="mb-2 flex gap-4 border-b border-zinc-800">
                     {(['single', 'stack'] as const).map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setLogTab(tab)}
                             className={cn(
-                                'pb-1.5 text-xs font-medium transition-colors border-b-2 -mb-px',
+                                '-mb-px border-b-2 pb-1.5 text-xs font-medium transition-colors',
                                 logTab === tab
                                     ? 'border-zinc-300 text-zinc-100'
                                     : 'border-transparent text-zinc-500 hover:text-zinc-300',
@@ -65,10 +71,17 @@ export function WizardStep2({
             </div>
 
             <div className="flex justify-between">
-                <Button variant="ghost" onClick={onBack} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800">
+                <Button
+                    variant="ghost"
+                    onClick={onBack}
+                    className="text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                >
                     Back
                 </Button>
-                <Button onClick={onNext} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button
+                    onClick={onNext}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                >
                     Next
                 </Button>
             </div>

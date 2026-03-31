@@ -41,7 +41,9 @@ export default function OrganizationGeneral({
     timezones: string[];
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(organization.logo_url || null);
+    const [preview, setPreview] = useState<string | null>(
+        organization.logo_url || null,
+    );
     const [deleteOrgOpen, setDeleteOrgOpen] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState('');
     const deleteForm = useForm({});
@@ -98,36 +100,58 @@ export default function OrganizationGeneral({
                         description="Update your organization's name and details"
                     />
 
-                    <Dialog open={deleteOrgOpen} onOpenChange={setDeleteOrgOpen}>
+                    <Dialog
+                        open={deleteOrgOpen}
+                        onOpenChange={setDeleteOrgOpen}
+                    >
                         <DialogContent className="max-w-sm">
                             <DialogHeader>
                                 <DialogTitle>Delete organization</DialogTitle>
                                 <DialogDescription>
-                                    This will permanently delete <strong>{organization.name}</strong> and all its data. Type the organization name to confirm.
+                                    This will permanently delete{' '}
+                                    <strong>{organization.name}</strong> and all
+                                    its data. Type the organization name to
+                                    confirm.
                                 </DialogDescription>
                             </DialogHeader>
                             <form
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    deleteForm.delete(`/settings/organizations/${organization.slug}`, {
-                                        onSuccess: () => setDeleteOrgOpen(false),
-                                    });
+                                    deleteForm.delete(
+                                        `/settings/organizations/${organization.slug}`,
+                                        {
+                                            onSuccess: () =>
+                                                setDeleteOrgOpen(false),
+                                        },
+                                    );
                                 }}
                             >
                                 <div className="space-y-4">
                                     <Input
                                         value={deleteConfirm}
-                                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                                        onChange={(e) =>
+                                            setDeleteConfirm(e.target.value)
+                                        }
                                         placeholder={organization.name}
                                     />
                                     <DialogFooter>
-                                        <Button type="button" variant="outline" onClick={() => setDeleteOrgOpen(false)}>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                setDeleteOrgOpen(false)
+                                            }
+                                        >
                                             Cancel
                                         </Button>
                                         <Button
                                             type="submit"
                                             variant="destructive"
-                                            disabled={deleteConfirm !== organization.name || deleteForm.processing}
+                                            disabled={
+                                                deleteConfirm !==
+                                                    organization.name ||
+                                                deleteForm.processing
+                                            }
                                         >
                                             Delete organization
                                         </Button>
@@ -144,7 +168,9 @@ export default function OrganizationGeneral({
                             <div className="flex items-center gap-4">
                                 <div
                                     className="flex size-16 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted transition-colors hover:bg-accent"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() =>
+                                        fileInputRef.current?.click()
+                                    }
                                 >
                                     {preview ? (
                                         <img
@@ -162,9 +188,13 @@ export default function OrganizationGeneral({
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
                                     >
-                                        {preview ? 'Change logo' : 'Upload logo'}
+                                        {preview
+                                            ? 'Change logo'
+                                            : 'Upload logo'}
                                     </Button>
                                     {preview && (
                                         <Button
@@ -200,7 +230,9 @@ export default function OrganizationGeneral({
                             <Input
                                 id="name"
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <InputError message={form.errors.name} />
@@ -223,7 +255,11 @@ export default function OrganizationGeneral({
                     </form>
 
                     <DangerZone>
-                        <Button type="button" variant="destructive" onClick={() => setDeleteOrgOpen(true)}>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => setDeleteOrgOpen(true)}
+                        >
                             <Trash2 className="mr-1.5 size-3.5" />
                             Delete organization
                         </Button>

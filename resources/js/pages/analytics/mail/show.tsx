@@ -22,7 +22,9 @@ export default function MailShow({ analytics }: Props) {
                         {Object.entries(mail).map(([k, v]) => (
                             <div key={k} className="grid grid-cols-4 gap-2">
                                 <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="col-span-3 font-medium">{String(v ?? '')}</dd>
+                                <dd className="col-span-3 font-medium">
+                                    {String(v ?? '')}
+                                </dd>
                             </div>
                         ))}
                     </dl>

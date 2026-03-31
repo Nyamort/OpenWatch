@@ -27,19 +27,27 @@ export default function RequestShow({ analytics }: Props) {
                         {Object.entries(req).map(([k, v]) => (
                             <div key={k}>
                                 <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="font-medium">{String(v ?? '')}</dd>
+                                <dd className="font-medium">
+                                    {String(v ?? '')}
+                                </dd>
                             </div>
                         ))}
                     </dl>
                 </div>
                 <section>
-                    <h2 className="mb-2 text-sm font-medium">Queries ({analytics.rows.queries.length})</h2>
+                    <h2 className="mb-2 text-sm font-medium">
+                        Queries ({analytics.rows.queries.length})
+                    </h2>
                 </section>
                 <section>
-                    <h2 className="mb-2 text-sm font-medium">Exceptions ({analytics.rows.exceptions.length})</h2>
+                    <h2 className="mb-2 text-sm font-medium">
+                        Exceptions ({analytics.rows.exceptions.length})
+                    </h2>
                 </section>
                 <section>
-                    <h2 className="mb-2 text-sm font-medium">Logs ({analytics.rows.logs.length})</h2>
+                    <h2 className="mb-2 text-sm font-medium">
+                        Logs ({analytics.rows.logs.length})
+                    </h2>
                 </section>
             </div>
         </AppLayout>

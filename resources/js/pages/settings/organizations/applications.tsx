@@ -42,20 +42,28 @@ interface Application {
     environments_count: number;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Applications', href: '#' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Applications', href: '#' }];
 
 const AVATAR_COLORS = [
-    'bg-violet-500', 'bg-blue-500', 'bg-emerald-500',
-    'bg-orange-500', 'bg-rose-500', 'bg-amber-500',
+    'bg-violet-500',
+    'bg-blue-500',
+    'bg-emerald-500',
+    'bg-orange-500',
+    'bg-rose-500',
+    'bg-amber-500',
 ];
 
 function avatarColor(name: string): string {
     return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
-function ApplicationRow({ organization, application }: { organization: Organization; application: Application }) {
+function ApplicationRow({
+    organization,
+    application,
+}: {
+    organization: Organization;
+    application: Application;
+}) {
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     return (
@@ -69,13 +77,19 @@ function ApplicationRow({ organization, application }: { organization: Organizat
 
             <div className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="flex min-w-0 items-center gap-3">
-                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${avatarColor(application.name)}`}>
+                    <div
+                        className={`flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white ${avatarColor(application.name)}`}
+                    >
                         {application.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 space-y-0.5">
-                        <p className="truncate text-sm font-medium">{application.name}</p>
+                        <p className="truncate text-sm font-medium">
+                            {application.name}
+                        </p>
                         {application.description && (
-                            <p className="truncate text-xs text-muted-foreground">{application.description}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                                {application.description}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -87,13 +101,19 @@ function ApplicationRow({ organization, application }: { organization: Organizat
                     </Badge>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                            >
                                 <MoreHorizontal className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                                <Link href={`/settings/organizations/${organization.slug}/applications/${application.slug}`}>
+                                <Link
+                                    href={`/settings/organizations/${organization.slug}/applications/${application.slug}`}
+                                >
                                     <Settings2 className="mr-2 size-3.5" />
                                     Settings
                                 </Link>
@@ -141,7 +161,8 @@ function CreateApplicationDialog({
                 <DialogHeader>
                     <DialogTitle>New application</DialogTitle>
                     <DialogDescription>
-                        Create a new application within <strong>{organization.name}</strong>.
+                        Create a new application within{' '}
+                        <strong>{organization.name}</strong>.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -150,25 +171,38 @@ function CreateApplicationDialog({
                         <Input
                             id="app-name"
                             value={form.data.name}
-                            onChange={(e) => form.setData('name', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('name', e.target.value)
+                            }
                             placeholder="My Application"
                             required
                         />
                         <InputError message={form.errors.name} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="app-description">Description <span className="text-muted-foreground">(optional)</span></Label>
+                        <Label htmlFor="app-description">
+                            Description{' '}
+                            <span className="text-muted-foreground">
+                                (optional)
+                            </span>
+                        </Label>
                         <Textarea
                             id="app-description"
                             value={form.data.description}
-                            onChange={(e) => form.setData('description', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('description', e.target.value)
+                            }
                             placeholder="What does this application do?"
                             rows={3}
                         />
                         <InputError message={form.errors.description} />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -220,11 +254,17 @@ export default function Applications({
                         {applications.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 py-12 text-center">
                                 <Layers className="size-8 text-muted-foreground/40" />
-                                <p className="text-sm text-muted-foreground">No applications yet.</p>
+                                <p className="text-sm text-muted-foreground">
+                                    No applications yet.
+                                </p>
                             </div>
                         ) : (
                             applications.map((application) => (
-                                <ApplicationRow key={application.id} organization={organization} application={application} />
+                                <ApplicationRow
+                                    key={application.id}
+                                    organization={organization}
+                                    application={application}
+                                />
                             ))
                         )}
                     </div>

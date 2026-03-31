@@ -32,9 +32,7 @@ interface Application {
     logo_url: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Applications', href: '#' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Applications', href: '#' }];
 
 export default function ApplicationEdit({
     organization,
@@ -50,12 +48,15 @@ export default function ApplicationEdit({
     newTokenEnvironmentName: string | null;
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(application.logo_url || null);
+    const [preview, setPreview] = useState<string | null>(
+        application.logo_url || null,
+    );
     const [addEnvOpen, setAddEnvOpen] = useState(false);
     const [deleteAppOpen, setDeleteAppOpen] = useState(false);
     const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
     const [displayedToken, setDisplayedToken] = useState<string | null>(null);
-    const [displayedTokenEnvName, setDisplayedTokenEnvName] = useState<string>('');
+    const [displayedTokenEnvName, setDisplayedTokenEnvName] =
+        useState<string>('');
 
     useEffect(() => {
         if (newToken) {
@@ -143,10 +144,16 @@ export default function ApplicationEdit({
                                 <div className="flex items-center gap-4">
                                     <div
                                         className="flex size-16 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted transition-colors hover:bg-accent"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
                                     >
                                         {preview ? (
-                                            <img src={preview} alt="Logo preview" className="size-full object-cover" />
+                                            <img
+                                                src={preview}
+                                                alt="Logo preview"
+                                                className="size-full object-cover"
+                                            />
                                         ) : (
                                             <ImageIcon className="size-6 text-muted-foreground" />
                                         )}
@@ -157,9 +164,13 @@ export default function ApplicationEdit({
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => fileInputRef.current?.click()}
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
                                         >
-                                            {preview ? 'Change logo' : 'Upload logo'}
+                                            {preview
+                                                ? 'Change logo'
+                                                : 'Upload logo'}
                                         </Button>
                                         {preview && (
                                             <Button
@@ -173,7 +184,9 @@ export default function ApplicationEdit({
                                                 Remove
                                             </Button>
                                         )}
-                                        <p className="text-xs text-muted-foreground">PNG, JPG up to 2 MB</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            PNG, JPG up to 2 MB
+                                        </p>
                                     </div>
                                 </div>
 
@@ -192,7 +205,9 @@ export default function ApplicationEdit({
                                 <Input
                                     id="app-name"
                                     value={form.data.name}
-                                    onChange={(e) => form.setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        form.setData('name', e.target.value)
+                                    }
                                     required
                                 />
                                 <InputError message={form.errors.name} />
@@ -201,12 +216,19 @@ export default function ApplicationEdit({
                             <div className="grid gap-2">
                                 <Label htmlFor="app-description">
                                     Description{' '}
-                                    <span className="font-normal text-muted-foreground">(optional)</span>
+                                    <span className="font-normal text-muted-foreground">
+                                        (optional)
+                                    </span>
                                 </Label>
                                 <Textarea
                                     id="app-description"
                                     value={form.data.description}
-                                    onChange={(e) => form.setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'description',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="What does this application do?"
                                 />
                                 <InputError message={form.errors.description} />
@@ -219,12 +241,20 @@ export default function ApplicationEdit({
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-sm font-medium">Environments</h3>
+                                <h3 className="text-sm font-medium">
+                                    Environments
+                                </h3>
                                 <p className="text-sm text-muted-foreground">
-                                    Update the name and color of each environment.
+                                    Update the name and color of each
+                                    environment.
                                 </p>
                             </div>
-                            <Button type="button" variant="outline" size="sm" onClick={() => setAddEnvOpen(true)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAddEnvOpen(true)}
+                            >
                                 <Plus className="mr-1.5 size-3.5" />
                                 Add
                             </Button>
@@ -249,7 +279,11 @@ export default function ApplicationEdit({
                     </div>
 
                     <DangerZone>
-                        <Button type="button" variant="destructive" onClick={() => setDeleteAppOpen(true)}>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => setDeleteAppOpen(true)}
+                        >
                             <Trash2 className="mr-1.5 size-3.5" />
                             Delete application
                         </Button>

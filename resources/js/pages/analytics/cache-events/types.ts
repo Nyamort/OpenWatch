@@ -34,7 +34,15 @@ export interface CacheKeyRow {
     total: number;
 }
 
-export type CacheSortKey = 'key' | 'hit_pct' | 'hits' | 'misses' | 'writes' | 'deletes' | 'failures' | 'total';
+export type CacheSortKey =
+    | 'key'
+    | 'hit_pct'
+    | 'hits'
+    | 'misses'
+    | 'writes'
+    | 'deletes'
+    | 'failures'
+    | 'total';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

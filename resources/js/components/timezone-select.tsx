@@ -12,13 +12,19 @@ interface TimezoneSelectProps {
     onChange: (tz: string) => void;
 }
 
-export function TimezoneSelect({ timezones, value, onChange }: TimezoneSelectProps) {
+export function TimezoneSelect({
+    timezones,
+    value,
+    onChange,
+}: TimezoneSelectProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const searchRef = useRef<HTMLInputElement>(null);
 
     const filtered = search.trim()
-        ? timezones.filter((tz) => tz.toLowerCase().includes(search.toLowerCase()))
+        ? timezones.filter((tz) =>
+              tz.toLowerCase().includes(search.toLowerCase()),
+          )
         : timezones;
 
     function handleOpenChange(next: boolean) {
@@ -33,8 +39,10 @@ export function TimezoneSelect({ timezones, value, onChange }: TimezoneSelectPro
     return (
         <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                    <span className="flex-1 truncate text-left">{value || 'Select timezone'}</span>
+                <button className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none">
+                    <span className="flex-1 truncate text-left">
+                        {value || 'Select timezone'}
+                    </span>
                     <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
                 </button>
             </DropdownMenuTrigger>
@@ -73,7 +81,9 @@ export function TimezoneSelect({ timezones, value, onChange }: TimezoneSelectPro
                                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
                             >
                                 <span className="flex-1 truncate">{tz}</span>
-                                {tz === value && <Check className="size-3.5 shrink-0 text-primary" />}
+                                {tz === value && (
+                                    <Check className="size-3.5 shrink-0 text-primary" />
+                                )}
                             </button>
                         ))
                     )}

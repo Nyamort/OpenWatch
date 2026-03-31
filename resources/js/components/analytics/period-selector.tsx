@@ -6,7 +6,11 @@ import { type DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 
 const PERIODS = [
@@ -27,7 +31,9 @@ export function getStoredPeriod(): string | null {
     }
 }
 
-function parseCustomPeriod(period: string): { range: DateRange; fromTime: string; toTime: string } | null {
+function parseCustomPeriod(
+    period: string,
+): { range: DateRange; fromTime: string; toTime: string } | null {
     if (!period.includes('..')) return null;
     try {
         const [fromStr, toStr] = period.split('..');
@@ -51,7 +57,9 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
     const parsed = parseCustomPeriod(current);
 
     const [open, setOpen] = useState(false);
-    const [dateRange, setDateRange] = useState<DateRange | undefined>(parsed?.range);
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(
+        parsed?.range,
+    );
     const [fromTime, setFromTime] = useState(parsed?.fromTime ?? '00:00');
     const [toTime, setToTime] = useState(parsed?.toTime ?? '23:59');
     const [rangeError, setRangeError] = useState<string | null>(null);
@@ -64,12 +72,18 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
         }
         const urlObj = new URL(url, window.location.origin);
         urlObj.searchParams.set('period', period);
-        router.get(urlObj.pathname + urlObj.search, {}, { preserveScroll: true, preserveState: true });
+        router.get(
+            urlObj.pathname + urlObj.search,
+            {},
+            { preserveScroll: true, preserveState: true },
+        );
     }
 
     function handleApply() {
         if (!dateRange?.from || !dateRange?.to) return;
-        const diffDays = Math.round((dateRange.to.getTime() - dateRange.from.getTime()) / 86_400_000);
+        const diffDays = Math.round(
+            (dateRange.to.getTime() - dateRange.from.getTime()) / 86_400_000,
+        );
         if (diffDays > 90) {
             setRangeError('The date range cannot exceed 90 days.');
             return;
@@ -81,9 +95,10 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
         handleChange(`${fromDate}T${fromTime}:00..${toDate}T${toTime}:00`);
     }
 
-    const customLabel = parsed?.range.from && parsed?.range.to
-        ? `${format(parsed.range.from, 'MMM d')} – ${format(parsed.range.to, 'MMM d')}`
-        : null;
+    const customLabel =
+        parsed?.range.from && parsed?.range.to
+            ? `${format(parsed.range.from, 'MMM d')} – ${format(parsed.range.to, 'MMM d')}`
+            : null;
 
     return (
         <div className="flex gap-1 rounded-lg border bg-muted p-1">
@@ -104,7 +119,7 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <button
-                        className={`cursor-pointer flex items-center gap-1.5 rounded px-2 py-1 text-sm font-medium transition-colors ${
+                        className={`flex cursor-pointer items-center gap-1.5 rounded px-2 py-1 text-sm font-medium transition-colors ${
                             isCustom
                                 ? 'bg-background text-foreground shadow-sm'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -120,7 +135,10 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
                     <Calendar
                         mode="range"
                         selected={dateRange}
-                        onSelect={(r) => { setDateRange(r); setRangeError(null); }}
+                        onSelect={(r) => {
+                            setDateRange(r);
+                            setRangeError(null);
+                        }}
                         numberOfMonths={2}
                         defaultMonth={dateRange?.from}
                         disabled={(date) => {
@@ -129,7 +147,9 @@ export function PeriodSelector({ current }: PeriodSelectorProps) {
                     />
                     <Separator />
                     {rangeError && (
-                        <p className="px-3 pt-2 text-xs text-destructive">{rangeError}</p>
+                        <p className="px-3 pt-2 text-xs text-destructive">
+                            {rangeError}
+                        </p>
                     )}
                     <div className="flex items-end gap-3 p-3">
                         <div className="flex flex-1 flex-col gap-1.5">

@@ -49,23 +49,42 @@ export default function UserShow({ analytics, user_value, period }: Props) {
             <Head />
             <div className="grid grid-cols-3 gap-4">
                 {[
-                    { label: 'Requests', value: analytics.summary.request_count },
-                    { label: 'Exceptions', value: analytics.summary.exception_count },
+                    {
+                        label: 'Requests',
+                        value: analytics.summary.request_count,
+                    },
+                    {
+                        label: 'Exceptions',
+                        value: analytics.summary.exception_count,
+                    },
                     { label: 'Jobs', value: analytics.summary.job_count },
                 ].map((stat) => (
-                    <div key={stat.label} className="rounded-lg border bg-card p-4">
-                        <p className="text-xs text-muted-foreground">{stat.label}</p>
-                        <p className="mt-1 text-2xl font-semibold">{stat.value}</p>
+                    <div
+                        key={stat.label}
+                        className="rounded-lg border bg-card p-4"
+                    >
+                        <p className="text-xs text-muted-foreground">
+                            {stat.label}
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold">
+                            {stat.value}
+                        </p>
                     </div>
                 ))}
             </div>
             <section>
                 <h2 className="mb-2 text-sm font-medium">Requests</h2>
-                <DataTable columns={requestColumns} rows={analytics.rows.requests} />
+                <DataTable
+                    columns={requestColumns}
+                    rows={analytics.rows.requests}
+                />
             </section>
             <section>
                 <h2 className="mb-2 text-sm font-medium">Exceptions</h2>
-                <DataTable columns={exceptionColumns} rows={analytics.rows.exceptions} />
+                <DataTable
+                    columns={exceptionColumns}
+                    rows={analytics.rows.exceptions}
+                />
             </section>
             <section>
                 <h2 className="mb-2 text-sm font-medium">Jobs</h2>

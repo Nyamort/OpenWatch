@@ -2,7 +2,15 @@ import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { CacheCharts } from './partials/cache-charts';
 import { CacheTable } from './partials/cache-table';
-import type { CacheEventsGraphBucket, CacheFailuresGraphBucket, CacheKeyRow, CacheSortKey, CacheStats, Pagination, SortDir } from './types';
+import type {
+    CacheEventsGraphBucket,
+    CacheFailuresGraphBucket,
+    CacheKeyRow,
+    CacheSortKey,
+    CacheStats,
+    Pagination,
+    SortDir,
+} from './types';
 
 interface Props {
     events_graph: CacheEventsGraphBucket[];
@@ -18,12 +26,32 @@ interface Props {
 
 const breadcrumbs = [{ title: 'Cache', href: '#' }];
 
-export default function CacheEventsIndex({ events_graph, failures_graph, stats, keys, pagination, period, sort, direction, search }: Props) {
+export default function CacheEventsIndex({
+    events_graph,
+    failures_graph,
+    stats,
+    keys,
+    pagination,
+    period,
+    sort,
+    direction,
+    search,
+}: Props) {
     return (
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <CacheCharts eventsGraph={events_graph} failuresGraph={failures_graph} stats={stats} />
-            <CacheTable keys={keys} pagination={pagination} sort={sort} direction={direction} search={search} />
+            <CacheCharts
+                eventsGraph={events_graph}
+                failuresGraph={failures_graph}
+                stats={stats}
+            />
+            <CacheTable
+                keys={keys}
+                pagination={pagination}
+                sort={sort}
+                direction={direction}
+                search={search}
+            />
         </AnalyticsLayout>
     );
 }

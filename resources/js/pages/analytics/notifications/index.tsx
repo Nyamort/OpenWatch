@@ -2,7 +2,14 @@ import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { NotificationCharts } from './partials/notification-charts';
 import { NotificationTable } from './partials/notification-table';
-import type { NotificationGraphBucket, NotificationRow, NotificationSortKey, NotificationStats, Pagination, SortDir } from './types';
+import type {
+    NotificationGraphBucket,
+    NotificationRow,
+    NotificationSortKey,
+    NotificationStats,
+    Pagination,
+    SortDir,
+} from './types';
 
 interface Props {
     graph: NotificationGraphBucket[];
@@ -17,12 +24,27 @@ interface Props {
 
 const breadcrumbs = [{ title: 'Notifications', href: '#' }];
 
-export default function NotificationsIndex({ graph, stats, notifications, pagination, period, sort, direction, search }: Props) {
+export default function NotificationsIndex({
+    graph,
+    stats,
+    notifications,
+    pagination,
+    period,
+    sort,
+    direction,
+    search,
+}: Props) {
     return (
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <NotificationCharts graph={graph} stats={stats} />
-            <NotificationTable notifications={notifications} pagination={pagination} sort={sort} direction={direction} search={search} />
+            <NotificationTable
+                notifications={notifications}
+                pagination={pagination}
+                sort={sort}
+                direction={direction}
+                search={search}
+            />
         </AnalyticsLayout>
     );
 }

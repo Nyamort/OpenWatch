@@ -13,7 +13,12 @@ interface Analytics {
         [key: string]: unknown;
     };
     rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    } | null;
 }
 
 interface Props {
@@ -34,20 +39,28 @@ export default function ExceptionShow({ analytics, period }: Props) {
     return (
         <AnalyticsLayout period={period}>
             <Head />
-            <div className="rounded-lg border bg-card p-4 text-sm space-y-2">
+            <div className="space-y-2 rounded-lg border bg-card p-4 text-sm">
                 <p className="text-muted-foreground">
                     {summary.file}:{summary.line}
                 </p>
                 <p className="font-medium">{summary.message}</p>
                 <p>
-                    <span className={summary.handled ? 'text-yellow-600' : 'text-red-600'}>
+                    <span
+                        className={
+                            summary.handled ? 'text-yellow-600' : 'text-red-600'
+                        }
+                    >
                         {summary.handled ? 'Handled' : 'Unhandled'}
                     </span>
                 </p>
             </div>
             <section>
                 <h2 className="mb-2 text-sm font-medium">Occurrences</h2>
-                <DataTable columns={occurrenceColumns} rows={analytics.rows} pagination={analytics.pagination} />
+                <DataTable
+                    columns={occurrenceColumns}
+                    rows={analytics.rows}
+                    pagination={analytics.pagination}
+                />
             </section>
         </AnalyticsLayout>
     );

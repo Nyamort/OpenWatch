@@ -33,7 +33,7 @@ export function useCurrentUrl(): UseCurrentUrlReturn {
         let absoluteUrl: URL;
         if (!urlString.startsWith('http')) {
             absoluteUrl = new URL(urlString, window?.location.origin);
-        }else{
+        } else {
             absoluteUrl = new URL(urlString);
         }
 

@@ -28,7 +28,14 @@ export interface OutgoingRequestHostRow {
     p95: number | null;
 }
 
-export type OutgoingRequestSortKey = 'host' | 'success' | 'count_4xx' | 'count_5xx' | 'total' | 'avg' | 'p95';
+export type OutgoingRequestSortKey =
+    | 'host'
+    | 'success'
+    | 'count_4xx'
+    | 'count_5xx'
+    | 'total'
+    | 'avg'
+    | 'p95';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

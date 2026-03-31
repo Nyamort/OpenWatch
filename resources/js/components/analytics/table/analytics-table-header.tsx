@@ -11,12 +11,21 @@ interface AnalyticsTableHeaderProps {
     onSearch: (value: string) => void;
 }
 
-export function AnalyticsTableHeader({ icon: Icon, label, count, search, searchPlaceholder = 'Search...', onSearch }: AnalyticsTableHeaderProps) {
+export function AnalyticsTableHeader({
+    icon: Icon,
+    label,
+    count,
+    search,
+    searchPlaceholder = 'Search...',
+    onSearch,
+}: AnalyticsTableHeaderProps) {
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium">
                 <Icon className="size-4 text-muted-foreground" />
-                <span>{count} {label}</span>
+                <span>
+                    {count} {label}
+                </span>
             </div>
             <div className="relative w-64">
                 <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />

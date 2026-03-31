@@ -19,7 +19,11 @@ interface OrgSelectorProps {
     onChange: (slug: string) => void;
 }
 
-export function OrgSelector({ organizations, value, onChange }: OrgSelectorProps) {
+export function OrgSelector({
+    organizations,
+    value,
+    onChange,
+}: OrgSelectorProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -27,7 +31,9 @@ export function OrgSelector({ organizations, value, onChange }: OrgSelectorProps
 
     const selected = organizations.find((o) => o.slug === value);
     const filtered = search.trim()
-        ? organizations.filter((o) => o.name.toLowerCase().includes(search.toLowerCase()))
+        ? organizations.filter((o) =>
+              o.name.toLowerCase().includes(search.toLowerCase()),
+          )
         : organizations;
 
     function handleOpenChange(next: boolean) {

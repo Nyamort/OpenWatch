@@ -16,10 +16,18 @@ interface Invitation {
     organization_name: string;
 }
 
-export default function Register({ invitation }: { invitation?: Invitation | null }) {
+export default function Register({
+    invitation,
+}: {
+    invitation?: Invitation | null;
+}) {
     return (
         <AuthLayout
-            title={invitation ? `Join ${invitation.organization_name}` : 'Create an account'}
+            title={
+                invitation
+                    ? `Join ${invitation.organization_name}`
+                    : 'Create an account'
+            }
             description={
                 invitation
                     ? `Create your account to join ${invitation.organization_name}`
@@ -36,7 +44,11 @@ export default function Register({ invitation }: { invitation?: Invitation | nul
                 {({ processing, errors }) => (
                     <>
                         {invitation && (
-                            <input type="hidden" name="invitation_token" value={invitation.token} />
+                            <input
+                                type="hidden"
+                                name="invitation_token"
+                                value={invitation.token}
+                            />
                         )}
 
                         <div className="grid gap-6">
@@ -53,7 +65,10 @@ export default function Register({ invitation }: { invitation?: Invitation | nul
                                     placeholder="Full name"
                                     defaultValue={invitation?.name ?? ''}
                                 />
-                                <InputError message={errors.name} className="mt-2" />
+                                <InputError
+                                    message={errors.name}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div className="grid gap-2">
@@ -87,7 +102,9 @@ export default function Register({ invitation }: { invitation?: Invitation | nul
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">Confirm password</Label>
+                                <Label htmlFor="password_confirmation">
+                                    Confirm password
+                                </Label>
                                 <Input
                                     id="password_confirmation"
                                     type="password"
@@ -97,7 +114,9 @@ export default function Register({ invitation }: { invitation?: Invitation | nul
                                     name="password_confirmation"
                                     placeholder="Confirm password"
                                 />
-                                <InputError message={errors.password_confirmation} />
+                                <InputError
+                                    message={errors.password_confirmation}
+                                />
                             </div>
 
                             <Button

@@ -64,7 +64,9 @@ export function AddEnvironmentDialog({
                         <Input
                             id="env-name"
                             value={form.data.name}
-                            onChange={(e) => form.setData('name', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('name', e.target.value)
+                            }
                             placeholder="Production"
                             autoFocus
                             required
@@ -74,29 +76,44 @@ export function AddEnvironmentDialog({
 
                     <div className="grid gap-2">
                         <Label>Color</Label>
-                        <ColorPicker value={form.data.color} onChange={(v) => form.setData('color', v)} />
+                        <ColorPicker
+                            value={form.data.color}
+                            onChange={(v) => form.setData('color', v)}
+                        />
                         <InputError message={form.errors.color} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="env-url">
-                            URL <span className="font-normal text-muted-foreground">(optional)</span>
+                            URL{' '}
+                            <span className="font-normal text-muted-foreground">
+                                (optional)
+                            </span>
                         </Label>
                         <Input
                             id="env-url"
                             type="url"
                             value={form.data.url}
-                            onChange={(e) => form.setData('url', e.target.value)}
+                            onChange={(e) =>
+                                form.setData('url', e.target.value)
+                            }
                             placeholder="https://example.com"
                         />
                         <InputError message={form.errors.url} />
                     </div>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={form.processing || !form.data.name.trim()}>
+                        <Button
+                            type="submit"
+                            disabled={form.processing || !form.data.name.trim()}
+                        >
                             Add Environment
                         </Button>
                     </div>

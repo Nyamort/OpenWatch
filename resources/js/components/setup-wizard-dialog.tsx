@@ -25,7 +25,9 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     };
 
     const [step, setStep] = useState(1);
-    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(
+        new Set(),
+    );
     const [created, setCreated] = useState<CreatedData | null>(null);
 
     function complete(n: number) {
@@ -42,12 +44,13 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
     }
 
     const orgName = activeOrganization?.name ?? '—';
-    const projectName = created?.project.name ?? (step === 1 ? 'New Application' : '—');
+    const projectName =
+        created?.project.name ?? (step === 1 ? 'New Application' : '—');
     const projectLogoUrl = created?.project.logo_url || null;
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-2xl bg-zinc-950 text-zinc-100 border-zinc-800 p-0 gap-0 overflow-hidden">
+            <DialogContent className="max-w-2xl gap-0 overflow-hidden border-zinc-800 bg-zinc-950 p-0 text-zinc-100">
                 <DialogHeader className="border-b border-zinc-800 px-6 py-4">
                     <div className="flex items-center justify-between">
                         <DialogTitle asChild>
@@ -61,57 +64,92 @@ export function SetupWizardDialog({ open, onOpenChange }: Props) {
                                         className="size-5 rounded object-cover"
                                     />
                                 )}
-                                <span className="font-semibold text-zinc-100">{projectName}</span>
+                                <span className="font-semibold text-zinc-100">
+                                    {projectName}
+                                </span>
                             </div>
                         </DialogTitle>
                         {completedSteps.has(step - 1) && (
-                            <span className="flex items-center gap-1 text-xs font-bold text-emerald-400 mr-8">
+                            <span className="mr-8 flex items-center gap-1 text-xs font-bold text-emerald-400">
                                 <CheckCircle2 className="size-3.5" /> DONE
                             </span>
                         )}
                     </div>
                 </DialogHeader>
 
-                <div className="flex flex-col divide-y divide-zinc-800 overflow-y-auto max-h-[70vh]">
+                <div className="flex max-h-[70vh] flex-col divide-y divide-zinc-800 overflow-y-auto">
                     <div className="px-6 py-4">
-                        <StepHeader number={1} title="Create Application" done={completedSteps.has(1)} active={step >= 1} />
+                        <StepHeader
+                            number={1}
+                            title="Create Application"
+                            done={completedSteps.has(1)}
+                            active={step >= 1}
+                        />
                         {activeOrganization && (
                             <div className={step !== 1 ? 'hidden' : ''}>
                                 <WizardStep1
                                     organizationId={activeOrganization.id}
                                     created={created}
-                                    onCreated={(data) => { setCreated(data); complete(1); setStep(2); }}
+                                    onCreated={(data) => {
+                                        setCreated(data);
+                                        complete(1);
+                                        setStep(2);
+                                    }}
                                 />
                             </div>
                         )}
                     </div>
 
                     <div className="px-6 py-4">
-                        <StepHeader number={2} title="Install Agent" done={completedSteps.has(2)} active={step >= 2} />
+                        <StepHeader
+                            number={2}
+                            title="Install Agent"
+                            done={completedSteps.has(2)}
+                            active={step >= 2}
+                        />
                         <div className={step !== 2 ? 'hidden' : ''}>
                             <WizardStep2
                                 token={created?.token ?? ''}
-                                onNext={() => { complete(2); setStep(3); }}
+                                onNext={() => {
+                                    complete(2);
+                                    setStep(3);
+                                }}
                                 onBack={() => setStep(1)}
                             />
                         </div>
                     </div>
 
                     <div className="px-6 py-4">
-                        <StepHeader number={3} title="Sampling" done={completedSteps.has(3)} active={step >= 3} />
+                        <StepHeader
+                            number={3}
+                            title="Sampling"
+                            done={completedSteps.has(3)}
+                            active={step >= 3}
+                        />
                         <div className={step !== 3 ? 'hidden' : ''}>
                             <WizardStep3
-                                onNext={() => { complete(3); setStep(4); }}
+                                onNext={() => {
+                                    complete(3);
+                                    setStep(4);
+                                }}
                                 onBack={() => setStep(2)}
                             />
                         </div>
                     </div>
 
                     <div className="px-6 py-4">
-                        <StepHeader number={4} title="Setup Agent" done={completedSteps.has(4)} active={step >= 4} />
+                        <StepHeader
+                            number={4}
+                            title="Setup Agent"
+                            done={completedSteps.has(4)}
+                            active={step >= 4}
+                        />
                         {step >= 4 && (
                             <WizardStep4
-                                onComplete={() => { complete(4); handleOpenChange(false); }}
+                                onComplete={() => {
+                                    complete(4);
+                                    handleOpenChange(false);
+                                }}
                                 onSkip={() => handleOpenChange(false)}
                                 onBack={() => setStep(3)}
                             />

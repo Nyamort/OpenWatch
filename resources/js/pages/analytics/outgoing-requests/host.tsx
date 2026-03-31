@@ -5,7 +5,12 @@ import AnalyticsLayout from '@/layouts/analytics-layout';
 interface Analytics {
     summary: { host: string; period_label: string };
     rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    } | null;
 }
 
 interface Props {
@@ -25,7 +30,11 @@ export default function OutgoingRequestsHost({ analytics, period }: Props) {
     return (
         <AnalyticsLayout period={period}>
             <Head />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <DataTable
+                columns={columns}
+                rows={analytics.rows}
+                pagination={analytics.pagination}
+            />
         </AnalyticsLayout>
     );
 }

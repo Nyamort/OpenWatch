@@ -8,13 +8,23 @@ import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import { show } from '@/routes/analytics/queries';
 import type { Pagination, QueryRow, QuerySortKey, SortDir } from '../types';
-
 
 interface QueryTableProps {
     queries: QueryRow[];
@@ -96,20 +106,29 @@ function QueryCell({ query }: { query: string }) {
     );
 }
 
-export function QueryTable({ queries, pagination, sort, direction, search }: QueryTableProps) {
+export function QueryTable({
+    queries,
+    pagination,
+    sort,
+    direction,
+    search,
+}: QueryTableProps) {
     const { props } = usePage();
-    const { activeOrganization, activeProject, activeEnvironment } = props as unknown as {
-        activeOrganization: { slug: string };
-        activeProject: { slug: string };
-        activeEnvironment: { slug: string };
-    };
+    const { activeOrganization, activeProject, activeEnvironment } =
+        props as unknown as {
+            activeOrganization: { slug: string };
+            activeProject: { slug: string };
+            activeEnvironment: { slug: string };
+        };
 
-    const { searchValue, handleSearch, handlePage, handleSort } = useAnalyticsTable<QuerySortKey>({
-        search,
-        only: ['queries', 'pagination', 'sort', 'direction'],
-    });
+    const { searchValue, handleSearch, handlePage, handleSort } =
+        useAnalyticsTable<QuerySortKey>({
+            search,
+            only: ['queries', 'pagination', 'sort', 'direction'],
+        });
 
-    const onSort = (col: string) => handleSort(col as QuerySortKey, sort, direction);
+    const onSort = (col: string) =>
+        handleSort(col as QuerySortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
@@ -121,7 +140,10 @@ export function QueryTable({ queries, pagination, sort, direction, search }: Que
                 searchPlaceholder="Search queries..."
                 onSearch={handleSearch}
             />
-            <Table className="border-separate border-spacing-y-1.5" containerClassName="overflow-x-visible">
+            <Table
+                className="border-separate border-spacing-y-1.5"
+                containerClassName="overflow-x-visible"
+            >
                 <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                     <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
                         <SortableHead

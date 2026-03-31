@@ -73,13 +73,19 @@ interface Props {
     comments: Comment[];
 }
 
-const statusVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const statusVariantMap: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     open: 'destructive',
     resolved: 'secondary',
     ignored: 'outline',
 };
 
-const priorityVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const priorityVariantMap: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     critical: 'destructive',
     high: 'default',
     medium: 'secondary',
@@ -101,13 +107,25 @@ function activityLabel(activity: IssueActivity): string {
     }
 }
 
-export default function IssueShow({ organization, project, environment, issue, comments }: Props) {
+export default function IssueShow({
+    organization,
+    project,
+    environment,
+    issue,
+    comments,
+}: Props) {
     const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/issues`;
     const issueUrl = `${baseUrl}/${issue.id}`;
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: organization.name, href: `/organizations/${organization.slug}` },
-        { title: project.name, href: `/organizations/${organization.slug}/projects/${project.slug}` },
+        {
+            title: organization.name,
+            href: `/organizations/${organization.slug}`,
+        },
+        {
+            title: project.name,
+            href: `/organizations/${organization.slug}/projects/${project.slug}`,
+        },
         { title: 'Issues', href: baseUrl },
         { title: `#${issue.id}`, href: issueUrl },
     ];
@@ -127,13 +145,18 @@ export default function IssueShow({ organization, project, environment, issue, c
             <Head title={issue.title} />
             <div className="flex gap-6 p-6">
                 {/* Left column */}
-                <div className="flex-1 min-w-0 space-y-6">
+                <div className="min-w-0 flex-1 space-y-6">
                     <div>
-                        <h1 className="text-xl font-semibold break-all">{issue.title}</h1>
+                        <h1 className="text-xl font-semibold break-all">
+                            {issue.title}
+                        </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            First seen {new Date(issue.first_seen_at).toLocaleString()} &middot; Last seen{' '}
-                            {new Date(issue.last_seen_at).toLocaleString()} &middot;{' '}
-                            {issue.occurrence_count.toLocaleString()} occurrence{issue.occurrence_count !== 1 ? 's' : ''}
+                            First seen{' '}
+                            {new Date(issue.first_seen_at).toLocaleString()}{' '}
+                            &middot; Last seen{' '}
+                            {new Date(issue.last_seen_at).toLocaleString()}{' '}
+                            &middot; {issue.occurrence_count.toLocaleString()}{' '}
+                            occurrence{issue.occurrence_count !== 1 ? 's' : ''}
                         </p>
                     </div>
 
@@ -147,16 +170,27 @@ export default function IssueShow({ organization, project, environment, issue, c
                     {/* Activity timeline */}
                     {issue.activities.length > 0 && (
                         <section>
-                            <h2 className="mb-3 text-sm font-medium">Recent Activity</h2>
+                            <h2 className="mb-3 text-sm font-medium">
+                                Recent Activity
+                            </h2>
                             <ul className="space-y-2">
                                 {issue.activities.map((activity) => (
-                                    <li key={activity.id} className="flex items-start gap-2 text-sm">
-                                        <span className="mt-0.5 size-2 rounded-full bg-muted-foreground/40 shrink-0 mt-1.5" />
+                                    <li
+                                        key={activity.id}
+                                        className="flex items-start gap-2 text-sm"
+                                    >
+                                        <span className="mt-0.5 mt-1.5 size-2 shrink-0 rounded-full bg-muted-foreground/40" />
                                         <span>
-                                            <span className="font-medium">{activity.actor?.name ?? 'System'}</span>{' '}
+                                            <span className="font-medium">
+                                                {activity.actor?.name ??
+                                                    'System'}
+                                            </span>{' '}
                                             {activityLabel(activity)}{' '}
                                             <span className="text-muted-foreground">
-                                                &middot; {new Date(activity.created_at).toLocaleString()}
+                                                &middot;{' '}
+                                                {new Date(
+                                                    activity.created_at,
+                                                ).toLocaleString()}
                                             </span>
                                         </span>
                                     </li>
@@ -169,19 +203,30 @@ export default function IssueShow({ organization, project, environment, issue, c
                     <section>
                         <h2 className="mb-3 text-sm font-medium">Comments</h2>
                         {comments.length === 0 && (
-                            <p className="text-sm text-muted-foreground">No comments yet.</p>
+                            <p className="text-sm text-muted-foreground">
+                                No comments yet.
+                            </p>
                         )}
-                        <ul className="space-y-4 mb-4">
+                        <ul className="mb-4 space-y-4">
                             {comments.map((comment) => (
-                                <li key={comment.id} className="rounded-lg border bg-card p-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium">{comment.author.name}</span>
+                                <li
+                                    key={comment.id}
+                                    className="rounded-lg border bg-card p-4"
+                                >
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="text-sm font-medium">
+                                            {comment.author.name}
+                                        </span>
                                         <span className="text-xs text-muted-foreground">
-                                            {new Date(comment.created_at).toLocaleString()}
+                                            {new Date(
+                                                comment.created_at,
+                                            ).toLocaleString()}
                                             {comment.edited_at && ' (edited)'}
                                         </span>
                                     </div>
-                                    <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
+                                    <p className="text-sm whitespace-pre-wrap">
+                                        {comment.body}
+                                    </p>
                                 </li>
                             ))}
                         </ul>
@@ -191,18 +236,39 @@ export default function IssueShow({ organization, project, environment, issue, c
 
                 {/* Right sidebar */}
                 <div className="w-64 shrink-0 space-y-6">
-                    <div className="rounded-lg border bg-card p-4 space-y-4">
+                    <div className="space-y-4 rounded-lg border bg-card p-4">
                         <div>
-                            <p className="mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</p>
-                            <Badge variant={statusVariantMap[issue.status] ?? 'outline'}>{issue.status}</Badge>
+                            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                Status
+                            </p>
+                            <Badge
+                                variant={
+                                    statusVariantMap[issue.status] ?? 'outline'
+                                }
+                            >
+                                {issue.status}
+                            </Badge>
                         </div>
                         <div>
-                            <p className="mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</p>
-                            <Badge variant={priorityVariantMap[issue.priority] ?? 'outline'}>{issue.priority}</Badge>
+                            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                Priority
+                            </p>
+                            <Badge
+                                variant={
+                                    priorityVariantMap[issue.priority] ??
+                                    'outline'
+                                }
+                            >
+                                {issue.priority}
+                            </Badge>
                         </div>
                         <div>
-                            <p className="mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">Assignee</p>
-                            <p className="text-sm">{issue.assignee?.name ?? 'Unassigned'}</p>
+                            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                Assignee
+                            </p>
+                            <p className="text-sm">
+                                {issue.assignee?.name ?? 'Unassigned'}
+                            </p>
                         </div>
                     </div>
 

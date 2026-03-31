@@ -18,14 +18,20 @@ export function CodeBlock({
     }
 
     return (
-        <div className="relative flex items-start rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm min-w-0">
-            <span className="flex-1 overflow-x-auto whitespace-pre scrollbar-none min-w-0 pr-2">{children}</span>
+        <div className="relative flex min-w-0 items-start rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm">
+            <span className="scrollbar-none min-w-0 flex-1 overflow-x-auto pr-2 whitespace-pre">
+                {children}
+            </span>
             <button
                 onClick={handleCopy}
                 className="ml-1 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
                 title="Copy"
             >
-                {copied ? <Check className="size-4 text-emerald-400" /> : <ClipboardCopy className="size-4" />}
+                {copied ? (
+                    <Check className="size-4 text-emerald-400" />
+                ) : (
+                    <ClipboardCopy className="size-4" />
+                )}
             </button>
         </div>
     );
@@ -63,7 +69,12 @@ export function StepHeader({
             >
                 {number}
             </div>
-            <span className={cn('text-sm font-medium', active ? 'text-zinc-100' : 'text-zinc-500')}>
+            <span
+                className={cn(
+                    'text-sm font-medium',
+                    active ? 'text-zinc-100' : 'text-zinc-500',
+                )}
+            >
                 {title}
             </span>
             {done && (

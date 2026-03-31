@@ -30,7 +30,15 @@ export interface JobRow {
     p95: number | null;
 }
 
-export type JobSortKey = 'name' | 'total' | 'queued' | 'processed' | 'failed' | 'released' | 'avg' | 'p95';
+export type JobSortKey =
+    | 'name'
+    | 'total'
+    | 'queued'
+    | 'processed'
+    | 'failed'
+    | 'released'
+    | 'avg'
+    | 'p95';
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

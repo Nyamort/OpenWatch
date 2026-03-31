@@ -67,15 +67,25 @@ function RotateTokenDialog({
                 <DialogHeader>
                     <DialogTitle>Rotate token — {environment.name}</DialogTitle>
                     <DialogDescription>
-                        The current token will enter a 3-day grace period before being revoked. A new token will be generated and shown once.
+                        The current token will enter a 3-day grace period before
+                        being revoked. A new token will be generated and shown
+                        once.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" variant="destructive" disabled={form.processing}>
+                        <Button
+                            type="submit"
+                            variant="destructive"
+                            disabled={form.processing}
+                        >
                             Rotate token
                         </Button>
                     </DialogFooter>
@@ -114,15 +124,25 @@ function DeleteEnvironmentDialog({
                 <DialogHeader>
                     <DialogTitle>Delete environment</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete <strong>{environment.name}</strong>? This will permanently remove all associated tokens and data.
+                        Are you sure you want to delete{' '}
+                        <strong>{environment.name}</strong>? This will
+                        permanently remove all associated tokens and data.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" variant="destructive" disabled={form.processing}>
+                        <Button
+                            type="submit"
+                            variant="destructive"
+                            disabled={form.processing}
+                        >
                             Delete
                         </Button>
                     </DialogFooter>
@@ -182,7 +202,10 @@ export function EnvironmentRow({
 
             <form onSubmit={handleSubmit} className="space-y-2 px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <ColorPicker value={form.data.color} onChange={(v) => form.setData('color', v)} />
+                    <ColorPicker
+                        value={form.data.color}
+                        onChange={(v) => form.setData('color', v)}
+                    />
                     <Input
                         value={form.data.name}
                         onChange={(e) => form.setData('name', e.target.value)}
@@ -191,12 +214,19 @@ export function EnvironmentRow({
                     />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button type="button" size="icon" variant="ghost" className="size-8 shrink-0">
+                            <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 shrink-0"
+                            >
                                 <MoreHorizontal className="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setRotateOpen(true)}>
+                            <DropdownMenuItem
+                                onClick={() => setRotateOpen(true)}
+                            >
                                 <RefreshCw className="mr-2 size-3.5" />
                                 Rotate token
                             </DropdownMenuItem>
@@ -220,7 +250,12 @@ export function EnvironmentRow({
                         placeholder="https://example.com"
                         className="h-8 flex-1 text-sm"
                     />
-                    <Button type="submit" size="sm" variant="outline" disabled={form.processing || !isDirty}>
+                    <Button
+                        type="submit"
+                        size="sm"
+                        variant="outline"
+                        disabled={form.processing || !isDirty}
+                    >
                         Save
                     </Button>
                 </div>

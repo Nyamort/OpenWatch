@@ -25,15 +25,29 @@ export function BulkActionToolbar({ selectedIds, bulkUrl, onClear }: Props) {
 
     return (
         <div className="flex items-center gap-3 rounded-lg border bg-muted/60 px-4 py-2">
-            <span className="text-sm font-medium">{selectedIds.length} selected</span>
+            <span className="text-sm font-medium">
+                {selectedIds.length} selected
+            </span>
             <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => performAction('resolve')}>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => performAction('resolve')}
+                >
                     Resolve
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => performAction('ignore')}>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => performAction('ignore')}
+                >
                     Ignore
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => performAction('reopen')}>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => performAction('reopen')}
+                >
                     Reopen
                 </Button>
             </div>

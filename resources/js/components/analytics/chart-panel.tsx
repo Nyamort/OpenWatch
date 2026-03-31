@@ -7,9 +7,35 @@ export const tooltipProps = {
     allowEscapeViewBox: { x: false, y: true },
 } as const;
 
-export function BarCursor({ x, y, width, height }: { x?: number; y?: number; width?: number; height?: number }) {
-    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
-    return <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke="currentColor" strokeWidth={1} className="stroke-border" />;
+export function BarCursor({
+    x,
+    y,
+    width,
+    height,
+}: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+}) {
+    if (
+        x === undefined ||
+        y === undefined ||
+        width === undefined ||
+        height === undefined
+    )
+        return null;
+    return (
+        <line
+            x1={x + width / 2}
+            y1={y}
+            x2={x + width / 2}
+            y2={y + height}
+            stroke="currentColor"
+            strokeWidth={1}
+            className="stroke-border"
+        />
+    );
 }
 
 /**
@@ -18,9 +44,15 @@ export function BarCursor({ x, y, width, height }: { x?: number; y?: number; wid
  * charts where gaps in the data would otherwise leave isolated values invisible.
  */
 export function isolatedDot<T>(data: T[], key: keyof T, color: string) {
-    return (props: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
+    return (props: {
+        cx?: number;
+        cy?: number;
+        index?: number;
+        value?: number | null;
+    }) => {
         const { cx, cy, index, value } = props;
-        if (value == null || cx == null || cy == null || index == null) return null;
+        if (value == null || cx == null || cy == null || index == null)
+            return null;
         const prev = data[index - 1]?.[key];
         const next = data[index + 1]?.[key];
         if (prev != null || next != null) return null;
@@ -50,13 +82,23 @@ function formatBucketDatetime(bucket: string): string {
     });
 }
 
-export function ChartPanel({ config, title, heroValue, legendStats, firstBucket, lastBucket, children }: ChartPanelProps) {
+export function ChartPanel({
+    config,
+    title,
+    heroValue,
+    legendStats,
+    firstBucket,
+    lastBucket,
+    children,
+}: ChartPanelProps) {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const legendContent = () => (
         <div className="mb-3 flex items-center justify-between text-sm">
             <div>
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{title}</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    {title}
+                </p>
                 <p className="mt-1 font-bold tabular-nums">{heroValue}</p>
             </div>
             {legendStats}
@@ -64,14 +106,17 @@ export function ChartPanel({ config, title, heroValue, legendStats, firstBucket,
     );
 
     return (
-        <div className="bg-surface flex flex-col rounded-xl border p-5">
+        <div className="flex flex-col rounded-xl border bg-surface p-5">
             <div ref={wrapperRef}>
-                <ChartContainer config={config} className="min-h-0 w-full flex-1 max-h-[270px]">
+                <ChartContainer
+                    config={config}
+                    className="max-h-[270px] min-h-0 w-full flex-1"
+                >
                     {children(legendContent) as React.ReactElement}
                 </ChartContainer>
             </div>
             {firstBucket && lastBucket && (
-                <div className="text-muted-foreground mt-1 flex justify-between text-xs">
+                <div className="mt-1 flex justify-between text-xs text-muted-foreground">
                     <span>{formatBucketDatetime(firstBucket)}</span>
                     <span>{formatBucketDatetime(lastBucket)}</span>
                 </div>

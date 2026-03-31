@@ -40,9 +40,21 @@ export function TokenDialog({
                 </DialogHeader>
 
                 <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
-                    <code className="flex-1 truncate font-mono text-sm">{token}</code>
-                    <Button type="button" size="icon" variant="ghost" className="size-7 shrink-0" onClick={copyToken}>
-                        {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
+                    <code className="flex-1 truncate font-mono text-sm">
+                        {token}
+                    </code>
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 shrink-0"
+                        onClick={copyToken}
+                    >
+                        {copied ? (
+                            <Check className="size-3.5 text-green-500" />
+                        ) : (
+                            <Copy className="size-3.5" />
+                        )}
                     </Button>
                 </div>
 

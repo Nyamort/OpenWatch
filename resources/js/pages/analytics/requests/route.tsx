@@ -32,18 +32,31 @@ export default function RequestsRoute({ analytics, period }: Props) {
                     { label: 'P95 (ms)', value: summary.p95_duration },
                     { label: 'Error Rate', value: `${summary.error_rate}%` },
                 ].map((stat) => (
-                    <div key={stat.label} className="rounded-lg border bg-card p-4">
-                        <p className="text-xs text-muted-foreground">{stat.label}</p>
-                        <p className="mt-1 text-2xl font-semibold">{stat.value}</p>
+                    <div
+                        key={stat.label}
+                        className="rounded-lg border bg-card p-4"
+                    >
+                        <p className="text-xs text-muted-foreground">
+                            {stat.label}
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold">
+                            {stat.value}
+                        </p>
                     </div>
                 ))}
             </div>
             <div className="rounded-lg border bg-card p-4">
-                <h2 className="mb-4 text-sm font-medium">Timeline ({analytics.series.length} buckets)</h2>
+                <h2 className="mb-4 text-sm font-medium">
+                    Timeline ({analytics.series.length} buckets)
+                </h2>
                 {analytics.series.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No data in this period.</p>
+                    <p className="text-sm text-muted-foreground">
+                        No data in this period.
+                    </p>
                 ) : (
-                    <p className="text-sm text-muted-foreground">Chart data available ({analytics.series.length} points).</p>
+                    <p className="text-sm text-muted-foreground">
+                        Chart data available ({analytics.series.length} points).
+                    </p>
                 )}
             </div>
         </AnalyticsLayout>

@@ -46,7 +46,9 @@ function parseUserAgent(userAgent: string): string {
 
 export default function Sessions({ sessions, currentSessionId }: Props) {
     function revokeSession(sessionId: string) {
-        router.delete(`/settings/sessions/${sessionId}`, { preserveScroll: true });
+        router.delete(`/settings/sessions/${sessionId}`, {
+            preserveScroll: true,
+        });
     }
 
     return (
@@ -64,32 +66,44 @@ export default function Sessions({ sessions, currentSessionId }: Props) {
                     />
 
                     {sessions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No active sessions found.</p>
+                        <p className="text-sm text-muted-foreground">
+                            No active sessions found.
+                        </p>
                     ) : (
                         <div className="space-y-3">
                             {sessions.map((session) => (
                                 <div
                                     key={session.id}
-                                    className="flex items-center justify-between gap-4 rounded-lg border border p-4"
+                                    className="flex items-center justify-between gap-4 rounded-lg border p-4"
                                 >
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <p className="text-sm font-medium text-foreground">
-                                                {parseUserAgent(session.user_agent)}
+                                                {parseUserAgent(
+                                                    session.user_agent,
+                                                )}
                                             </p>
                                             {session.is_current && (
-                                                <Badge variant="secondary">Current</Badge>
+                                                <Badge variant="secondary">
+                                                    Current
+                                                </Badge>
                                             )}
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                            {session.ip_address} &middot; Last active {formatLastActivity(session.last_activity)}
+                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                            {session.ip_address} &middot; Last
+                                            active{' '}
+                                            {formatLastActivity(
+                                                session.last_activity,
+                                            )}
                                         </p>
                                     </div>
                                     <Button
                                         size="sm"
                                         variant="outline"
                                         disabled={session.is_current}
-                                        onClick={() => revokeSession(session.id)}
+                                        onClick={() =>
+                                            revokeSession(session.id)
+                                        }
                                     >
                                         Revoke
                                     </Button>

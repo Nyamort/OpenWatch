@@ -24,13 +24,18 @@ function formatTooltipDatetime(bucket: string): string {
     });
 }
 
-export function AnalyticsTooltip({ active, label, rows, footer }: AnalyticsTooltipProps) {
+export function AnalyticsTooltip({
+    active,
+    label,
+    rows,
+    footer,
+}: AnalyticsTooltipProps) {
     if (!active || !label) {
         return null;
     }
 
     return (
-        <div className="divide-neutral-700 min-w-72 divide-y rounded-md border border-neutral-700 bg-neutral-900 font-mono text-xs leading-3 text-white shadow-xl uppercase">
+        <div className="min-w-72 divide-y divide-neutral-700 rounded-md border border-neutral-700 bg-neutral-900 font-mono text-xs leading-3 text-white uppercase shadow-xl">
             <div className="p-4">
                 <div className="flex gap-1">
                     <span>{formatTooltipDatetime(String(label))}</span>
@@ -40,10 +45,17 @@ export function AnalyticsTooltip({ active, label, rows, footer }: AnalyticsToolt
             <div className="grid gap-4 p-4">
                 {rows.map((row, i) => (
                     <div key={i} className="flex w-full items-stretch gap-2">
-                        <div className="w-1 shrink-0 rounded-sm" style={{ backgroundColor: row.color }} />
+                        <div
+                            className="w-1 shrink-0 rounded-sm"
+                            style={{ backgroundColor: row.color }}
+                        />
                         <div className="flex flex-1 items-center justify-between leading-none">
-                            <span className="text-neutral-300 pr-3">{row.label}</span>
-                            <span className="text-neutral-200 tabular-nums font-medium text-right">{row.value}</span>
+                            <span className="pr-3 text-neutral-300">
+                                {row.label}
+                            </span>
+                            <span className="text-right font-medium text-neutral-200 tabular-nums">
+                                {row.value}
+                            </span>
                         </div>
                     </div>
                 ))}

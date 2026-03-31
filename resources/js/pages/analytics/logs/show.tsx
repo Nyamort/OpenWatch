@@ -23,7 +23,9 @@ export default function LogShow({ analytics }: Props) {
                             <div key={k} className="grid grid-cols-4 gap-2">
                                 <dt className="text-muted-foreground">{k}</dt>
                                 <dd className="col-span-3 font-medium break-all">
-                                    {typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v ?? '')}
+                                    {typeof v === 'object'
+                                        ? JSON.stringify(v, null, 2)
+                                        : String(v ?? '')}
                                 </dd>
                             </div>
                         ))}

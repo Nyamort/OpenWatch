@@ -10,11 +10,16 @@ export function TablePagination({ pagination, onPage }: TablePaginationProps) {
     if (pagination.last_page <= 1) return null;
 
     const from = (pagination.current_page - 1) * pagination.per_page + 1;
-    const to = Math.min(pagination.current_page * pagination.per_page, pagination.total);
+    const to = Math.min(
+        pagination.current_page * pagination.per_page,
+        pagination.total,
+    );
 
     return (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{from}–{to} of {pagination.total}</span>
+            <span>
+                {from}–{to} of {pagination.total}
+            </span>
             <div className="flex items-center gap-1">
                 <button
                     onClick={() => onPage(pagination.current_page - 1)}
@@ -23,7 +28,9 @@ export function TablePagination({ pagination, onPage }: TablePaginationProps) {
                 >
                     <ChevronLeft className="size-4" />
                 </button>
-                <span className="px-2 tabular-nums">{pagination.current_page} / {pagination.last_page}</span>
+                <span className="px-2 tabular-nums">
+                    {pagination.current_page} / {pagination.last_page}
+                </span>
                 <button
                     onClick={() => onPage(pagination.current_page + 1)}
                     disabled={pagination.current_page === pagination.last_page}

@@ -5,7 +5,12 @@ import AnalyticsLayout from '@/layouts/analytics-layout';
 interface Analytics {
     summary: { period_label: string };
     rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    } | null;
     config: { levels: string[] };
     filters_applied: { level?: string; search?: string };
 }
@@ -31,7 +36,9 @@ const columns = [
         key: 'level',
         label: 'Level',
         render: (value: unknown) => (
-            <span className={LEVEL_COLORS[String(value)] ?? ''}>{String(value)}</span>
+            <span className={LEVEL_COLORS[String(value)] ?? ''}>
+                {String(value)}
+            </span>
         ),
     },
     { key: 'message', label: 'Message' },
@@ -42,7 +49,11 @@ export default function LogsIndex({ analytics, period }: Props) {
     return (
         <AnalyticsLayout period={period}>
             <Head />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <DataTable
+                columns={columns}
+                rows={analytics.rows}
+                pagination={analytics.pagination}
+            />
         </AnalyticsLayout>
     );
 }
