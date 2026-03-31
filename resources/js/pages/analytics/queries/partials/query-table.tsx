@@ -1,9 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Check, Copy, Database } from 'lucide-react';
-import { format as formatSql } from 'sql-formatter';
 import { useRef, useState } from 'react';
-import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
+import { format as formatSql } from 'sql-formatter';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
+import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
+import { formatDuration } from '@/lib/utils';
 import { show } from '@/routes/analytics/queries';
-import { formatDuration } from '../../requests/partials/request-charts';
 import type { Pagination, QueryRow, QuerySortKey, SortDir } from '../types';
 
 

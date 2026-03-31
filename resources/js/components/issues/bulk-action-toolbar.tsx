@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
     selectedIds: number[];

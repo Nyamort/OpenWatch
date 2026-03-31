@@ -1,3 +1,5 @@
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { BulkActionToolbar } from '@/components/issues/bulk-action-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -5,8 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
 
 interface Issue {
     id: number;

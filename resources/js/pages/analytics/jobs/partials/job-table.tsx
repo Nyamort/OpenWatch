@@ -4,8 +4,8 @@ import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
+import { formatDuration } from '@/lib/utils';
 import type { JobRow, JobSortKey, Pagination, SortDir } from '../types';
-import { formatDuration } from '../../requests/partials/request-charts';
 
 interface JobTableProps {
     jobs: JobRow[];

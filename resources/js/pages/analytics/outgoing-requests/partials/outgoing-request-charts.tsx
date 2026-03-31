@@ -2,7 +2,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'rec
 import { BarCursor, ChartPanel, isolatedDot, tooltipProps } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
-import { formatDuration } from '../../requests/partials/request-charts';
+import { formatDuration } from '@/lib/utils';
 import type { OutgoingRequestGraphBucket, OutgoingRequestStats } from '../types';
 
 const requestsChartConfig = {

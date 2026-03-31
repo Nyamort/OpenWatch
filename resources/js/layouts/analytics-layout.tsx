@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react';
 import { PeriodSelector } from '@/components/analytics/period-selector';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { ReactNode } from 'react';
 
 interface AnalyticsLayoutProps {
     children: ReactNode;

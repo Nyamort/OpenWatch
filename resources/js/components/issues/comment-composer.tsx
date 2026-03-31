@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
     submitUrl: string;

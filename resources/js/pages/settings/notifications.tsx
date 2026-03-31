@@ -1,13 +1,13 @@
 import { Head, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
+import NotificationPreferencesController from '@/actions/App/Http/Controllers/Settings/NotificationPreferencesController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import type { BreadcrumbItem } from '@/types';
-import NotificationPreferencesController from '@/actions/App/Http/Controllers/Settings/NotificationPreferencesController';
 import { edit } from '@/routes/notifications';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

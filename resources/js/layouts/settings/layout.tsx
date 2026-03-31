@@ -9,13 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
-import type { NavItem } from '@/types';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editNotifications } from '@/routes/notifications';
-import { index as sessionsIndex } from '@/routes/sessions';
 import { edit } from '@/routes/profile';
+import { index as sessionsIndex } from '@/routes/sessions';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
+import type { NavItem } from '@/types';
 
 const accountNavItems: NavItem[] = [
     { title: 'Profile', href: edit(), icon: null },

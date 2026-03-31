@@ -5,8 +5,8 @@ import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
+import { formatDuration } from '@/lib/utils';
 import { show } from '@/routes/analytics/mail';
-import { formatDuration } from '../../requests/partials/request-charts';
 import type { MailRow, MailSortKey, Pagination, SortDir } from '../types';
 
 interface MailTableProps {

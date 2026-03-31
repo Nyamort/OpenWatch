@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import InputError from '@/components/input-error';
-import { ColorPicker } from '@/components/ui/color-picker';
 import { Button } from '@/components/ui/button';
+import { ColorPicker } from '@/components/ui/color-picker';
 import {
     Dialog,
     DialogContent,

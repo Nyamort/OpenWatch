@@ -13,14 +13,14 @@ import {
 } from '@/components/ui/sidebar';
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { dashboard } from '@/routes';
+import { index as cacheEventsIndex } from '@/routes/analytics/cache-events';
 import { index as commandsIndex } from '@/routes/analytics/commands';
 import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
-import { index as cacheEventsIndex } from '@/routes/analytics/cache-events';
-import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requests';
+import { index as jobsIndex } from '@/routes/analytics/jobs';
 import { index as mailIndex } from '@/routes/analytics/mail';
 import { index as notificationsIndex } from '@/routes/analytics/notifications';
+import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requests';
 import { index as queriesIndex } from '@/routes/analytics/queries';
-import { index as jobsIndex } from '@/routes/analytics/jobs';
 import { index as requestsIndex } from '@/routes/analytics/requests';
 import type { NavItem } from '@/types/navigation';
 

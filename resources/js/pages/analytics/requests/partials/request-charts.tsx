@@ -2,6 +2,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'rec
 import { BarCursor, ChartPanel, isolatedDot, tooltipProps } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
+import { formatDuration } from '@/lib/utils';
 import type { GraphBucket, Stats } from '../types';
 
 const requestChartConfig = {
@@ -14,13 +15,6 @@ const durationChartConfig = {
     avg: { label: 'AVG', color: 'oklch(0.50 0 0)' },
     p95: { label: 'P95', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
-
-export function formatDuration(us: number | null): string {
-    if (us === null) return '—';
-    const ms = us / 1000;
-    if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
-    return `${ms.toFixed(2)}ms`;
-}
 
 interface RequestChartsProps {
     graph: GraphBucket[];

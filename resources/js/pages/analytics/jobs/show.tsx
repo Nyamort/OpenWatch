@@ -1,5 +1,5 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
+import { DataTable } from '@/components/analytics/data-table';
 import AppLayout from '@/layouts/app-layout';
 
 interface Analytics {

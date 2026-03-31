@@ -1,10 +1,10 @@
+import { Head, router, useForm } from '@inertiajs/react';
 import { CommentComposer } from '@/components/issues/comment-composer';
 import { SnapshotRenderer } from '@/components/issues/snapshot-renderer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
 
 interface IssueSource {
     id: number;

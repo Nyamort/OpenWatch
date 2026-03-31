@@ -1,9 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Layers, MoreHorizontal, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { DeleteApplicationDialog } from '@/components/organizations/delete-application-dialog';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { DeleteApplicationDialog } from '@/components/organizations/delete-application-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
