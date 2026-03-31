@@ -1,31 +1,28 @@
-import { DataTable } from '@/components/analytics/data-table';
 import { Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: { current_page: number; last_page: number; per_page: number; total: number } | null;
-}
+import { MailCharts } from './partials/mail-charts';
+import { MailTable } from './partials/mail-table';
+import type { MailGraphBucket, MailRow, MailSortKey, MailStats, Pagination, SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph: MailGraphBucket[];
+    stats: MailStats;
+    mails: MailRow[];
+    pagination: Pagination;
     period: string;
+    sort: MailSortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'class', label: 'Class' },
-    { key: 'mailer', label: 'Mailer' },
-    { key: 'sent_count', label: 'Sent' },
-    { key: 'failed_count', label: 'Failed' },
-    { key: 'avg_duration', label: 'Avg Duration (ms)' },
-];
+const breadcrumbs = [{ title: 'Mails', href: '#' }];
 
-export default function MailIndex({ analytics, period }: Props) {
+export default function MailIndex({ graph, stats, mails, pagination, period, sort, direction, search }: Props) {
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <DataTable columns={columns} rows={analytics.rows} pagination={analytics.pagination} />
+            <MailCharts graph={graph} stats={stats} />
+            <MailTable mails={mails} pagination={pagination} sort={sort} direction={direction} search={search} />
         </AnalyticsLayout>
     );
 }
