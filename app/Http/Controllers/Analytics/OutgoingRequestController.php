@@ -23,11 +23,24 @@ class OutgoingRequestController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildIndex->handle($ctx, $period);
+        $data = $this->buildIndex->handle(
+            ctx: $ctx,
+            period: $period,
+            sort: (string) $request->query('sort', 'total'),
+            direction: (string) $request->query('direction', 'desc'),
+            search: (string) $request->query('search', ''),
+            page: (int) $request->query('page', 1),
+        );
 
         return Inertia::render('analytics/outgoing-requests/index', [
-            'analytics' => $data,
+            'graph' => $data['graph'],
+            'stats' => $data['stats'],
+            'hosts' => $data['hosts'],
+            'pagination' => $data['pagination'],
             'period' => $request->query('period', '24h'),
+            'sort' => $request->query('sort', 'total'),
+            'direction' => $request->query('direction', 'desc'),
+            'search' => $request->query('search', ''),
         ]);
     }
 
