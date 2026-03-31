@@ -4,6 +4,7 @@ import {
     ArrowUpRight,
     Bell,
     BriefcaseBusiness,
+    CalendarClock,
     Database,
     Globe,
     HardDrive,
@@ -33,6 +34,7 @@ import { index as notificationsIndex } from '@/routes/analytics/notifications';
 import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requests';
 import { index as queriesIndex } from '@/routes/analytics/queries';
 import { index as requestsIndex } from '@/routes/analytics/requests';
+import { index as scheduledTasksIndex } from '@/routes/analytics/scheduled-tasks';
 import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
@@ -99,6 +101,17 @@ export function AppSidebar() {
                                   }),
                               ),
                               icon: Terminal,
+                          },
+                          {
+                              title: 'Scheduled Tasks',
+                              href: analyticsHref(
+                                  scheduledTasksIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: CalendarClock,
                           },
                           {
                               title: 'Exceptions',
