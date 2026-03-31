@@ -180,7 +180,7 @@ class ProcessTelemetryBatch implements ShouldQueue
             ],
             'scheduled-task' => [
                 'name' => $record['name'],
-                'cron' => $record['cron'],
+                'cron' => $this->buildScheduledTaskCron($record),
                 'status' => $record['status'],
                 'duration' => $record['duration'] ?? null,
             ],
@@ -209,6 +209,24 @@ class ProcessTelemetryBatch implements ShouldQueue
         };
 
         DB::table($table)->insert(array_merge($base, $typeFields));
+    }
+
+    /**
+     * Build the cron expression for a scheduled task record.
+     * If repeat_seconds is non-zero, prepend a seconds field (e.g. "* /5 * * * * *").
+     *
+     * @param  array<string, mixed>  $record
+     */
+    private function buildScheduledTaskCron(array $record): string
+    {
+        $cron = $record['cron'];
+        $repeatSeconds = (int) ($record['repeat_seconds'] ?? 0);
+
+        if ($repeatSeconds > 0) {
+            return '*/'.$repeatSeconds.' '.$cron;
+        }
+
+        return $cron;
     }
 
     /**
