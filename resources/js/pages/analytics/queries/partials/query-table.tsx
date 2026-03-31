@@ -53,24 +53,40 @@ function QueryCell({ query }: { query: string }) {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <SqlSyntaxHighlighter className="overflow-hidden" wrapLongLines={false}>
+                <div
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <SqlSyntaxHighlighter
+                        className="overflow-hidden"
+                        wrapLongLines={false}
+                    >
                         {query}
                     </SqlSyntaxHighlighter>
                 </div>
             </PopoverTrigger>
-            <PopoverContent className="w-xl p-0" align="start">
+            <PopoverContent
+                className="w-xl p-0"
+                align="start"
+                onMouseEnter={handlePopoverEnter}
+                onMouseLeave={handleMouseLeave}
+            >
                 <div className="flex items-center justify-between border-b border-border px-3 py-2">
                     <span className="text-sm font-medium">Query</span>
-                    <Button variant="ghost" size="icon" className="size-7" onClick={handleCopy}>
-                        {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        onClick={handleCopy}
+                    >
+                        {copied ? (
+                            <Check className="size-3.5 text-emerald-500" />
+                        ) : (
+                            <Copy className="size-3.5" />
+                        )}
                     </Button>
                 </div>
-                <div
-                    className="max-h-64 overflow-y-auto p-3"
-                    onMouseEnter={handlePopoverEnter}
-                    onMouseLeave={handleMouseLeave}
-                >
+                <div className="max-h-64 overflow-y-auto p-3">
                     <SqlSyntaxHighlighter wrapLongLines>
                         {formatSql(query, { language: 'sql' })}
                     </SqlSyntaxHighlighter>
