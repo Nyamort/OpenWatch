@@ -5,10 +5,10 @@ import { ChartLegend, ChartTooltip, type ChartConfig } from '@/components/ui/cha
 import type { CacheEventsGraphBucket, CacheFailuresGraphBucket, CacheStats } from '../types';
 
 const eventsChartConfig = {
-    hits: { label: 'Hits', color: 'oklch(0.60 0.15 145)' },
-    misses: { label: 'Misses', color: 'oklch(0.50 0 0)' },
+    hits: { label: 'Hits', color: 'oklch(0.55 0 0)' },
+    misses: { label: 'Misses', color: 'hsl(30 90% 55%)' },
     writes: { label: 'Writes', color: 'oklch(0.55 0.15 230)' },
-    deletes: { label: 'Deletes', color: 'oklch(0.65 0.10 60)' },
+    deletes: { label: 'Deletes', color: 'hsl(0 80% 55%)' },
 } satisfies ChartConfig;
 
 const failuresChartConfig = {
