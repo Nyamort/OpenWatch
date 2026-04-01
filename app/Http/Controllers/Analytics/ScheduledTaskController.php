@@ -46,23 +46,33 @@ class ScheduledTaskController extends AnalyticsController
     }
 
     /**
-     * Display individual runs for a scheduled task.
+     * Display detail analytics for a scheduled task (name + cron).
      */
     public function show(Request $request, string $organization, string $project, string $environment, string $scheduledTask): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildRuns->handle(
-            ctx: $ctx,
-            period: $period,
-            name: (string) $request->query('name', $scheduledTask),
-            cron: (string) $request->query('cron', ''),
-        );
+        $name = (string) $request->query('name', '');
+        $cron = (string) $request->query('cron', '');
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $name, $cron, $sort, $direction, $page): array {
+            return $data ??= $this->buildRuns->handle(ctx: $ctx, period: $period, name: $name, cron: $cron, sort: $sort, direction: $direction, page: $page);
+        };
 
         return Inertia::render('analytics/scheduled-tasks/show', [
-            'analytics' => $data,
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'runs' => Inertia::defer(fn () => $resolve()['runs']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'name' => $name,
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }
