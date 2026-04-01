@@ -1,33 +1,101 @@
-import { Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-
-interface Analytics {
-    summary: Record<string, unknown>;
-}
+import { Deferred, Head, usePage } from '@inertiajs/react';
+import AnalyticsLayout from '@/layouts/analytics-layout';
+import { index as commandsIndex } from '@/routes/analytics/commands';
+import { CommandDetailCharts } from './partials/command-detail-charts';
+import { CommandDetailTable } from './partials/command-detail-table';
+import type {
+    CommandDetailGraphBucket,
+    CommandDetailSortKey,
+    CommandDetailStats,
+    CommandRunRow,
+    Pagination,
+    SortDir,
+} from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: CommandDetailGraphBucket[];
+    stats?: CommandDetailStats;
+    runs?: CommandRunRow[];
+    pagination?: Pagination;
+    name: string;
+    period: string;
+    sort: CommandDetailSortKey;
+    direction: SortDir;
 }
 
-export default function CommandShow({ analytics }: Props) {
+function ChartsSkeleton() {
     return (
-        <AppLayout>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[0, 1].map((i) => (
+                <div
+                    key={i}
+                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
+                />
+            ))}
+        </div>
+    );
+}
+
+function TableSkeleton() {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <div className="h-11 animate-pulse rounded-lg bg-muted/40" />
+            {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                    key={i}
+                    className="h-11 animate-pulse rounded-lg bg-muted/20"
+                />
+            ))}
+        </div>
+    );
+}
+
+export default function CommandShow({
+    graph,
+    stats,
+    runs,
+    pagination,
+    name,
+    period,
+    sort,
+    direction,
+}: Props) {
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const breadcrumbs = [
+        {
+            title: 'Commands',
+            href:
+                activeOrganization && activeProject && activeEnvironment
+                    ? commandsIndex.url({
+                          organization: activeOrganization.slug,
+                          project: activeProject.slug,
+                          environment: activeEnvironment.slug,
+                      })
+                    : '#',
+        },
+        { title: name || 'Unknown Command', href: '#' },
+    ];
+
+    return (
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <div className="flex flex-col gap-6 p-6">
-                <h1 className="text-xl font-semibold">Command Detail</h1>
-                <div className="rounded-lg border bg-card p-4">
-                    <dl className="space-y-2 text-sm">
-                        {Object.entries(analytics.summary).map(([k, v]) => (
-                            <div key={k} className="grid grid-cols-4 gap-2">
-                                <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="col-span-3 font-medium">
-                                    {String(v ?? '')}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </div>
-        </AppLayout>
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <CommandDetailCharts graph={graph!} stats={stats!} />
+            </Deferred>
+            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+                <CommandDetailTable
+                    runs={runs!}
+                    pagination={pagination!}
+                    sort={sort}
+                    direction={direction}
+                />
+            </Deferred>
+        </AnalyticsLayout>
     );
 }

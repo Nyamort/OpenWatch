@@ -46,16 +46,32 @@ class CommandController extends AnalyticsController
     }
 
     /**
-     * Display a single command run.
+     * Display detail analytics for a command name.
      */
     public function show(Request $request, string $organization, string $project, string $environment, int $command): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $period = $this->buildPeriod($request);
 
-        $data = $this->buildDetail->handle($ctx, $command);
+        $name = (string) $request->query('name', '');
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $name, $sort, $direction, $page): array {
+            return $data ??= $this->buildDetail->handle(ctx: $ctx, period: $period, name: $name, sort: $sort, direction: $direction, page: $page);
+        };
 
         return Inertia::render('analytics/commands/show', [
-            'analytics' => $data,
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'runs' => Inertia::defer(fn () => $resolve()['runs']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'name' => $name,
+            'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }

@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { ArrowUpRight, OctagonAlert, Terminal } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
@@ -10,8 +11,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import { show as commandShow } from '@/routes/analytics/commands';
 import type { CommandRow, CommandSortKey, Pagination, SortDir } from '../types';
 
 interface CommandTableProps {
@@ -37,6 +40,32 @@ export function CommandTable({
 
     const onSort = (col: string) =>
         handleSort(col as CommandSortKey, sort, direction);
+
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+    const analyticsHref = useAnalyticsHref();
+
+    const showHref = (row: CommandRow) => {
+        if (!activeOrganization || !activeProject || !activeEnvironment) {
+            return '#';
+        }
+
+        return analyticsHref(
+            commandShow.url(
+                {
+                    organization: activeOrganization.slug,
+                    project: activeProject.slug,
+                    environment: activeEnvironment.slug,
+                    command: 0,
+                },
+                { query: { name: row.name ?? '' } },
+            ),
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
@@ -161,11 +190,14 @@ export function CommandTable({
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
-                                        <div className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
+                                        <a
+                                            href={showHref(row)}
+                                            className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500"
+                                        >
                                             <span className="flex size-6 items-center justify-center">
                                                 <ArrowUpRight className="size-4" />
                                             </span>
-                                        </div>
+                                        </a>
                                     </div>
                                 </TableCell>
                             </TableRow>
