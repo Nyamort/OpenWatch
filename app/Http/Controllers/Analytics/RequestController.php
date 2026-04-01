@@ -55,16 +55,27 @@ class RequestController extends AnalyticsController
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildRoute->handle(
-            ctx: $ctx,
-            period: $period,
-            routePath: (string) $request->query('route_path', ''),
-            method: (string) $request->query('method', 'GET'),
-        );
+        $routePath = (string) $request->query('route_path', '');
+        $method = (string) $request->query('method', '');
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $routePath, $method, $sort, $direction, $page): array {
+            return $data ??= $this->buildRoute->handle(ctx: $ctx, period: $period, routePath: $routePath, method: $method, sort: $sort, direction: $direction, page: $page);
+        };
 
         return Inertia::render('analytics/requests/route', [
-            'analytics' => $data,
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'requests' => Inertia::defer(fn () => $resolve()['requests']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'route_path' => $routePath,
+            'method' => $method !== '' ? strtoupper($method) : null,
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 

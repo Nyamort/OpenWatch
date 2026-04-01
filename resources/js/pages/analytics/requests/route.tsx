@@ -1,64 +1,108 @@
-import { Head } from '@inertiajs/react';
+import { Deferred, Head, usePage } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: {
-        route_path: string;
-        method: string;
-        total: number;
-        avg_duration: number;
-        p95_duration: number;
-        error_rate: number;
-        period_label: string;
-    };
-    series: Array<{ bucket: string; count: number; avg_duration: number }>;
-}
+import { index as requestsIndex } from '@/routes/analytics/requests';
+import { RouteCharts } from './partials/route-charts';
+import { RouteTable } from './partials/route-table';
+import type {
+    GraphBucket,
+    Pagination,
+    RouteRequestRow,
+    RouteSortKey,
+    SortDir,
+    Stats,
+} from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: GraphBucket[];
+    stats?: Stats;
+    requests?: RouteRequestRow[];
+    pagination?: Pagination;
+    route_path: string;
+    method: string | null;
     period: string;
+    sort: RouteSortKey;
+    direction: SortDir;
 }
 
-export default function RequestsRoute({ analytics, period }: Props) {
-    const { summary } = analytics;
+function ChartsSkeleton() {
+    return (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[0, 1].map((i) => (
+                <div
+                    key={i}
+                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
+                />
+            ))}
+        </div>
+    );
+}
+
+function TableSkeleton() {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <div className="h-11 animate-pulse rounded-lg bg-muted/40" />
+            {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                    key={i}
+                    className="h-11 animate-pulse rounded-lg bg-muted/20"
+                />
+            ))}
+        </div>
+    );
+}
+
+export default function RequestsRoute({
+    graph,
+    stats,
+    requests,
+    pagination,
+    route_path,
+    period,
+    sort,
+    direction,
+}: Props) {
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const breadcrumbs = [
+        {
+            title: 'Requests',
+            href:
+                activeOrganization && activeProject && activeEnvironment
+                    ? requestsIndex.url({
+                          organization: activeOrganization.slug,
+                          project: activeProject.slug,
+                          environment: activeEnvironment.slug,
+                      })
+                    : '#',
+        },
+        { title: route_path || 'Unmatched Route', href: '#' },
+    ];
 
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <div className="grid grid-cols-4 gap-4">
-                {[
-                    { label: 'Total', value: summary.total },
-                    { label: 'Avg (ms)', value: summary.avg_duration },
-                    { label: 'P95 (ms)', value: summary.p95_duration },
-                    { label: 'Error Rate', value: `${summary.error_rate}%` },
-                ].map((stat) => (
-                    <div
-                        key={stat.label}
-                        className="rounded-lg border bg-card p-4"
-                    >
-                        <p className="text-xs text-muted-foreground">
-                            {stat.label}
-                        </p>
-                        <p className="mt-1 text-2xl font-semibold">
-                            {stat.value}
-                        </p>
-                    </div>
-                ))}
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-                <h2 className="mb-4 text-sm font-medium">
-                    Timeline ({analytics.series.length} buckets)
-                </h2>
-                {analytics.series.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No data in this period.
-                    </p>
-                ) : (
-                    <p className="text-sm text-muted-foreground">
-                        Chart data available ({analytics.series.length} points).
-                    </p>
-                )}
-            </div>
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <RouteCharts graph={graph!} stats={stats!} />
+            </Deferred>
+            <Deferred
+                data={['requests', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
+                <RouteTable
+                    requests={requests!}
+                    pagination={pagination!}
+                    sort={sort}
+                    direction={direction}
+                    organization={activeOrganization?.slug ?? ''}
+                    project={activeProject?.slug ?? ''}
+                    environment={activeEnvironment?.slug ?? ''}
+                />
+            </Deferred>
         </AnalyticsLayout>
     );
 }

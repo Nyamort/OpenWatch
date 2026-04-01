@@ -43,4 +43,17 @@ export type SortKey =
     | 'p95';
 export type SortDir = 'asc' | 'desc';
 
+export interface RouteRequestRow {
+    id: number;
+    recorded_at: string;
+    method: string;
+    url: string;
+    status_code: number;
+    duration: number | null;
+    exceptions: number;
+    queries: number;
+}
+
+export type RouteSortKey = 'date' | 'status' | 'duration';
+
 export type { Pagination } from '@/types/analytics';

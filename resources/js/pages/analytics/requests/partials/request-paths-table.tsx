@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import {
     ArrowUpRight,
     FolderClosed,
@@ -17,8 +18,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import { route as requestRoute } from '@/routes/analytics/requests';
 import type { Pagination, PathRow, SortDir, SortKey } from '../types';
 
 interface RequestPathsTableProps {
@@ -43,6 +46,36 @@ export function RequestPathsTable({
         });
 
     const onSort = (col: string) => handleSort(col as SortKey, sort, direction);
+
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+    const analyticsHref = useAnalyticsHref();
+
+    const routeHref = (row: PathRow) => {
+        if (!activeOrganization || !activeProject || !activeEnvironment) {
+            return '#';
+        }
+
+        return analyticsHref(
+            requestRoute.url(
+                {
+                    organization: activeOrganization.slug,
+                    project: activeProject.slug,
+                    environment: activeEnvironment.slug,
+                },
+                {
+                    query: {
+                        route_path: row.path ?? '',
+                        method: row.methods[0] ?? '',
+                    },
+                },
+            ),
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
@@ -206,7 +239,10 @@ export function RequestPathsTable({
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
-                                        <a className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
+                                        <a
+                                            href={routeHref(row)}
+                                            className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500"
+                                        >
                                             <span className="flex size-6 items-center justify-center">
                                                 <ArrowUpRight className="size-4" />
                                             </span>
