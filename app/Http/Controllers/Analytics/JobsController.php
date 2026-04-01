@@ -46,16 +46,32 @@ class JobsController extends AnalyticsController
     }
 
     /**
-     * Display a single queued job with its attempts.
+     * Display charts and attempts for a single job class.
      */
     public function show(Request $request, string $organization, string $project, string $environment, int $job): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $period = $this->buildPeriod($request);
 
-        $data = $this->buildDetail->handle($ctx, $job);
+        $name = (string) $request->query('name', '');
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $name, $sort, $direction, $page): array {
+            return $data ??= $this->buildDetail->handle(ctx: $ctx, period: $period, name: $name, sort: $sort, direction: $direction, page: $page);
+        };
 
         return Inertia::render('analytics/jobs/show', [
-            'analytics' => $data,
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'attempts' => Inertia::defer(fn () => $resolve()['attempts']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'name' => $name,
+            'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }

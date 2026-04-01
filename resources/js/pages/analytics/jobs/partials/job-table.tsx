@@ -1,4 +1,5 @@
-import { BriefcaseBusiness, OctagonAlert, TriangleAlert } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { ArrowUpRight, BriefcaseBusiness, OctagonAlert, TriangleAlert } from 'lucide-react';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -6,11 +7,14 @@ import {
     Table,
     TableBody,
     TableCell,
+    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import { show as jobShow } from '@/routes/analytics/jobs';
 import type { JobRow, JobSortKey, Pagination, SortDir } from '../types';
 
 interface JobTableProps {
@@ -36,6 +40,32 @@ export function JobTable({
 
     const onSort = (col: string) =>
         handleSort(col as JobSortKey, sort, direction);
+
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+    const analyticsHref = useAnalyticsHref();
+
+    const showHref = (row: JobRow) => {
+        if (!activeOrganization || !activeProject || !activeEnvironment) {
+            return '#';
+        }
+
+        return analyticsHref(
+            jobShow.url(
+                {
+                    organization: activeOrganization.slug,
+                    project: activeProject.slug,
+                    environment: activeEnvironment.slug,
+                    job: 0,
+                },
+                { query: { name: row.name ?? '' } },
+            ),
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
@@ -128,10 +158,11 @@ export function JobTable({
                             direction={direction}
                             onSort={onSort}
                             align="right"
-                            className="h-11 w-px pr-5 text-right text-xs font-medium whitespace-nowrap"
+                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
                         >
                             P95
                         </SortableHead>
+                        <TableHead className="h-11 w-px rounded-r-lg border-y border-r border-border bg-muted/50 pr-5 whitespace-nowrap" />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -187,8 +218,20 @@ export function JobTable({
                                 <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.avg)}
                                 </TableCell>
-                                <TableCell className="h-11 w-px pr-5 text-right whitespace-nowrap tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.p95)}
+                                </TableCell>
+                                <TableCell className="h-11 w-px pr-5">
+                                    <div className="flex items-center justify-end">
+                                        <a
+                                            href={showHref(row)}
+                                            className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500"
+                                        >
+                                            <span className="flex size-6 items-center justify-center">
+                                                <ArrowUpRight className="size-4" />
+                                            </span>
+                                        </a>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))
