@@ -196,9 +196,9 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    {navGroups.map((group) => (
+                    {navGroups.map((group, i) => (
                         <NavMain
-                            key={group.label}
+                            key={group.label ?? i}
                             label={group.label}
                             items={group.items}
                         />
