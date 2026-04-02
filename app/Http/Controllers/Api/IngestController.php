@@ -56,7 +56,6 @@ class IngestController extends Controller
             }
 
             $requestId = $request->header('X-Request-Id', '');
-
             ProcessTelemetryBatch::dispatch($environmentId, $data['records'], (string) $requestId);
 
             return response()->json([]);
