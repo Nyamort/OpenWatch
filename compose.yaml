@@ -26,6 +26,7 @@ services:
             - mongodb
             - redis
             - mailpit
+            - clickhouse
     mysql:
         image: 'mysql:8.4'
         ports:
@@ -92,6 +93,26 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    clickhouse:
+        image: 'clickhouse/clickhouse-server:24'
+        ports:
+            - '${FORWARD_CLICKHOUSE_PORT:-8123}:8123'
+            - '${FORWARD_CLICKHOUSE_TCP_PORT:-9000}:9000'
+        environment:
+            CLICKHOUSE_DB: '${CLICKHOUSE_DATABASE:-openwatch}'
+            CLICKHOUSE_USER: '${CLICKHOUSE_USERNAME:-default}'
+            CLICKHOUSE_PASSWORD: '${CLICKHOUSE_PASSWORD:-}'
+        volumes:
+            - 'sail-clickhouse:/var/lib/clickhouse'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - clickhouse-client
+                - '--query=SELECT 1'
+            retries: 3
+            timeout: 5s
 networks:
     sail:
         driver: bridge
@@ -101,4 +122,6 @@ volumes:
     sail-mongodb:
         driver: local
     sail-redis:
+        driver: local
+    sail-clickhouse:
         driver: local
