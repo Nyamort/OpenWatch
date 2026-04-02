@@ -41,9 +41,9 @@ class BuildExceptionIndexData
         // Global stats
         $stats = $this->clickhouse->selectOne("
             SELECT
-                count() AS count,
-                sum(handled) AS handled,
-                sum(1 - handled) AS unhandled
+                count() AS total,
+                sum(handled) AS handled_count,
+                sum(1 - handled) AS unhandled_count
             FROM extraction_exceptions
             {$baseWhere}
         ");
@@ -53,8 +53,8 @@ class BuildExceptionIndexData
         $bucketMap = $this->clickhouse->select("
             SELECT
                 intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
-                sum(handled) AS handled,
-                sum(1 - handled) AS unhandled
+                sum(handled) AS handled_count,
+                sum(1 - handled) AS unhandled_count
             FROM extraction_exceptions
             {$baseWhere}
             GROUP BY bucket_slot
@@ -69,8 +69,8 @@ class BuildExceptionIndexData
             $row = $bucketMap->get($slot);
             $graph[] = [
                 'bucket' => Carbon::createFromTimestampUTC($slot * $bucketSeconds)->format('Y-m-d H:i:s'),
-                'handled' => (int) ($row?->handled ?? 0),
-                'unhandled' => (int) ($row?->unhandled ?? 0),
+                'handled' => (int) ($row?->handled_count ?? 0),
+                'unhandled' => (int) ($row?->unhandled_count ?? 0),
             ];
         }
 
@@ -79,9 +79,9 @@ class BuildExceptionIndexData
         return [
             'graph' => $graph,
             'stats' => [
-                'count' => (int) ($stats?->count ?? 0),
-                'handled' => (int) ($stats?->handled ?? 0),
-                'unhandled' => (int) ($stats?->unhandled ?? 0),
+                'count' => (int) ($stats?->total ?? 0),
+                'handled' => (int) ($stats?->handled_count ?? 0),
+                'unhandled' => (int) ($stats?->unhandled_count ?? 0),
             ],
             'exceptions' => $exceptions['data'],
             'pagination' => $exceptions['pagination'],
