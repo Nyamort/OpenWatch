@@ -144,7 +144,7 @@ class BuildJobsIndexData
                 countIf(a.status = 'released') AS released,
                 toFloat64(round(avg(a.duration), 2)) AS avg,
                 toFloat64(quantile(0.95)(a.duration)) AS p95,
-                coalesce(q.queued, 0) AS queued
+                coalesce(any(q.queued), 0) AS queued
             FROM extraction_job_attempts AS a
             LEFT JOIN (
                 SELECT name, count() AS queued

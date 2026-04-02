@@ -42,8 +42,8 @@ class BuildExceptionIndexData
         $stats = $this->clickhouse->selectOne("
             SELECT
                 count() AS count,
-                countIf(handled = 1) AS handled,
-                countIf(handled = 0) AS unhandled
+                sum(handled) AS handled,
+                sum(1 - handled) AS unhandled
             FROM extraction_exceptions
             {$baseWhere}
         ");
@@ -53,8 +53,8 @@ class BuildExceptionIndexData
         $bucketMap = $this->clickhouse->select("
             SELECT
                 intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
-                countIf(handled = 1) AS handled,
-                countIf(handled = 0) AS unhandled
+                sum(handled) AS handled,
+                sum(1 - handled) AS unhandled
             FROM extraction_exceptions
             {$baseWhere}
             GROUP BY bucket_slot
