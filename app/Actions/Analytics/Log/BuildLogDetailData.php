@@ -11,7 +11,7 @@ class BuildLogDetailData
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
-     * Fetch a single log entry with the full raw payload from telemetry_records.
+     * Fetch a single log entry.
      *
      * @return array<string, mixed>
      */
@@ -32,19 +32,8 @@ class BuildLogDetailData
             abort(404, 'Log entry not found.');
         }
 
-        $telemetryRecordId = ClickHouseService::escape($log->telemetry_record_id ?? '');
-
-        $telemetryRecord = $this->clickhouse->selectOne("
-            SELECT payload
-            FROM telemetry_records
-            WHERE id = {$telemetryRecordId}
-            LIMIT 1
-        ");
-
-        $payload = $telemetryRecord?->payload ? json_decode($telemetryRecord->payload, true) : null;
-
         return (new AnalyticsResponseBuilder)
-            ->withSummary(array_merge((array) $log, ['payload' => $payload]))
+            ->withSummary((array) $log)
             ->build();
     }
 }

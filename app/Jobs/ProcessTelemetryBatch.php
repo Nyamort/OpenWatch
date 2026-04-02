@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Environment;
 use App\Services\ClickHouse\ClickHouseService;
 use App\Services\Ingestion\RecordValidatorRegistry;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -40,7 +41,6 @@ class ProcessTelemetryBatch implements ShouldQueue
         $organizationId = $environment->project->organization->id;
         $projectId = $environment->project->id;
 
-        $telemetryRows = [];
         $extractionRows = [];
 
         foreach ($this->records as $record) {
@@ -52,24 +52,8 @@ class ProcessTelemetryBatch implements ShouldQueue
                 }
 
                 $type = $record['t'];
-                $traceId = $record['trace_id'] ?? null;
-                $groupKey = $record['_group'] ?? null;
-                $executionId = $record['execution_id'] ?? null;
-                $recordedAt = \Carbon\Carbon::createFromTimestamp($record['timestamp'])->utc()->format('Y-m-d H:i:s');
+                $recordedAt = Carbon::createFromTimestamp($record['timestamp'])->utc()->format('Y-m-d H:i:s');
                 $telemetryRecordId = Str::uuid()->toString();
-
-                $telemetryRows[] = [
-                    'id' => $telemetryRecordId,
-                    'organization_id' => $organizationId,
-                    'project_id' => $projectId,
-                    'environment_id' => $this->environmentId,
-                    'record_type' => $type,
-                    'trace_id' => $traceId,
-                    'group_key' => $groupKey,
-                    'execution_id' => $executionId,
-                    'payload' => json_encode($record),
-                    'recorded_at' => $recordedAt,
-                ];
 
                 $extractionRow = $this->buildExtractionRow(
                     $type,
@@ -88,10 +72,6 @@ class ProcessTelemetryBatch implements ShouldQueue
 
                 continue;
             }
-        }
-
-        if (! empty($telemetryRows)) {
-            $clickhouse->insert('telemetry_records', $telemetryRows);
         }
 
         foreach ($extractionRows as $table => $rows) {
@@ -119,13 +99,16 @@ class ProcessTelemetryBatch implements ShouldQueue
             'organization_id' => $organizationId,
             'project_id' => $projectId,
             'environment_id' => $this->environmentId,
+            'deploy' => (string) ($record['deploy'] ?? ''),
+            'server' => (string) ($record['server'] ?? ''),
             'recorded_at' => $recordedAt,
         ];
 
         $typeFields = match ($type) {
             'request' => [
                 'trace_id' => $record['trace_id'] ?? null,
-                'user' => $record['user'] ?? null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
+                'ip' => ($record['ip'] ?? '') !== '' ? (string) $record['ip'] : null,
                 'method' => $record['method'],
                 'url' => $record['url'],
                 'route_name' => $record['route_name'] ?? null,
@@ -134,25 +117,84 @@ class ProcessTelemetryBatch implements ShouldQueue
                     ? implode('|', $record['route_methods'])
                     : ($record['route_methods'] ?? null),
                 'route_action' => $record['route_action'] ?? null,
+                'route_domain' => ($record['route_domain'] ?? '') !== '' ? (string) $record['route_domain'] : null,
                 'status_code' => (int) $record['status_code'],
                 'duration' => (int) $record['duration'],
+                'bootstrap' => isset($record['bootstrap']) ? (int) $record['bootstrap'] : null,
+                'before_middleware' => isset($record['before_middleware']) ? (int) $record['before_middleware'] : null,
+                'action' => isset($record['action']) ? (int) $record['action'] : null,
+                'render' => isset($record['render']) ? (int) $record['render'] : null,
+                'after_middleware' => isset($record['after_middleware']) ? (int) $record['after_middleware'] : null,
+                'terminating' => isset($record['terminating']) ? (int) $record['terminating'] : null,
+                'sending' => isset($record['sending']) ? (int) $record['sending'] : null,
                 'request_size' => isset($record['request_size']) ? (int) $record['request_size'] : null,
                 'response_size' => isset($record['response_size']) ? (int) $record['response_size'] : null,
                 'peak_memory_usage' => isset($record['peak_memory_usage']) ? (int) $record['peak_memory_usage'] : null,
                 'exceptions' => (int) ($record['exceptions'] ?? 0),
                 'queries' => (int) ($record['queries'] ?? 0),
+                'logs' => (int) ($record['logs'] ?? 0),
+                'cache_events' => (int) ($record['cache_events'] ?? 0),
+                'jobs_queued' => (int) ($record['jobs_queued'] ?? 0),
+                'notifications' => (int) ($record['notifications'] ?? 0),
+                'outgoing_requests' => (int) ($record['outgoing_requests'] ?? 0),
+                'lazy_loads' => (int) ($record['lazy_loads'] ?? 0),
+                'hydrated_models' => (int) ($record['hydrated_models'] ?? 0),
+                'files_read' => (int) ($record['files_read'] ?? 0),
+                'files_written' => (int) ($record['files_written'] ?? 0),
+                'exception_preview' => ($record['exception_preview'] ?? '') !== '' ? (string) $record['exception_preview'] : null,
+            ],
+            'exception' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'group_key' => $record['_group'] ?? null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
+                'class' => $record['class'],
+                'file' => $record['file'] ?? null,
+                'line' => isset($record['line']) ? (int) $record['line'] : null,
+                'message' => $record['message'],
+                'code' => isset($record['code']) ? (string) $record['code'] : null,
+                'trace' => is_array($record['trace'] ?? null) ? json_encode($record['trace']) : (string) ($record['trace'] ?? ''),
+                'handled' => (int) ($record['handled'] ?? 0),
+                'php_version' => $record['php_version'] ?? null,
+                'laravel_version' => $record['laravel_version'] ?? null,
             ],
             'query' => [
                 'trace_id' => $record['trace_id'] ?? null,
                 'execution_id' => $record['execution_id'] ?? null,
-                'user' => $record['user'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'sql_hash' => hash('sha256', $record['sql']),
                 'sql_normalized' => $record['sql'],
+                'file' => ($record['file'] ?? '') !== '' ? (string) $record['file'] : null,
+                'line' => isset($record['line']) && $record['line'] > 0 ? (int) $record['line'] : null,
                 'connection' => $record['connection'],
                 'connection_type' => $record['connection_type'],
                 'duration' => (int) $record['duration'],
             ],
+            'log' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
+                'level' => $record['level'],
+                'message' => $record['message'],
+                'context' => is_array($record['context'] ?? null) ? json_encode($record['context']) : (string) ($record['context'] ?? '{}'),
+                'extra' => is_array($record['extra'] ?? null) ? json_encode($record['extra']) : (string) ($record['extra'] ?? '{}'),
+            ],
             'cache-event' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'store' => $record['store'],
                 'key' => $record['key'],
                 'type' => $record['type'],
@@ -161,30 +203,63 @@ class ProcessTelemetryBatch implements ShouldQueue
             ],
             'command' => [
                 'name' => $record['name'],
+                'command' => ($record['command'] ?? '') !== '' ? (string) $record['command'] : null,
                 'class' => $record['class'] ?? null,
                 'exit_code' => isset($record['exit_code']) ? (int) $record['exit_code'] : null,
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
-            ],
-            'log' => [
-                'level' => $record['level'],
-                'message' => $record['message'],
-                'execution_id' => $record['execution_id'] ?? null,
+                'bootstrap' => isset($record['bootstrap']) ? (int) $record['bootstrap'] : null,
+                'action' => isset($record['action']) ? (int) $record['action'] : null,
+                'terminating' => isset($record['terminating']) ? (int) $record['terminating'] : null,
+                'peak_memory_usage' => isset($record['peak_memory_usage']) ? (int) $record['peak_memory_usage'] : null,
+                'exceptions' => (int) ($record['exceptions'] ?? 0),
+                'queries' => (int) ($record['queries'] ?? 0),
+                'logs' => (int) ($record['logs'] ?? 0),
+                'cache_events' => (int) ($record['cache_events'] ?? 0),
+                'jobs_queued' => (int) ($record['jobs_queued'] ?? 0),
+                'notifications' => (int) ($record['notifications'] ?? 0),
+                'outgoing_requests' => (int) ($record['outgoing_requests'] ?? 0),
+                'lazy_loads' => (int) ($record['lazy_loads'] ?? 0),
+                'hydrated_models' => (int) ($record['hydrated_models'] ?? 0),
+                'files_read' => (int) ($record['files_read'] ?? 0),
+                'files_written' => (int) ($record['files_written'] ?? 0),
+                'exception_preview' => ($record['exception_preview'] ?? '') !== '' ? (string) $record['exception_preview'] : null,
             ],
             'notification' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'channel' => $record['channel'],
                 'class' => $record['class'],
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
                 'failed' => (int) ($record['failed'] ?? 0),
             ],
             'mail' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'mailer' => $record['mailer'],
                 'class' => $record['class'],
                 'subject' => $record['subject'],
-                'to' => json_encode($record['to'] ?? null),
+                'to' => (int) ($record['to'] ?? 0),
+                'cc' => (int) ($record['cc'] ?? 0),
+                'bcc' => (int) ($record['bcc'] ?? 0),
+                'attachments' => (int) ($record['attachments'] ?? 0),
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
                 'failed' => (int) ($record['failed'] ?? 0),
             ],
             'queued-job' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'job_id' => $record['job_id'],
                 'name' => $record['name'],
                 'connection' => $record['connection'],
@@ -192,6 +267,7 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
             ],
             'job-attempt' => [
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'job_id' => $record['job_id'],
                 'attempt_id' => $record['attempt_id'],
                 'attempt' => (int) $record['attempt'],
@@ -200,34 +276,64 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'queue' => $record['queue'] ?? '',
                 'status' => $record['status'],
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
+                'peak_memory_usage' => isset($record['peak_memory_usage']) ? (int) $record['peak_memory_usage'] : null,
+                'exceptions' => (int) ($record['exceptions'] ?? 0),
+                'queries' => (int) ($record['queries'] ?? 0),
+                'logs' => (int) ($record['logs'] ?? 0),
+                'cache_events' => (int) ($record['cache_events'] ?? 0),
+                'jobs_queued' => (int) ($record['jobs_queued'] ?? 0),
+                'notifications' => (int) ($record['notifications'] ?? 0),
+                'outgoing_requests' => (int) ($record['outgoing_requests'] ?? 0),
+                'lazy_loads' => (int) ($record['lazy_loads'] ?? 0),
+                'hydrated_models' => (int) ($record['hydrated_models'] ?? 0),
+                'files_read' => (int) ($record['files_read'] ?? 0),
+                'files_written' => (int) ($record['files_written'] ?? 0),
+                'exception_preview' => ($record['exception_preview'] ?? '') !== '' ? (string) $record['exception_preview'] : null,
             ],
             'scheduled-task' => [
                 'name' => $record['name'],
                 'cron' => $this->buildScheduledTaskCron($record),
+                'timezone' => (string) ($record['timezone'] ?? 'UTC'),
                 'status' => $record['status'],
                 'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
+                'peak_memory_usage' => isset($record['peak_memory_usage']) ? (int) $record['peak_memory_usage'] : null,
+                'without_overlapping' => (int) ($record['without_overlapping'] ?? 0),
+                'on_one_server' => (int) ($record['on_one_server'] ?? 0),
+                'run_in_background' => (int) ($record['run_in_background'] ?? 0),
+                'even_in_maintenance_mode' => (int) ($record['even_in_maintenance_mode'] ?? 0),
+                'exceptions' => (int) ($record['exceptions'] ?? 0),
+                'queries' => (int) ($record['queries'] ?? 0),
+                'logs' => (int) ($record['logs'] ?? 0),
+                'cache_events' => (int) ($record['cache_events'] ?? 0),
+                'jobs_queued' => (int) ($record['jobs_queued'] ?? 0),
+                'notifications' => (int) ($record['notifications'] ?? 0),
+                'outgoing_requests' => (int) ($record['outgoing_requests'] ?? 0),
+                'lazy_loads' => (int) ($record['lazy_loads'] ?? 0),
+                'hydrated_models' => (int) ($record['hydrated_models'] ?? 0),
+                'files_read' => (int) ($record['files_read'] ?? 0),
+                'files_written' => (int) ($record['files_written'] ?? 0),
+                'exception_preview' => ($record['exception_preview'] ?? '') !== '' ? (string) $record['exception_preview'] : null,
             ],
             'outgoing-request' => [
+                'trace_id' => $record['trace_id'] ?? null,
+                'execution_id' => $record['execution_id'] ?? null,
+                'execution_source' => (string) ($record['execution_source'] ?? ''),
+                'execution_stage' => (string) ($record['execution_stage'] ?? ''),
+                'execution_preview' => ($record['execution_preview'] ?? '') !== '' ? (string) $record['execution_preview'] : null,
+                'user' => ($record['user'] ?? '') !== '' ? (string) $record['user'] : null,
                 'host' => $record['host'],
                 'method' => $record['method'],
                 'url' => $record['url'],
                 'status_code' => isset($record['status_code']) ? (int) $record['status_code'] : null,
                 'duration' => (int) $record['duration'],
+                'request_size' => isset($record['request_size']) ? (int) $record['request_size'] : null,
+                'response_size' => isset($record['response_size']) ? (int) $record['response_size'] : null,
             ],
-            'exception' => [
-                'trace_id' => $record['trace_id'] ?? null,
-                'execution_id' => $record['execution_id'] ?? null,
-                'group_key' => $record['_group'] ?? null,
-                'user' => $record['user'] ?? null,
-                'class' => $record['class'],
-                'file' => $record['file'] ?? null,
-                'line' => isset($record['line']) ? (int) $record['line'] : null,
-                'message' => $record['message'],
-                'handled' => (int) ($record['handled'] ?? 0),
-                'php_version' => $record['php_version'] ?? null,
-                'laravel_version' => $record['laravel_version'] ?? null,
+            'user' => [
+                'user_id' => ($record['id'] ?? '') !== '' ? (string) $record['id'] : null,
+                'name' => ($record['name'] ?? '') !== '' ? (string) $record['name'] : null,
+                'username' => ($record['username'] ?? '') !== '' ? (string) $record['username'] : null,
             ],
-            'user' => [],
             default => null,
         };
 
