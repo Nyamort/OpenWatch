@@ -4,11 +4,13 @@ namespace App\Actions\Dashboard;
 
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class BuildDashboardData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Build the summary metrics for the dashboard.
      * Cached with short TTL (30s for 1h period, 5min for 30d).
@@ -40,23 +42,24 @@ class BuildDashboardData
      */
     private function buildRequestMetrics(AnalyticsContext $ctx, PeriodResult $period): array
     {
-        $result = DB::table('extraction_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->selectRaw('COUNT(*) as total, CAST(SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS UNSIGNED) as errors, MAX(duration) as max_duration')
-            ->first();
+        $where = $this->baseWhere($ctx, $period);
+
+        $result = $this->clickhouse->selectOne("
+            SELECT
+                count() AS total,
+                countIf(status_code >= 500) AS errors,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_requests {$where}
+        ");
 
         $total = (int) ($result?->total ?? 0);
         $errors = (int) ($result?->errors ?? 0);
-        $errorRate = $total > 0 ? round($errors / $total * 100, 1) : 0.0;
 
         return [
             'total' => $total,
             'error_count' => $errors,
-            'error_rate' => $errorRate,
-            'p95_duration' => (int) ($result?->max_duration ?? 0),
+            'error_rate' => $total > 0 ? round($errors / $total * 100, 1) : 0.0,
+            'p95_duration' => (float) ($result?->p95 ?? 0),
         ];
     }
 
@@ -65,13 +68,14 @@ class BuildDashboardData
      */
     private function buildExceptionMetrics(AnalyticsContext $ctx, PeriodResult $period): array
     {
-        $result = DB::table('extraction_exceptions')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->selectRaw('COUNT(*) as total, CAST(SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) AS UNSIGNED) as unhandled')
-            ->first();
+        $where = $this->baseWhere($ctx, $period);
+
+        $result = $this->clickhouse->selectOne("
+            SELECT
+                count() AS total,
+                countIf(handled = 0) AS unhandled
+            FROM extraction_exceptions {$where}
+        ");
 
         return [
             'total' => (int) ($result?->total ?? 0),
@@ -84,13 +88,14 @@ class BuildDashboardData
      */
     private function buildJobMetrics(AnalyticsContext $ctx, PeriodResult $period): array
     {
-        $result = DB::table('extraction_job_attempts')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->selectRaw("COUNT(*) as total, CAST(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS UNSIGNED) as failed")
-            ->first();
+        $where = $this->baseWhere($ctx, $period);
+
+        $result = $this->clickhouse->selectOne("
+            SELECT
+                count() AS total,
+                countIf(status = 'failed') AS failed
+            FROM extraction_job_attempts {$where}
+        ");
 
         $total = (int) ($result?->total ?? 0);
         $failed = (int) ($result?->failed ?? 0);
@@ -107,18 +112,29 @@ class BuildDashboardData
      */
     private function buildUserMetrics(AnalyticsContext $ctx, PeriodResult $period): array
     {
-        $result = DB::table('extraction_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->whereNotNull('user')
-            ->where('user', '!=', '')
-            ->selectRaw('COUNT(DISTINCT `user`) as authenticated, COUNT(*) as total_requests')
-            ->first();
+        $where = $this->baseWhere($ctx, $period);
+
+        $authenticated = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(user)
+            FROM extraction_requests {$where} AND user != ''
+        ") ?? 0);
 
         return [
-            'authenticated' => (int) ($result?->authenticated ?? 0),
+            'authenticated' => $authenticated,
         ];
+    }
+
+    private function baseWhere(AnalyticsContext $ctx, PeriodResult $period): string
+    {
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+
+        return "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
     }
 }

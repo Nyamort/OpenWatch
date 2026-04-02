@@ -48,7 +48,7 @@ class NotificationController extends AnalyticsController
     /**
      * Display a single notification record.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $notification): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $notification): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
 

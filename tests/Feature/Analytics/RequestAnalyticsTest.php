@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupAnalyticsContext(string $suffix = ''): array
 {
@@ -23,28 +23,30 @@ function setupAnalyticsContext(string $suffix = ''): array
 
 function insertRequest(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_requests')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'trace_id' => 'trace-'.uniqid(),
-        'user' => null,
-        'method' => 'GET',
-        'url' => 'https://example.com/',
-        'route_name' => 'home',
-        'route_path' => '/',
-        'route_methods' => 'GET|HEAD',
-        'route_action' => 'HomeController@index',
-        'status_code' => 200,
-        'duration' => 100,
-        'request_size' => 0,
-        'response_size' => 500,
-        'peak_memory_usage' => 1024,
-        'exceptions' => 0,
-        'queries' => 0,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_requests', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'trace_id' => 'trace-'.uniqid(),
+            'user' => null,
+            'method' => 'GET',
+            'url' => 'https://example.com/',
+            'route_name' => 'home',
+            'route_path' => '/',
+            'route_methods' => 'GET|HEAD',
+            'route_action' => 'HomeController@index',
+            'status_code' => 200,
+            'duration' => 100,
+            'request_size' => 0,
+            'response_size' => 500,
+            'peak_memory_usage' => 1024,
+            'exceptions' => 0,
+            'queries' => 0,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('requests index returns graph and stats', function () {

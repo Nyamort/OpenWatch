@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupLogContext(string $suffix = ''): array
 {
@@ -23,24 +23,26 @@ function setupLogContext(string $suffix = ''): array
 
 function insertLog(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_logs')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'level' => 'info',
-        'message' => 'Test log message',
-        'execution_id' => 'exec-'.uniqid(),
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_logs', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'level' => 'info',
+            'message' => 'Test log message',
+            'execution_id' => 'exec-'.uniqid(),
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('log feed is ordered newest-first', function () {
     $ctx = setupLogContext(uniqid());
 
-    insertLog($ctx, ['message' => 'First log', 'recorded_at' => now()->subMinutes(5)]);
-    insertLog($ctx, ['message' => 'Second log', 'recorded_at' => now()->subMinutes(2)]);
-    insertLog($ctx, ['message' => 'Third log', 'recorded_at' => now()]);
+    insertLog($ctx, ['message' => 'First log', 'recorded_at' => now()->subMinutes(5)->utc()->format('Y-m-d H:i:s')]);
+    insertLog($ctx, ['message' => 'Second log', 'recorded_at' => now()->subMinutes(2)->utc()->format('Y-m-d H:i:s')]);
+    insertLog($ctx, ['message' => 'Third log', 'recorded_at' => now()->utc()->format('Y-m-d H:i:s')]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/logs");

@@ -4,23 +4,29 @@ namespace App\Actions\Analytics\Notification;
 
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildNotificationDetailData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Fetch a single notification record.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, int $notificationId): array
+    public function handle(AnalyticsContext $ctx, string $notificationId): array
     {
-        $notification = DB::table('extraction_notifications')
-            ->where('id', $notificationId)
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->first();
+        $orgId = $ctx->organization->id;
+        $escapedId = ClickHouseService::escape($notificationId);
+
+        $notification = $this->clickhouse->selectOne("
+            SELECT *
+            FROM extraction_notifications
+            WHERE id = {$escapedId}
+              AND organization_id = {$orgId}
+            LIMIT 1
+        ");
 
         if ($notification === null) {
             abort(404, 'Notification record not found.');

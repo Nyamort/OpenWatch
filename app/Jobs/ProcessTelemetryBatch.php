@@ -3,12 +3,12 @@
 namespace App\Jobs;
 
 use App\Models\Environment;
-use App\Models\TelemetryRecord;
+use App\Services\ClickHouse\ClickHouseService;
 use App\Services\Ingestion\RecordValidatorRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class ProcessTelemetryBatch implements ShouldQueue
@@ -29,7 +29,7 @@ class ProcessTelemetryBatch implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(RecordValidatorRegistry $registry): void
+    public function handle(RecordValidatorRegistry $registry, ClickHouseService $clickhouse): void
     {
         $environment = Environment::with('project.organization')->find($this->environmentId);
 
@@ -39,6 +39,9 @@ class ProcessTelemetryBatch implements ShouldQueue
 
         $organizationId = $environment->project->organization->id;
         $projectId = $environment->project->id;
+
+        $telemetryRows = [];
+        $extractionRows = [];
 
         foreach ($this->records as $record) {
             try {
@@ -52,9 +55,11 @@ class ProcessTelemetryBatch implements ShouldQueue
                 $traceId = $record['trace_id'] ?? null;
                 $groupKey = $record['_group'] ?? null;
                 $executionId = $record['execution_id'] ?? null;
-                $recordedAt = \Carbon\Carbon::createFromTimestamp($record['timestamp'])->toDateTimeString();
+                $recordedAt = \Carbon\Carbon::createFromTimestamp($record['timestamp'])->utc()->format('Y-m-d H:i:s');
+                $telemetryRecordId = Str::uuid()->toString();
 
-                $telemetryRecord = TelemetryRecord::create([
+                $telemetryRows[] = [
+                    'id' => $telemetryRecordId,
                     'organization_id' => $organizationId,
                     'project_id' => $projectId,
                     'environment_id' => $this->environmentId,
@@ -62,36 +67,54 @@ class ProcessTelemetryBatch implements ShouldQueue
                     'trace_id' => $traceId,
                     'group_key' => $groupKey,
                     'execution_id' => $executionId,
-                    'payload' => $record,
+                    'payload' => json_encode($record),
                     'recorded_at' => $recordedAt,
-                ]);
+                ];
 
-                $this->insertExtractionRecord($type, $telemetryRecord->id, $organizationId, $projectId, $record, $recordedAt);
+                $extractionRow = $this->buildExtractionRow(
+                    $type,
+                    $telemetryRecordId,
+                    $organizationId,
+                    $projectId,
+                    $record,
+                    $recordedAt,
+                );
+
+                if ($extractionRow !== null) {
+                    $extractionRows[$this->extractionTable($type)][] = $extractionRow;
+                }
             } catch (InvalidArgumentException $e) {
                 report($e);
 
-                // Unknown type — skip
                 continue;
             }
+        }
+
+        if (! empty($telemetryRows)) {
+            $clickhouse->insert('telemetry_records', $telemetryRows);
+        }
+
+        foreach ($extractionRows as $table => $rows) {
+            $clickhouse->insert($table, $rows);
         }
     }
 
     /**
-     * Insert into the type-specific extraction table.
+     * Build the row for the type-specific extraction table.
      *
      * @param  array<string, mixed>  $record
+     * @return array<string, mixed>|null
      */
-    private function insertExtractionRecord(
+    private function buildExtractionRow(
         string $type,
-        int $telemetryRecordId,
+        string $telemetryRecordId,
         int $organizationId,
         int $projectId,
         array $record,
-        mixed $recordedAt,
-    ): void {
-        $table = $this->extractionTable($type);
-
+        string $recordedAt,
+    ): ?array {
         $base = [
+            'id' => Str::uuid()->toString(),
             'telemetry_record_id' => $telemetryRecordId,
             'organization_id' => $organizationId,
             'project_id' => $projectId,
@@ -111,13 +134,13 @@ class ProcessTelemetryBatch implements ShouldQueue
                     ? implode('|', $record['route_methods'])
                     : ($record['route_methods'] ?? null),
                 'route_action' => $record['route_action'] ?? null,
-                'status_code' => $record['status_code'],
-                'duration' => $record['duration'],
-                'request_size' => $record['request_size'] ?? null,
-                'response_size' => $record['response_size'] ?? null,
-                'peak_memory_usage' => $record['peak_memory_usage'] ?? null,
-                'exceptions' => $record['exceptions'] ?? 0,
-                'queries' => $record['queries'] ?? 0,
+                'status_code' => (int) $record['status_code'],
+                'duration' => (int) $record['duration'],
+                'request_size' => isset($record['request_size']) ? (int) $record['request_size'] : null,
+                'response_size' => isset($record['response_size']) ? (int) $record['response_size'] : null,
+                'peak_memory_usage' => isset($record['peak_memory_usage']) ? (int) $record['peak_memory_usage'] : null,
+                'exceptions' => (int) ($record['exceptions'] ?? 0),
+                'queries' => (int) ($record['queries'] ?? 0),
             ],
             'query' => [
                 'trace_id' => $record['trace_id'] ?? null,
@@ -127,20 +150,20 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'sql_normalized' => $record['sql'],
                 'connection' => $record['connection'],
                 'connection_type' => $record['connection_type'],
-                'duration' => $record['duration'],
+                'duration' => (int) $record['duration'],
             ],
             'cache-event' => [
                 'store' => $record['store'],
                 'key' => $record['key'],
                 'type' => $record['type'],
-                'duration' => $record['duration'],
-                'ttl' => $record['ttl'] ?? null,
+                'duration' => (int) $record['duration'],
+                'ttl' => isset($record['ttl']) ? (int) $record['ttl'] : null,
             ],
             'command' => [
                 'name' => $record['name'],
                 'class' => $record['class'] ?? null,
-                'exit_code' => $record['exit_code'] ?? null,
-                'duration' => $record['duration'] ?? null,
+                'exit_code' => isset($record['exit_code']) ? (int) $record['exit_code'] : null,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
             ],
             'log' => [
                 'level' => $record['level'],
@@ -150,46 +173,46 @@ class ProcessTelemetryBatch implements ShouldQueue
             'notification' => [
                 'channel' => $record['channel'],
                 'class' => $record['class'],
-                'duration' => $record['duration'] ?? null,
-                'failed' => $record['failed'] ?? false,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
+                'failed' => (int) ($record['failed'] ?? 0),
             ],
             'mail' => [
                 'mailer' => $record['mailer'],
                 'class' => $record['class'],
                 'subject' => $record['subject'],
                 'to' => json_encode($record['to'] ?? null),
-                'duration' => $record['duration'] ?? null,
-                'failed' => $record['failed'] ?? false,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
+                'failed' => (int) ($record['failed'] ?? 0),
             ],
             'queued-job' => [
                 'job_id' => $record['job_id'],
                 'name' => $record['name'],
                 'connection' => $record['connection'],
                 'queue' => $record['queue'],
-                'duration' => $record['duration'] ?? null,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
             ],
             'job-attempt' => [
                 'job_id' => $record['job_id'],
                 'attempt_id' => $record['attempt_id'],
-                'attempt' => $record['attempt'],
+                'attempt' => (int) $record['attempt'],
                 'name' => $record['name'],
                 'connection' => $record['connection'] ?? '',
                 'queue' => $record['queue'] ?? '',
                 'status' => $record['status'],
-                'duration' => $record['duration'] ?? null,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
             ],
             'scheduled-task' => [
                 'name' => $record['name'],
                 'cron' => $this->buildScheduledTaskCron($record),
                 'status' => $record['status'],
-                'duration' => $record['duration'] ?? null,
+                'duration' => isset($record['duration']) ? (int) $record['duration'] : null,
             ],
             'outgoing-request' => [
                 'host' => $record['host'],
                 'method' => $record['method'],
                 'url' => $record['url'],
-                'status_code' => $record['status_code'] ?? null,
-                'duration' => $record['duration'],
+                'status_code' => isset($record['status_code']) ? (int) $record['status_code'] : null,
+                'duration' => (int) $record['duration'],
             ],
             'exception' => [
                 'trace_id' => $record['trace_id'] ?? null,
@@ -198,22 +221,25 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'user' => $record['user'] ?? null,
                 'class' => $record['class'],
                 'file' => $record['file'] ?? null,
-                'line' => $record['line'] ?? null,
+                'line' => isset($record['line']) ? (int) $record['line'] : null,
                 'message' => $record['message'],
-                'handled' => $record['handled'] ?? false,
+                'handled' => (int) ($record['handled'] ?? 0),
                 'php_version' => $record['php_version'] ?? null,
                 'laravel_version' => $record['laravel_version'] ?? null,
             ],
             'user' => [],
-            default => [],
+            default => null,
         };
 
-        DB::table($table)->insert(array_merge($base, $typeFields));
+        if ($typeFields === null) {
+            return null;
+        }
+
+        return array_merge($base, $typeFields);
     }
 
     /**
      * Build the cron expression for a scheduled task record.
-     * If repeat_seconds is non-zero, prepend a seconds field (e.g. "* /5 * * * * *").
      *
      * @param  array<string, mixed>  $record
      */

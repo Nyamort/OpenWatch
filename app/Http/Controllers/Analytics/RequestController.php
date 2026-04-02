@@ -82,7 +82,7 @@ class RequestController extends AnalyticsController
     /**
      * Display detail for a single request.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $requestRecord): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $requestRecord): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
 

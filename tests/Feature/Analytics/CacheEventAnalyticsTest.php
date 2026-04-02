@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupCacheContext(string $suffix = ''): array
 {
@@ -23,18 +23,20 @@ function setupCacheContext(string $suffix = ''): array
 
 function insertCacheEvent(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_cache_events')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'store' => 'redis',
-        'key' => 'user:1',
-        'type' => 'hit',
-        'duration' => 1,
-        'ttl' => 3600,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_cache_events', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'store' => 'redis',
+            'key' => 'user:1',
+            'type' => 'hit',
+            'duration' => 1,
+            'ttl' => 3600,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('cache events index computes hit rate correctly', function () {

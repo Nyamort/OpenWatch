@@ -5,14 +5,14 @@ namespace App\Actions\Analytics\ScheduledTask;
 use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class BuildScheduledTaskRunData
 {
     use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
      * Build graph, stats and paginated runs for a scheduled task (name + cron).
@@ -28,37 +28,53 @@ class BuildScheduledTaskRunData
         string $direction = 'desc',
         int $page = 1,
     ): array {
-        $base = DB::table('extraction_scheduled_tasks')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->where('name', $name)
-            ->where('cron', $cron)
-            ->whereBetween('recorded_at', [$period->start, $period->end]);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+        $escapedName = ClickHouseService::escape($name);
+        $escapedCron = ClickHouseService::escape($cron);
+
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND name = {$escapedName}
+            AND cron = {$escapedCron}
+            AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
-        $stats = (clone $base)->selectRaw("
-            COUNT(*) as count,
-            SUM(CASE WHEN status = 'processed' THEN 1 ELSE 0 END) as processed,
-            SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END) as skipped,
-            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-            CAST(MIN(duration) AS DOUBLE) as min,
-            CAST(MAX(duration) AS DOUBLE) as max,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg
-        ")->first();
+        $stats = $this->clickhouse->selectOne("
+            SELECT
+                count() AS count,
+                countIf(status = 'processed') AS processed,
+                countIf(status = 'skipped') AS skipped,
+                countIf(status = 'failed') AS failed,
+                toFloat64(min(duration)) AS min,
+                toFloat64(max(duration)) AS max,
+                toFloat64(round(avgIf(duration, status != 'skipped'), 2)) AS avg,
+                toFloat64(quantileIf(0.95)(duration, status != 'skipped')) AS p95
+            FROM extraction_scheduled_tasks
+            {$baseWhere}
+        ");
 
         $totalCount = (int) ($stats->count ?? 0);
-        $globalP95 = null;
-
-        if ($totalCount > 0) {
-            $p95Offset = max(0, (int) ceil($totalCount * 0.95) - 1);
-            $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
-        }
 
         // Time-bucketed graph
         $bucketSeconds = $period->bucketSeconds;
-        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
-        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+        $bucketMap = $this->clickhouse->select("
+            SELECT
+                intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
+                countIf(status = 'processed') AS processed,
+                countIf(status = 'skipped') AS skipped,
+                countIf(status = 'failed') AS failed,
+                toFloat64(round(avgIf(duration, status != 'skipped'), 2)) AS avg,
+                toFloat64(quantileIf(0.95)(duration, status != 'skipped')) AS p95
+            FROM extraction_scheduled_tasks
+            {$baseWhere}
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ")->keyBy('bucket_slot');
 
         $graph = [];
         $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
@@ -76,45 +92,18 @@ class BuildScheduledTaskRunData
             ];
         }
 
-        $runs = $this->fetchRuns($base, $sort, $direction, $page);
-
-        return [
-            'graph' => $graph,
-            'runs' => $runs['data'],
-            'pagination' => $runs['pagination'],
-            'stats' => [
-                'count' => $totalCount,
-                'processed' => (int) ($stats?->processed ?? 0),
-                'skipped' => (int) ($stats?->skipped ?? 0),
-                'failed' => (int) ($stats?->failed ?? 0),
-                'min' => $stats->min ?? null,
-                'max' => $stats->max ?? null,
-                'avg' => $stats->avg ?? null,
-                'p95' => $globalP95 ? (float) $globalP95 : null,
-            ],
-        ];
-    }
-
-    /**
-     * Fetch paginated individual runs.
-     *
-     * @return array<string, mixed>
-     */
-    private function fetchRuns(Builder $base, string $sort = 'date', string $direction = 'desc', int $page = 1): array
-    {
         $allowedSorts = ['date' => 'recorded_at', 'status' => 'status', 'duration' => 'duration'];
-        $orderCol = $this->resolveSort($sort, $allowedSorts, 'recorded_at');
-        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
-
-        $total = (clone $base)->count();
+        $orderCol = $allowedSorts[$sort] ?? 'recorded_at';
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
         $offset = $this->pageOffset($page);
 
-        $rows = (clone $base)
-            ->select(['id', 'recorded_at', 'status', 'duration'])
-            ->orderByRaw("{$orderCol} {$orderDir}")
-            ->limit($this->analyticsPerPage)
-            ->offset($offset)
-            ->get();
+        $rows = $this->clickhouse->select("
+            SELECT id, recorded_at, status, duration
+            FROM extraction_scheduled_tasks
+            {$baseWhere}
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
 
         $data = $rows->map(fn ($row) => [
             'id' => $row->id,
@@ -124,58 +113,19 @@ class BuildScheduledTaskRunData
         ])->all();
 
         return [
-            'data' => $data,
-            'pagination' => $this->buildPaginationMeta($total, $page),
+            'graph' => $graph,
+            'runs' => $data,
+            'pagination' => $this->buildPaginationMeta($totalCount, $page),
+            'stats' => [
+                'count' => $totalCount,
+                'processed' => (int) ($stats?->processed ?? 0),
+                'skipped' => (int) ($stats?->skipped ?? 0),
+                'failed' => (int) ($stats?->failed ?? 0),
+                'min' => $stats->min ?? null,
+                'max' => $stats->max ?? null,
+                'avg' => $stats->avg ?? null,
+                'p95' => $stats->p95 ?? null,
+            ],
         ];
-    }
-
-    /**
-     * Driver-aware SQL expression for the integer bucket slot from recorded_at.
-     */
-    private function bucketSlotExpression(int $bucketSeconds): string
-    {
-        $epoch = match (DB::getDriverName()) {
-            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
-            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
-            default => 'UNIX_TIMESTAMP(recorded_at)',
-        };
-
-        return "FLOOR({$epoch} / {$bucketSeconds})";
-    }
-
-    /**
-     * Fetch per-bucket aggregates.
-     */
-    private function fetchBuckets(Builder $base, string $slotExpr): Collection
-    {
-        $aggregates = "
-            SUM(CASE WHEN status = 'processed' THEN 1 ELSE 0 END) AS processed,
-            SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
-            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
-        ";
-
-        if (DB::getDriverName() === 'sqlite') {
-            return (clone $base)
-                ->selectRaw("{$slotExpr} AS bucket_slot, {$aggregates}, NULL AS p95")
-                ->groupByRaw($slotExpr)
-                ->orderByRaw($slotExpr)
-                ->get();
-        }
-
-        $inner = (clone $base)->select([
-            'status',
-            'duration',
-            DB::raw("{$slotExpr} AS bucket_slot"),
-            DB::raw("ROW_NUMBER() OVER (PARTITION BY {$slotExpr} ORDER BY duration) AS row_num"),
-            DB::raw("COUNT(*) OVER (PARTITION BY {$slotExpr}) AS bucket_count"),
-        ]);
-
-        return DB::query()
-            ->fromSub($inner, 'ranked')
-            ->selectRaw("bucket_slot, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END) AS DOUBLE) AS p95")
-            ->groupBy('bucket_slot')
-            ->orderBy('bucket_slot')
-            ->get();
     }
 }

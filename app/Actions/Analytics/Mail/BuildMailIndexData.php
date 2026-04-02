@@ -5,13 +5,14 @@ namespace App\Actions\Analytics\Mail;
 use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 class BuildMailIndexData
 {
     use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
      * Build graph buckets, global stats, and paginated mail table.
@@ -26,32 +27,44 @@ class BuildMailIndexData
         string $search = '',
         int $page = 1,
     ): array {
-        $base = DB::table('extraction_mails')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end]);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
-        $stats = (clone $base)->selectRaw('
-            COUNT(*) as count,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg,
-            CAST(MIN(duration) AS DOUBLE) as min,
-            CAST(MAX(duration) AS DOUBLE) as max
-        ')->first();
+        $stats = $this->clickhouse->selectOne("
+            SELECT
+                count() AS count,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(min(duration)) AS min,
+                toFloat64(max(duration)) AS max,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_mails
+            {$baseWhere}
+        ");
 
         $totalCount = (int) ($stats->count ?? 0);
-        $globalP95 = null;
-
-        if ($totalCount > 0) {
-            $p95Offset = max(0, (int) ceil($totalCount * 0.95) - 1);
-            $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
-        }
 
         // Time-bucketed graph data
         $bucketSeconds = $period->bucketSeconds;
-        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
-        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+        $bucketMap = $this->clickhouse->select("
+            SELECT
+                intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
+                count() AS count,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_mails
+            {$baseWhere}
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ")->keyBy('bucket_slot');
 
         $graph = [];
         $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
@@ -67,7 +80,7 @@ class BuildMailIndexData
             ];
         }
 
-        $mails = $this->fetchMails($base, $sort, $direction, $search, $page);
+        $mails = $this->fetchMails($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -76,7 +89,7 @@ class BuildMailIndexData
                 'avg' => $stats->avg ?? null,
                 'min' => $stats->min ?? null,
                 'max' => $stats->max ?? null,
-                'p95' => $globalP95 ? (float) $globalP95 : null,
+                'p95' => $stats->p95 ?? null,
             ],
             'mails' => $mails['data'],
             'pagination' => $mails['pagination'],
@@ -84,65 +97,48 @@ class BuildMailIndexData
     }
 
     /**
-     * Fetch per-class aggregates grouped by class.
-     *
      * @return array<string, mixed>
      */
-    private function fetchMails(Builder $base, string $sort, string $direction, string $search, int $page): array
+    private function fetchMails(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
+
         if ($search !== '') {
-            $base = (clone $base)->where('class', 'like', '%'.$search.'%');
+            $escaped = ClickHouseService::escape('%'.$search.'%');
+            $baseWhere .= " AND class LIKE {$escaped}";
         }
 
-        $allowedSorts = [
-            'mail' => 'mail',
-            'count' => 'count',
-            'avg' => 'avg',
-            'p95' => 'p95',
-        ];
-        $orderCol = $this->resolveSort($sort, $allowedSorts, 'count');
-        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['mail' => 'mail', 'count' => 'count', 'avg' => 'avg', 'p95' => 'p95'];
+        $orderCol = $allowedSorts[$sort] ?? 'count';
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
 
-        $totalMails = (clone $base)->distinct()->count('class');
+        $totalMails = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(class) FROM extraction_mails {$baseWhere}
+        ") ?? 0);
+
         $offset = $this->pageOffset($page);
 
-        $aggregates = '
-            MIN(class) AS mail,
-            MIN(id) AS sample_id,
-            COUNT(*) AS count,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
-        ';
-
-        if (DB::getDriverName() === 'sqlite') {
-            $rows = (clone $base)
-                ->selectRaw("class, {$aggregates}, NULL AS p95")
-                ->groupBy('class')
-                ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($this->analyticsPerPage)
-                ->offset($offset)
-                ->get();
-        } else {
-            $inner = (clone $base)->select([
-                'id',
-                'class',
-                'duration',
-                DB::raw('ROW_NUMBER() OVER (PARTITION BY class ORDER BY duration) AS row_num'),
-                DB::raw('COUNT(*) OVER (PARTITION BY class) AS class_count'),
-            ]);
-
-            $rows = DB::query()
-                ->fromSub($inner, 'ranked')
-                ->selectRaw("class, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * class_count) THEN duration END) AS DOUBLE) AS p95")
-                ->groupBy('class')
-                ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($this->analyticsPerPage)
-                ->offset($offset)
-                ->get();
-        }
+        $rows = $this->clickhouse->select("
+            SELECT
+                class,
+                any(class) AS mail,
+                any(id) AS sample_id,
+                count() AS count,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_mails
+            {$baseWhere}
+            GROUP BY class
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
 
         $data = $rows->map(fn ($row) => [
             'class' => $row->class,
-            'sample_id' => (int) $row->sample_id,
+            'sample_id' => $row->sample_id,
             'count' => (int) $row->count,
             'avg' => $row->avg,
             'p95' => $row->p95,
@@ -152,41 +148,5 @@ class BuildMailIndexData
             'data' => $data,
             'pagination' => $this->buildPaginationMeta($totalMails, $page),
         ];
-    }
-
-    private function bucketSlotExpression(int $bucketSeconds): string
-    {
-        $epoch = match (DB::getDriverName()) {
-            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
-            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
-            default => 'UNIX_TIMESTAMP(recorded_at)',
-        };
-
-        return "FLOOR({$epoch} / {$bucketSeconds})";
-    }
-
-    private function fetchBuckets(Builder $base, string $slotExpr): \Illuminate\Support\Collection
-    {
-        if (DB::getDriverName() === 'sqlite') {
-            return (clone $base)
-                ->selectRaw("{$slotExpr} AS bucket_slot, COUNT(*) AS count, CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg, NULL AS p95")
-                ->groupByRaw($slotExpr)
-                ->orderByRaw($slotExpr)
-                ->get();
-        }
-
-        $inner = (clone $base)->select([
-            'duration',
-            DB::raw("{$slotExpr} AS bucket_slot"),
-            DB::raw('ROW_NUMBER() OVER (PARTITION BY '.$slotExpr.' ORDER BY duration) AS row_num'),
-            DB::raw('COUNT(*) OVER (PARTITION BY '.$slotExpr.') AS bucket_count'),
-        ]);
-
-        return DB::query()
-            ->fromSub($inner, 'ranked')
-            ->selectRaw('bucket_slot, COUNT(*) AS count, CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END) AS DOUBLE) AS p95')
-            ->groupBy('bucket_slot')
-            ->orderBy('bucket_slot')
-            ->get();
     }
 }

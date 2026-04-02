@@ -4,48 +4,59 @@ namespace App\Actions\Analytics\Request;
 
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildRequestDetailData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
-     * Fetch a single extraction_requests row with related data by trace_id.
+     * Fetch a single extraction_requests row with related queries, exceptions, and logs.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, int $requestId): array
+    public function handle(AnalyticsContext $ctx, string $requestId): array
     {
-        $request = DB::table('extraction_requests')
-            ->where('id', $requestId)
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->first();
+        $orgId = $ctx->organization->id;
+        $escapedId = ClickHouseService::escape($requestId);
+
+        $request = $this->clickhouse->selectOne("
+            SELECT *
+            FROM extraction_requests
+            WHERE id = {$escapedId}
+              AND organization_id = {$orgId}
+            LIMIT 1
+        ");
 
         if ($request === null) {
             abort(404, 'Request not found.');
         }
 
-        $queries = DB::table('extraction_queries')
-            ->where('trace_id', $request->trace_id)
-            ->where('organization_id', $ctx->organization->id)
-            ->orderBy('recorded_at')
-            ->get()
-            ->toArray();
+        $traceId = ClickHouseService::escape($request->trace_id ?? '');
 
-        $exceptions = DB::table('extraction_exceptions')
-            ->where('trace_id', $request->trace_id)
-            ->where('organization_id', $ctx->organization->id)
-            ->orderBy('recorded_at')
-            ->get()
-            ->toArray();
+        $queries = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_queries
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
 
-        $logs = DB::table('extraction_logs')
-            ->where('execution_id', $request->trace_id)
-            ->where('organization_id', $ctx->organization->id)
-            ->orderBy('recorded_at')
-            ->get()
-            ->toArray();
+        $exceptions = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_exceptions
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
+
+        $logs = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_logs
+            WHERE execution_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
 
         return (new AnalyticsResponseBuilder)
             ->withSummary((array) $request)

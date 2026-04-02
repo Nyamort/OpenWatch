@@ -2,13 +2,18 @@
 
 namespace App\Actions\Analytics\OutgoingRequest;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildOutgoingRequestHostData
 {
+    use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Build individual request list for a given host, ordered by recorded_at desc.
      *
@@ -16,26 +21,46 @@ class BuildOutgoingRequestHostData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $host): array
     {
-        $rows = DB::table('extraction_outgoing_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->where('host', $host)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->orderBy('recorded_at', 'desc')
-            ->paginate(50);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+        $escapedHost = ClickHouseService::escape($host);
+
+        $total = (int) ($this->clickhouse->selectValue("
+            SELECT count()
+            FROM extraction_outgoing_requests
+            WHERE organization_id = {$orgId}
+              AND project_id = {$projId}
+              AND environment_id = {$envId}
+              AND host = {$escapedHost}
+              AND recorded_at BETWEEN {$start} AND {$end}
+        ") ?? 0);
+
+        $rows = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_outgoing_requests
+            WHERE organization_id = {$orgId}
+              AND project_id = {$projId}
+              AND environment_id = {$envId}
+              AND host = {$escapedHost}
+              AND recorded_at BETWEEN {$start} AND {$end}
+            ORDER BY recorded_at DESC
+            LIMIT 50
+        ");
 
         return (new AnalyticsResponseBuilder)
             ->withSummary([
                 'host' => $host,
                 'period_label' => $period->label,
             ])
-            ->withRows($rows->items())
+            ->withRows($rows->toArray())
             ->withPagination([
-                'current_page' => $rows->currentPage(),
-                'last_page' => $rows->lastPage(),
-                'per_page' => $rows->perPage(),
-                'total' => $rows->total(),
+                'current_page' => 1,
+                'last_page' => (int) ceil($total / 50),
+                'per_page' => 50,
+                'total' => $total,
             ])
             ->build();
     }

@@ -10,8 +10,8 @@ use App\Jobs\SendAlertTriggeredNotification;
 use App\Models\AlertState;
 use App\Models\User;
 use App\Services\Alerts\AlertEvaluator;
+use App\Services\ClickHouse\ClickHouseService;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\DB;
 
 function setupEvalContext(string $suffix = ''): array
 {
@@ -28,11 +28,10 @@ function setupEvalContext(string $suffix = ''): array
 test('evaluator returns triggered when metric exceeds threshold', function () {
     $ctx = setupEvalContext(uniqid());
 
-    // Insert 10 requests, 6 with 5xx errors = 60% error rate
+    $rows = [];
     for ($i = 0; $i < 10; $i++) {
-        $telemetryId = nextTelemetryId($ctx);
-        DB::table('extraction_requests')->insert([
-            'telemetry_record_id' => $telemetryId,
+        $rows[] = [
+            'telemetry_record_id' => nextTelemetryId(),
             'organization_id' => $ctx['org']->id,
             'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
@@ -42,9 +41,10 @@ test('evaluator returns triggered when metric exceeds threshold', function () {
             'duration' => 100,
             'exceptions' => 0,
             'queries' => 0,
-            'recorded_at' => now(),
-        ]);
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ];
     }
+    app(ClickHouseService::class)->insert('extraction_requests', $rows);
 
     $rule = (new CreateAlertRule)->handle($ctx['org'], $ctx['project'], $ctx['env'], [
         'name' => 'Error Rate Test',
@@ -55,7 +55,7 @@ test('evaluator returns triggered when metric exceeds threshold', function () {
         'recipient_ids' => [$ctx['owner']->id],
     ]);
 
-    $result = (new AlertEvaluator)->evaluate($rule);
+    $result = app(AlertEvaluator::class)->evaluate($rule);
 
     expect($result['triggered'])->toBeTrue()
         ->and($result['value'])->toBeGreaterThan(50);
@@ -64,11 +64,10 @@ test('evaluator returns triggered when metric exceeds threshold', function () {
 test('evaluator returns not triggered when metric is below threshold', function () {
     $ctx = setupEvalContext(uniqid());
 
-    // Insert 10 requests, only 1 with 5xx = 10% error rate
+    $rows = [];
     for ($i = 0; $i < 10; $i++) {
-        $telemetryId = nextTelemetryId($ctx);
-        DB::table('extraction_requests')->insert([
-            'telemetry_record_id' => $telemetryId,
+        $rows[] = [
+            'telemetry_record_id' => nextTelemetryId(),
             'organization_id' => $ctx['org']->id,
             'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
@@ -78,9 +77,10 @@ test('evaluator returns not triggered when metric is below threshold', function 
             'duration' => 100,
             'exceptions' => 0,
             'queries' => 0,
-            'recorded_at' => now(),
-        ]);
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ];
     }
+    app(ClickHouseService::class)->insert('extraction_requests', $rows);
 
     $rule = (new CreateAlertRule)->handle($ctx['org'], $ctx['project'], $ctx['env'], [
         'name' => 'Low Error Rate',
@@ -91,7 +91,7 @@ test('evaluator returns not triggered when metric is below threshold', function 
         'recipient_ids' => [$ctx['owner']->id],
     ]);
 
-    $result = (new AlertEvaluator)->evaluate($rule);
+    $result = app(AlertEvaluator::class)->evaluate($rule);
 
     expect($result['triggered'])->toBeFalse();
 });
@@ -109,20 +109,18 @@ test('ok to triggered transition dispatches notification', function () {
         'recipient_ids' => [$ctx['owner']->id],
     ]);
 
-    // Insert an exception to trigger (exception_count >= 0 is true with any data)
-    $telemetryId = nextTelemetryId($ctx);
-    DB::table('extraction_exceptions')->insert([
-        'telemetry_record_id' => $telemetryId,
+    app(ClickHouseService::class)->insert('extraction_exceptions', [[
+        'telemetry_record_id' => nextTelemetryId(),
         'organization_id' => $ctx['org']->id,
         'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'class' => 'RuntimeException',
         'message' => 'Test',
         'handled' => 0,
-        'recorded_at' => now(),
-    ]);
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
 
-    (new EvaluateAlertRules)->handle(new AlertEvaluator);
+    app()->call([new EvaluateAlertRules, 'handle'], ['evaluator' => app(AlertEvaluator::class)]);
 
     Bus::assertDispatched(SendAlertTriggeredNotification::class);
 
@@ -143,23 +141,20 @@ test('no re-notification when already triggered', function () {
         'recipient_ids' => [$ctx['owner']->id],
     ]);
 
-    // Set state to already triggered
     AlertState::create(['alert_rule_id' => $rule->id, 'status' => 'triggered']);
 
-    // Insert data that would trigger
-    $telemetryId = nextTelemetryId($ctx);
-    DB::table('extraction_exceptions')->insert([
-        'telemetry_record_id' => $telemetryId,
+    app(ClickHouseService::class)->insert('extraction_exceptions', [[
+        'telemetry_record_id' => nextTelemetryId(),
         'organization_id' => $ctx['org']->id,
         'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'class' => 'RuntimeException',
         'message' => 'Test',
         'handled' => 0,
-        'recorded_at' => now(),
-    ]);
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
 
-    (new EvaluateAlertRules)->handle(new AlertEvaluator);
+    app()->call([new EvaluateAlertRules, 'handle'], ['evaluator' => app(AlertEvaluator::class)]);
 
     Bus::assertNotDispatched(SendAlertTriggeredNotification::class);
 });
@@ -178,7 +173,7 @@ test('disabled rules are not evaluated', function () {
     ]);
     $rule->update(['enabled' => false]);
 
-    (new EvaluateAlertRules)->handle(new AlertEvaluator);
+    app()->call([new EvaluateAlertRules, 'handle'], ['evaluator' => app(AlertEvaluator::class)]);
 
     Bus::assertNotDispatched(SendAlertTriggeredNotification::class);
     $this->assertDatabaseEmpty('alert_histories');

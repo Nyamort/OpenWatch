@@ -47,16 +47,10 @@ function something()
 }
 
 /**
- * Insert a minimal telemetry_records row and return its auto-generated ID.
- * Use this to satisfy the unique FK constraint on extraction tables in tests.
+ * Generate a UUID string for use as a telemetry_record_id in ClickHouse extraction tables.
+ * ClickHouse has no FK constraints, so no DB insert is needed.
  */
-function nextTelemetryId(array $ctx = []): int
+function nextTelemetryId(array $ctx = []): string
 {
-    return \Illuminate\Support\Facades\DB::table('telemetry_records')->insertGetId([
-        'organization_id' => $ctx['org']->id ?? 1,
-        'project_id' => $ctx['project']->id ?? 1,
-        'environment_id' => $ctx['env']->id ?? 1,
-        'record_type' => 'request',
-        'recorded_at' => now(),
-    ]);
+    return \Illuminate\Support\Str::uuid()->toString();
 }

@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupOutgoingContext(string $suffix = ''): array
 {
@@ -23,18 +23,20 @@ function setupOutgoingContext(string $suffix = ''): array
 
 function insertOutgoingRequest(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_outgoing_requests')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'host' => 'api.example.com',
-        'method' => 'GET',
-        'url' => 'https://api.example.com/v1/users',
-        'status_code' => 200,
-        'duration' => 100,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_outgoing_requests', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'host' => 'api.example.com',
+            'method' => 'GET',
+            'url' => 'https://api.example.com/v1/users',
+            'status_code' => 200,
+            'duration' => 100,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('outgoing requests index returns graph, stats and hosts', function () {

@@ -5,14 +5,14 @@ namespace App\Actions\Analytics\Request;
 use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class BuildRequestIndexData
 {
     use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
      * Build graph buckets and global stats for request analytics.
@@ -21,35 +21,52 @@ class BuildRequestIndexData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $base = DB::table('extraction_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end]);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
-        $stats = (clone $base)->selectRaw('
-            COUNT(*) as count,
-            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) as `2xx`,
-            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) as `4xx`,
-            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as `5xx`,
-            CAST(MIN(duration) AS DOUBLE) as min,
-            CAST(MAX(duration) AS DOUBLE) as max,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) as avg
-        ')->first();
+        $stats = $this->clickhouse->selectOne("
+            SELECT
+                count() AS count,
+                countIf(status_code < 400) AS `2xx`,
+                countIf(status_code >= 400 AND status_code < 500) AS `4xx`,
+                countIf(status_code >= 500) AS `5xx`,
+                toFloat64(min(duration)) AS min,
+                toFloat64(max(duration)) AS max,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_requests
+            {$baseWhere}
+        ");
 
         $totalCount = (int) ($stats->count ?? 0);
-        $globalP95 = null;
-
-        if ($totalCount > 0) {
-            $p95Offset = max(0, (int) ceil($totalCount * 0.95) - 1);
-            $globalP95 = (clone $base)->orderBy('duration')->skip($p95Offset)->limit(1)->value('duration');
-        }
 
         // Time-bucketed graph data
         $bucketSeconds = $period->bucketSeconds;
-        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
-        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+        $bucketMap = $this->clickhouse->select("
+            SELECT
+                intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
+                count() AS count,
+                countIf(status_code < 400) AS `2xx`,
+                countIf(status_code >= 400 AND status_code < 500) AS `4xx`,
+                countIf(status_code >= 500) AS `5xx`,
+                toFloat64(min(duration)) AS min,
+                toFloat64(max(duration)) AS max,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_requests
+            {$baseWhere}
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ")->keyBy('bucket_slot');
 
         $graph = [];
         $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
@@ -70,7 +87,7 @@ class BuildRequestIndexData
             ];
         }
 
-        $paths = $this->fetchPaths($base, $sort, $direction, $search, $page);
+        $paths = $this->fetchPaths($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -84,65 +101,61 @@ class BuildRequestIndexData
                 'min' => $stats->min ?? null,
                 'max' => $stats->max ?? null,
                 'avg' => $stats->avg ?? null,
-                'p95' => $globalP95 ? (float) $globalP95 : null,
+                'p95' => $stats->p95 ?? null,
             ],
         ];
     }
 
     /**
-     * Fetch per-path aggregates grouped by route_path, ordered by total desc.
-     *
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
-    private function fetchPaths(Builder $base, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
+    private function fetchPaths(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
+
         if ($search !== '') {
-            $base = (clone $base)->where('route_path', 'like', '%'.$search.'%');
+            $escaped = ClickHouseService::escape('%'.$search.'%');
+            $baseWhere .= " AND route_path LIKE {$escaped}";
         }
 
-        $allowedSorts = ['method' => 'methods', 'path' => 'route_path', 'total' => 'total', '2xx' => '2xx', '4xx' => '4xx', '5xx' => '5xx', 'avg' => 'avg', 'p95' => 'p95'];
-        $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
-        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = [
+            'method' => 'methods',
+            'path' => 'route_path',
+            'total' => 'total',
+            '2xx' => '`2xx`',
+            '4xx' => '`4xx`',
+            '5xx' => '`5xx`',
+            'avg' => 'avg',
+            'p95' => 'p95',
+        ];
+        $orderCol = $allowedSorts[$sort] ?? $allowedSorts['total'];
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
 
-        $aggregates = '
-            COUNT(*) AS total,
-            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
-            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
-            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg,
-            MAX(route_methods) AS methods
-        ';
+        $totalRoutes = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(route_path) FROM extraction_requests {$baseWhere}
+        ") ?? 0);
 
-        $totalRoutes = (clone $base)->distinct()->count('route_path');
         $offset = $this->pageOffset($page);
 
-        if (DB::getDriverName() === 'sqlite') {
-            $rows = (clone $base)
-                ->selectRaw("route_path, {$aggregates}, NULL AS p95")
-                ->groupByRaw('route_path')
-                ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($this->analyticsPerPage)
-                ->offset($offset)
-                ->get();
-        } else {
-            $inner = (clone $base)->select([
-                'route_path',
-                'route_methods',
-                'status_code',
-                'duration',
-                DB::raw('ROW_NUMBER() OVER (PARTITION BY route_path ORDER BY duration) AS row_num'),
-                DB::raw('COUNT(*) OVER (PARTITION BY route_path) AS path_count'),
-            ]);
-
-            $rows = DB::query()
-                ->fromSub($inner, 'ranked')
-                ->selectRaw("route_path, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * path_count) THEN duration END) AS DOUBLE) AS p95")
-                ->groupByRaw('route_path')
-                ->orderByRaw("{$orderCol} {$orderDir}")
-                ->limit($this->analyticsPerPage)
-                ->offset($offset)
-                ->get();
-        }
+        $rows = $this->clickhouse->select("
+            SELECT
+                route_path,
+                any(route_methods) AS methods,
+                count() AS total,
+                countIf(status_code < 400) AS `2xx`,
+                countIf(status_code >= 400 AND status_code < 500) AS `4xx`,
+                countIf(status_code >= 500) AS `5xx`,
+                toFloat64(round(avg(duration), 2)) AS avg,
+                toFloat64(quantile(0.95)(duration)) AS p95
+            FROM extraction_requests
+            {$baseWhere}
+            GROUP BY route_path
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
 
         $data = $rows->map(fn ($row) => [
             'methods' => array_values(array_filter(explode('|', $row->methods ?? ''))),
@@ -159,61 +172,5 @@ class BuildRequestIndexData
             'data' => $data,
             'pagination' => $this->buildPaginationMeta($totalRoutes, $page),
         ];
-    }
-
-    /**
-     * Driver-aware SQL expression for the integer bucket slot from recorded_at.
-     */
-    private function bucketSlotExpression(int $bucketSeconds): string
-    {
-        $epoch = match (DB::getDriverName()) {
-            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
-            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
-            default => 'UNIX_TIMESTAMP(recorded_at)',
-        };
-
-        return "FLOOR({$epoch} / {$bucketSeconds})";
-    }
-
-    /**
-     * Fetch per-bucket aggregates.
-     * Uses window functions for p95 on MySQL/PostgreSQL; returns NULL on SQLite.
-     */
-    private function fetchBuckets(Builder $base, string $slotExpr): Collection
-    {
-        $aggregates = '
-            COUNT(*) AS count,
-            SUM(CASE WHEN status_code < 400 THEN 1 ELSE 0 END) AS `2xx`,
-            SUM(CASE WHEN status_code >= 400 AND status_code < 500 THEN 1 ELSE 0 END) AS `4xx`,
-            SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS `5xx`,
-            CAST(MIN(duration) AS DOUBLE) AS min,
-            CAST(MAX(duration) AS DOUBLE) AS max,
-            CAST(ROUND(AVG(duration), 2) AS DOUBLE) AS avg
-        ';
-
-        // SQLite does not support window functions (tests only) — p95 per bucket is skipped
-        if (DB::getDriverName() === 'sqlite') {
-            return (clone $base)
-                ->selectRaw("{$slotExpr} AS bucket_slot, {$aggregates}, NULL AS p95")
-                ->groupByRaw($slotExpr)
-                ->orderByRaw($slotExpr)
-                ->get();
-        }
-
-        // MySQL & PostgreSQL: compute p95 per bucket via window functions in a subquery
-        $inner = (clone $base)->select([
-            'status_code',
-            'duration',
-            DB::raw("{$slotExpr} AS bucket_slot"),
-            DB::raw("ROW_NUMBER() OVER (PARTITION BY {$slotExpr} ORDER BY duration) AS row_num"),
-            DB::raw("COUNT(*) OVER (PARTITION BY {$slotExpr}) AS bucket_count"),
-        ]);
-
-        return DB::query()
-            ->fromSub($inner, 'ranked')
-            ->selectRaw("bucket_slot, {$aggregates}, CAST(MAX(CASE WHEN row_num >= CEIL(0.95 * bucket_count) THEN duration END) AS DOUBLE) AS p95")
-            ->groupBy('bucket_slot')
-            ->orderBy('bucket_slot')
-            ->get();
     }
 }

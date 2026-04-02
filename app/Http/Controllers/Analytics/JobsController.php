@@ -48,7 +48,7 @@ class JobsController extends AnalyticsController
     /**
      * Display charts and attempts for a single job class.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $job): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $job): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);

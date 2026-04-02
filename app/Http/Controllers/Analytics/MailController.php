@@ -48,7 +48,7 @@ class MailController extends AnalyticsController
     /**
      * Display a single mail record.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $mail): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $mail): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
 

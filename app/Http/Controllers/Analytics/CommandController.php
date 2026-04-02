@@ -48,7 +48,7 @@ class CommandController extends AnalyticsController
     /**
      * Display detail analytics for a command name.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $command): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $command): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
         $period = $this->buildPeriod($request);

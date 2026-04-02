@@ -1,11 +1,14 @@
 <?php
 
+use App\Actions\Dashboard\BuildDashboardData;
 use App\Actions\Organization\CreateOrganization;
 use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\Analytics\AnalyticsContext;
+use App\Services\Analytics\PeriodService;
+use App\Services\ClickHouse\ClickHouseService;
 
 test('guests are redirected to the login page', function () {
     $response = $this->get(route('dashboard'));
@@ -75,20 +78,24 @@ test('dashboard data is scoped to org', function () {
         'name' => 'Prod', 'slug' => 'scoped-prod-'.uniqid(), 'type' => 'production',
     ])->environment;
 
-    // Insert a request for this org
-    DB::table('telemetry_records')->insert(['organization_id' => $org->id, 'project_id' => $project->id, 'environment_id' => $env->id, 'record_type' => 'request', 'recorded_at' => now()]);
-    $trId = DB::getPdo()->lastInsertId();
-    DB::table('extraction_requests')->insert([
-        'telemetry_record_id' => $trId, 'organization_id' => $org->id, 'project_id' => $project->id,
-        'environment_id' => $env->id, 'method' => 'GET', 'url' => 'http://example.com',
-        'status_code' => 200, 'duration' => 100, 'exceptions' => 0, 'queries' => 0, 'recorded_at' => now(),
-    ]);
+    app(ClickHouseService::class)->insert('extraction_requests', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $org->id,
+        'project_id' => $project->id,
+        'environment_id' => $env->id,
+        'method' => 'GET',
+        'url' => 'http://example.com',
+        'status_code' => 200,
+        'duration' => 100,
+        'exceptions' => 0,
+        'queries' => 0,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
 
-    $action = new \App\Actions\Dashboard\BuildDashboardData;
-    $ctx = new \App\Services\Analytics\AnalyticsContext($org, $project, $env);
-    $period = (new \App\Services\Analytics\PeriodService)->parse('24h');
+    $ctx = new AnalyticsContext($org, $project, $env);
+    $period = (new PeriodService)->parse('24h');
 
-    $data = $action->handle($ctx, $period);
+    $data = app(BuildDashboardData::class)->handle($ctx, $period);
 
     expect($data['requests']['total'])->toBe(1);
 });

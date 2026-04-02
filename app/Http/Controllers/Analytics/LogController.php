@@ -39,7 +39,7 @@ class LogController extends AnalyticsController
     /**
      * Display a single log entry.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, int $log): Response
+    public function show(Request $request, string $organization, string $project, string $environment, string $log): Response
     {
         $ctx = $this->resolveContext($request, $organization, $project, $environment);
 

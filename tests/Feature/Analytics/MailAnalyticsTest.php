@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupMailContext(string $suffix = ''): array
 {
@@ -23,8 +23,8 @@ function setupMailContext(string $suffix = ''): array
 
 function insertMail(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_mails')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
+    $data = array_merge([
+        'telemetry_record_id' => nextTelemetryId(),
         'organization_id' => $ctx['org']->id,
         'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
@@ -33,17 +33,22 @@ function insertMail(array $ctx, array $overrides = []): void
         'subject' => 'Welcome!',
         'to' => json_encode(['user@example.com']),
         'duration' => 200,
-        'failed' => false,
-        'recorded_at' => now(),
-    ], $overrides));
+        'failed' => 0,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ], $overrides);
+
+    // Normalize boolean to UInt8
+    $data['failed'] = $data['failed'] ? 1 : 0;
+
+    app(ClickHouseService::class)->insert('extraction_mails', [$data]);
 }
 
 test('mail index groups by class and mailer', function () {
     $ctx = setupMailContext(uniqid());
 
-    insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => false, 'duration' => 100]);
-    insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => false, 'duration' => 300]);
-    insertMail($ctx, ['class' => 'App\\Mail\\ResetMail', 'mailer' => 'smtp', 'failed' => false, 'duration' => 150]);
+    insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 100]);
+    insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 300]);
+    insertMail($ctx, ['class' => 'App\\Mail\\ResetMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 150]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail");
@@ -57,9 +62,9 @@ test('mail index groups by class and mailer', function () {
 test('mail avg duration excludes failed mails', function () {
     $ctx = setupMailContext(uniqid());
 
-    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => false, 'duration' => 200]);
-    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => false, 'duration' => 400]);
-    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => true, 'duration' => 9999]);
+    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 200]);
+    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 400]);
+    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 1, 'duration' => 9999]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail");

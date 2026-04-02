@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupQueryContext(string $suffix = ''): array
 {
@@ -23,21 +23,23 @@ function setupQueryContext(string $suffix = ''): array
 
 function insertQuery(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_queries')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'trace_id' => 'trace-'.uniqid(),
-        'execution_id' => 'exec-'.uniqid(),
-        'user' => null,
-        'sql_hash' => hash('sha256', 'SELECT * FROM users'),
-        'sql_normalized' => 'SELECT * FROM users',
-        'connection' => 'mysql',
-        'connection_type' => 'mysql',
-        'duration' => 1000,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_queries', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'trace_id' => 'trace-'.uniqid(),
+            'execution_id' => 'exec-'.uniqid(),
+            'user' => null,
+            'sql_hash' => hash('sha256', 'SELECT * FROM users'),
+            'sql_normalized' => 'SELECT * FROM users',
+            'connection' => 'mysql',
+            'connection_type' => 'mysql',
+            'duration' => 1000,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('queries index returns rows grouped by sql_hash', function () {

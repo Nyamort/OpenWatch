@@ -4,23 +4,29 @@ namespace App\Actions\Analytics\Mail;
 
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildMailDetailData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Fetch a single mail record with all fields.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, int $mailId): array
+    public function handle(AnalyticsContext $ctx, string $mailId): array
     {
-        $mail = DB::table('extraction_mails')
-            ->where('id', $mailId)
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->first();
+        $orgId = $ctx->organization->id;
+        $escapedId = ClickHouseService::escape($mailId);
+
+        $mail = $this->clickhouse->selectOne("
+            SELECT *
+            FROM extraction_mails
+            WHERE id = {$escapedId}
+              AND organization_id = {$orgId}
+            LIMIT 1
+        ");
 
         if ($mail === null) {
             abort(404, 'Mail record not found.');

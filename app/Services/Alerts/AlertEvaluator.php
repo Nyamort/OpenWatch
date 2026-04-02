@@ -3,11 +3,13 @@
 namespace App\Services\Alerts;
 
 use App\Models\AlertRule;
+use App\Services\ClickHouse\ClickHouseService;
 use DateTimeInterface;
-use Illuminate\Support\Facades\DB;
 
 class AlertEvaluator
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Evaluate an alert rule against current telemetry data.
      * Returns ['value' => float, 'triggered' => bool]
@@ -35,13 +37,12 @@ class AlertEvaluator
 
     private function computeErrorRate(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): float
     {
-        $result = DB::table('extraction_requests')
-            ->where('organization_id', $rule->organization_id)
-            ->where('project_id', $rule->project_id)
-            ->where('environment_id', $rule->environment_id)
-            ->whereBetween('recorded_at', [$start, $end])
-            ->selectRaw('COUNT(*) as total, CAST(SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) AS UNSIGNED) as errors')
-            ->first();
+        $where = $this->baseWhere($rule, $start, $end);
+
+        $result = $this->clickhouse->selectOne("
+            SELECT count() AS total, countIf(status_code >= 500) AS errors
+            FROM extraction_requests {$where}
+        ");
 
         if (! $result || $result->total == 0) {
             return 0.0;
@@ -52,33 +53,30 @@ class AlertEvaluator
 
     private function computeExceptionCount(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): float
     {
-        return (float) DB::table('extraction_exceptions')
-            ->where('organization_id', $rule->organization_id)
-            ->where('project_id', $rule->project_id)
-            ->where('environment_id', $rule->environment_id)
-            ->whereBetween('recorded_at', [$start, $end])
-            ->count();
+        $where = $this->baseWhere($rule, $start, $end);
+
+        return (float) ($this->clickhouse->selectValue("
+            SELECT count() FROM extraction_exceptions {$where}
+        ") ?? 0);
     }
 
     private function computeRequestCount(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): float
     {
-        return (float) DB::table('extraction_requests')
-            ->where('organization_id', $rule->organization_id)
-            ->where('project_id', $rule->project_id)
-            ->where('environment_id', $rule->environment_id)
-            ->whereBetween('recorded_at', [$start, $end])
-            ->count();
+        $where = $this->baseWhere($rule, $start, $end);
+
+        return (float) ($this->clickhouse->selectValue("
+            SELECT count() FROM extraction_requests {$where}
+        ") ?? 0);
     }
 
     private function computeJobFailureRate(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): float
     {
-        $result = DB::table('extraction_job_attempts')
-            ->where('organization_id', $rule->organization_id)
-            ->where('project_id', $rule->project_id)
-            ->where('environment_id', $rule->environment_id)
-            ->whereBetween('recorded_at', [$start, $end])
-            ->selectRaw("COUNT(*) as total, CAST(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS UNSIGNED) as failed")
-            ->first();
+        $where = $this->baseWhere($rule, $start, $end);
+
+        $result = $this->clickhouse->selectOne("
+            SELECT count() AS total, countIf(status = 'failed') AS failed
+            FROM extraction_job_attempts {$where}
+        ");
 
         if (! $result || $result->total == 0) {
             return 0.0;
@@ -89,16 +87,11 @@ class AlertEvaluator
 
     private function computeP95Duration(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): float
     {
-        // MySQL-compatible approximation: use MAX as upper bound
-        $result = DB::table('extraction_requests')
-            ->where('organization_id', $rule->organization_id)
-            ->where('project_id', $rule->project_id)
-            ->where('environment_id', $rule->environment_id)
-            ->whereBetween('recorded_at', [$start, $end])
-            ->selectRaw('MAX(duration) as max_duration')
-            ->first();
+        $where = $this->baseWhere($rule, $start, $end);
 
-        return (float) ($result?->max_duration ?? 0);
+        return (float) ($this->clickhouse->selectValue("
+            SELECT toFloat64(quantile(0.95)(duration)) FROM extraction_requests {$where}
+        ") ?? 0.0);
     }
 
     private function compare(float $value, string $operator, float $threshold): bool
@@ -110,5 +103,19 @@ class AlertEvaluator
             '<=' => $value <= $threshold,
             default => false,
         };
+    }
+
+    private function baseWhere(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): string
+    {
+        $orgId = $rule->organization_id;
+        $projId = $rule->project_id;
+        $envId = $rule->environment_id;
+        $startEscaped = ClickHouseService::escape($start);
+        $endEscaped = ClickHouseService::escape($end);
+
+        return "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$startEscaped} AND {$endEscaped}";
     }
 }

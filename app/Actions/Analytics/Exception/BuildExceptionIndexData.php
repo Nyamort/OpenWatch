@@ -5,13 +5,14 @@ namespace App\Actions\Analytics\Exception;
 use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 class BuildExceptionIndexData
 {
     use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
      * Build graph buckets, global stats, and paginated exception table.
@@ -26,23 +27,39 @@ class BuildExceptionIndexData
         string $search = '',
         int $page = 1,
     ): array {
-        $base = DB::table('extraction_exceptions')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end]);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
-        $stats = (clone $base)->selectRaw('
-            COUNT(*) as count,
-            SUM(CASE WHEN handled = 1 THEN 1 ELSE 0 END) as handled,
-            SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) as unhandled
-        ')->first();
+        $stats = $this->clickhouse->selectOne("
+            SELECT
+                count() AS count,
+                countIf(handled = 1) AS handled,
+                countIf(handled = 0) AS unhandled
+            FROM extraction_exceptions
+            {$baseWhere}
+        ");
 
         // Time-bucketed graph data
         $bucketSeconds = $period->bucketSeconds;
-        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
-        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+        $bucketMap = $this->clickhouse->select("
+            SELECT
+                intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
+                countIf(handled = 1) AS handled,
+                countIf(handled = 0) AS unhandled
+            FROM extraction_exceptions
+            {$baseWhere}
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ")->keyBy('bucket_slot');
 
         $graph = [];
         $startSlot = (int) floor(Carbon::parse($period->start)->utc()->timestamp / $bucketSeconds);
@@ -57,7 +74,7 @@ class BuildExceptionIndexData
             ];
         }
 
-        $exceptions = $this->fetchExceptions($base, $sort, $direction, $search, $page);
+        $exceptions = $this->fetchExceptions($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -72,14 +89,18 @@ class BuildExceptionIndexData
     }
 
     /**
-     * Fetch per-group exception aggregates.
-     *
      * @return array<string, mixed>
      */
-    private function fetchExceptions(Builder $base, string $sort, string $direction, string $search, int $page): array
+    private function fetchExceptions(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
+
         if ($search !== '') {
-            $base = (clone $base)->where('class', 'like', '%'.$search.'%');
+            $escaped = ClickHouseService::escape('%'.$search.'%');
+            $baseWhere .= " AND class LIKE {$escaped}";
         }
 
         $allowedSorts = [
@@ -88,26 +109,29 @@ class BuildExceptionIndexData
             'count' => 'count',
             'users' => 'users',
         ];
-        $orderCol = $this->resolveSort($sort, $allowedSorts, 'last_seen');
-        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+        $orderCol = $allowedSorts[$sort] ?? 'last_seen';
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
 
-        $totalGroups = (clone $base)->distinct()->count('group_key');
+        $totalGroups = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(group_key) FROM extraction_exceptions {$baseWhere}
+        ") ?? 0);
+
         $offset = $this->pageOffset($page);
 
-        $rows = (clone $base)
-            ->selectRaw('
+        $rows = $this->clickhouse->select("
+            SELECT
                 group_key,
-                MIN(class) as class,
-                COUNT(*) as count,
-                COUNT(DISTINCT user) as users,
-                MAX(recorded_at) as last_seen,
-                MIN(recorded_at) as first_seen
-            ')
-            ->groupBy('group_key')
-            ->orderByRaw("{$orderCol} {$orderDir}")
-            ->limit($this->analyticsPerPage)
-            ->offset($offset)
-            ->get();
+                any(class) AS class,
+                count() AS count,
+                uniqExact(user) AS users,
+                max(recorded_at) AS last_seen,
+                min(recorded_at) AS first_seen
+            FROM extraction_exceptions
+            {$baseWhere}
+            GROUP BY group_key
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
 
         $data = $rows->map(fn ($row) => [
             'group_key' => $row->group_key,
@@ -122,35 +146,5 @@ class BuildExceptionIndexData
             'data' => $data,
             'pagination' => $this->buildPaginationMeta($totalGroups, $page),
         ];
-    }
-
-    /**
-     * Driver-aware SQL expression for the integer bucket slot from recorded_at.
-     */
-    private function bucketSlotExpression(int $bucketSeconds): string
-    {
-        $epoch = match (DB::getDriverName()) {
-            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
-            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
-            default => 'UNIX_TIMESTAMP(recorded_at)',
-        };
-
-        return "FLOOR({$epoch} / {$bucketSeconds})";
-    }
-
-    /**
-     * Fetch per-bucket handled/unhandled counts.
-     */
-    private function fetchBuckets(Builder $base, string $slotExpr): \Illuminate\Support\Collection
-    {
-        return (clone $base)
-            ->selectRaw("
-                {$slotExpr} AS bucket_slot,
-                SUM(CASE WHEN handled = 1 THEN 1 ELSE 0 END) AS handled,
-                SUM(CASE WHEN handled = 0 THEN 1 ELSE 0 END) AS unhandled
-            ")
-            ->groupByRaw($slotExpr)
-            ->orderByRaw($slotExpr)
-            ->get();
     }
 }

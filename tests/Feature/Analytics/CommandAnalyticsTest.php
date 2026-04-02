@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupCommandContext(string $suffix = ''): array
 {
@@ -23,17 +23,19 @@ function setupCommandContext(string $suffix = ''): array
 
 function insertCommand(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_commands')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'name' => 'app:process',
-        'class' => 'App\\Console\\Commands\\ProcessCommand',
-        'exit_code' => 0,
-        'duration' => 500,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_commands', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'name' => 'app:process',
+            'class' => 'App\\Console\\Commands\\ProcessCommand',
+            'exit_code' => 0,
+            'duration' => 500,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('commands index groups by name with status counters', function () {

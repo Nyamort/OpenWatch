@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupJobsContext(string $suffix = ''): array
 {
@@ -23,21 +23,23 @@ function setupJobsContext(string $suffix = ''): array
 
 function insertJobAttempt(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_job_attempts')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
-        'environment_id' => $ctx['env']->id,
-        'job_id' => 'job-'.uniqid(),
-        'attempt_id' => 'attempt-'.uniqid(),
-        'attempt' => 1,
-        'name' => 'App\\Jobs\\ProcessOrder',
-        'connection' => 'redis',
-        'queue' => 'default',
-        'status' => 'processed',
-        'duration' => 250,
-        'recorded_at' => now(),
-    ], $overrides));
+    app(ClickHouseService::class)->insert('extraction_job_attempts', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'job_id' => 'job-'.uniqid(),
+            'attempt_id' => 'attempt-'.uniqid(),
+            'attempt' => 1,
+            'name' => 'App\\Jobs\\ProcessOrder',
+            'connection' => 'redis',
+            'queue' => 'default',
+            'status' => 'processed',
+            'duration' => 250,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
 }
 
 test('jobs index shows job list', function () {

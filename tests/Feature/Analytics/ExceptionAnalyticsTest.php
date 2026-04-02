@@ -5,7 +5,7 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 function setupExceptionContext(string $suffix = ''): array
 {
@@ -23,8 +23,8 @@ function setupExceptionContext(string $suffix = ''): array
 
 function insertException(array $ctx, array $overrides = []): void
 {
-    DB::table('extraction_exceptions')->insert(array_merge([
-        'telemetry_record_id' => nextTelemetryId($ctx),
+    $data = array_merge([
+        'telemetry_record_id' => nextTelemetryId(),
         'organization_id' => $ctx['org']->id,
         'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
@@ -36,20 +36,25 @@ function insertException(array $ctx, array $overrides = []): void
         'file' => '/app/src/Something.php',
         'line' => 42,
         'message' => 'Something went wrong',
-        'handled' => false,
+        'handled' => 0,
         'php_version' => '8.2.0',
         'laravel_version' => '12.0.0',
-        'recorded_at' => now(),
-    ], $overrides));
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ], $overrides);
+
+    // Normalize boolean to UInt8
+    $data['handled'] = $data['handled'] ? 1 : 0;
+
+    app(ClickHouseService::class)->insert('extraction_exceptions', [$data]);
 }
 
 test('exceptions index groups by group_key', function () {
     $ctx = setupExceptionContext(uniqid());
     $groupKey = hash('sha256', 'MyException-'.uniqid());
 
-    insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => false]);
-    insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => true]);
-    insertException($ctx, ['group_key' => hash('sha256', 'OtherException'), 'class' => 'App\\Exceptions\\OtherException', 'handled' => false]);
+    insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => 0]);
+    insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => 1]);
+    insertException($ctx, ['group_key' => hash('sha256', 'OtherException'), 'class' => 'App\\Exceptions\\OtherException', 'handled' => 0]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions");
@@ -64,9 +69,9 @@ test('exceptions index row for group shows correct handled/unhandled counts', fu
     $ctx = setupExceptionContext(uniqid());
     $groupKey = hash('sha256', 'CountException-'.uniqid());
 
-    insertException($ctx, ['group_key' => $groupKey, 'handled' => false]);
-    insertException($ctx, ['group_key' => $groupKey, 'handled' => false]);
-    insertException($ctx, ['group_key' => $groupKey, 'handled' => true]);
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 0]);
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 0]);
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 1]);
 
     $response = $this->actingAs($ctx['user'])
         ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions");

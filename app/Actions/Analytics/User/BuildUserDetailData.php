@@ -3,12 +3,13 @@
 namespace App\Actions\Analytics\User;
 
 use App\Services\Analytics\AnalyticsContext;
-use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildUserDetailData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
      * Build detail view for a given user value, showing their requests, exceptions, and jobs.
      *
@@ -16,52 +17,45 @@ class BuildUserDetailData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $userValue): array
     {
-        $requests = DB::table('extraction_requests')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->where('user', $userValue)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->orderBy('recorded_at', 'desc')
-            ->limit(50)
-            ->get()
-            ->toArray();
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+        $user = ClickHouseService::escape($userValue);
 
-        $exceptions = DB::table('extraction_exceptions')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->where('user', $userValue)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->orderBy('recorded_at', 'desc')
-            ->limit(50)
-            ->get()
-            ->toArray();
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}
+            AND user = {$user}";
 
-        $jobs = DB::table('extraction_job_attempts')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->where('user', $userValue)
-            ->whereBetween('recorded_at', [$period->start, $period->end])
-            ->orderBy('recorded_at', 'desc')
-            ->limit(50)
-            ->get()
-            ->toArray();
+        $requests = $this->clickhouse->select("
+            SELECT * FROM extraction_requests {$baseWhere}
+            ORDER BY recorded_at DESC LIMIT 50
+        ")->all();
 
-        return (new AnalyticsResponseBuilder)
-            ->withSummary([
+        $exceptions = $this->clickhouse->select("
+            SELECT * FROM extraction_exceptions {$baseWhere}
+            ORDER BY recorded_at DESC LIMIT 50
+        ")->all();
+
+        $jobs = $this->clickhouse->select("
+            SELECT * FROM extraction_job_attempts {$baseWhere}
+            ORDER BY recorded_at DESC LIMIT 50
+        ")->all();
+
+        return [
+            'summary' => [
                 'user' => $userValue,
                 'request_count' => count($requests),
                 'exception_count' => count($exceptions),
                 'job_count' => count($jobs),
                 'period_label' => $period->label,
-            ])
-            ->withRows([
-                'requests' => $requests,
-                'exceptions' => $exceptions,
-                'jobs' => $jobs,
-            ])
-            ->build();
+            ],
+            'requests' => $requests,
+            'exceptions' => $exceptions,
+            'jobs' => $jobs,
+        ];
     }
 }

@@ -2,58 +2,75 @@
 
 namespace App\Actions\Analytics\User;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
-use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildUserIndexData
 {
+    use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
-     * Build user analytics by aggregating across requests, exceptions, and job attempts.
+     * Build user analytics by aggregating across requests and exceptions.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'request_count', string $direction = 'desc', int $page = 1): array
     {
         $orgId = $ctx->organization->id;
         $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
-        $start = $period->start;
-        $end = $period->end;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
 
-        // Use UNION ALL to merge user identifiers from requests and exceptions, then GROUP BY.
-        // Alias `user` as `user_id` to avoid conflict with MySQL reserved keyword.
-        $rows = DB::table(DB::raw('(
-            SELECT `user` AS user_id, 1 AS is_request, 0 AS is_exception
-            FROM extraction_requests
-            WHERE organization_id = ? AND project_id = ? AND environment_id = ?
-              AND recorded_at BETWEEN ? AND ?
-              AND `user` IS NOT NULL AND `user` != \'\'
-            UNION ALL
-            SELECT `user`, 0, 1
-            FROM extraction_exceptions
-            WHERE organization_id = ? AND project_id = ? AND environment_id = ?
-              AND recorded_at BETWEEN ? AND ?
-              AND `user` IS NOT NULL AND `user` != \'\'
-        ) AS combined'))
-            ->addBinding([$orgId, $projId, $envId, $start, $end], 'select')
-            ->addBinding([$orgId, $projId, $envId, $start, $end], 'select')
-            ->selectRaw('user_id, CAST(SUM(is_request) AS UNSIGNED) as request_count, CAST(SUM(is_exception) AS UNSIGNED) as exception_count')
-            ->groupBy('user_id')
-            ->orderByDesc('request_count')
-            ->paginate(50);
+        $baseConditions = "organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}
+            AND user != ''";
 
-        return (new AnalyticsResponseBuilder)
-            ->withSummary(['period_label' => $period->label])
-            ->withRows($rows->items())
-            ->withPagination([
-                'current_page' => $rows->currentPage(),
-                'last_page' => $rows->lastPage(),
-                'per_page' => $rows->perPage(),
-                'total' => $rows->total(),
-            ])
-            ->withConfig(['period' => $period->label])
-            ->build();
+        $allowedSorts = ['request_count', 'exception_count'];
+        $orderCol = in_array($sort, $allowedSorts) ? $sort : 'request_count';
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
+
+        $totalUsers = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(user) FROM (
+                SELECT user FROM extraction_requests WHERE {$baseConditions}
+                UNION ALL
+                SELECT user FROM extraction_exceptions WHERE {$baseConditions}
+            )
+        ") ?? 0);
+
+        $offset = $this->pageOffset($page);
+
+        $rows = $this->clickhouse->select("
+            SELECT
+                user,
+                countIf(is_request = 1) AS request_count,
+                countIf(is_request = 0) AS exception_count
+            FROM (
+                SELECT user, 1 AS is_request FROM extraction_requests WHERE {$baseConditions}
+                UNION ALL
+                SELECT user, 0 AS is_request FROM extraction_exceptions WHERE {$baseConditions}
+            )
+            GROUP BY user
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
+
+        $data = $rows->map(fn ($row) => [
+            'user' => $row->user,
+            'request_count' => (int) $row->request_count,
+            'exception_count' => (int) $row->exception_count,
+        ])->all();
+
+        return [
+            'users' => $data,
+            'pagination' => $this->buildPaginationMeta($totalUsers, $page),
+            'summary' => ['period_label' => $period->label],
+        ];
     }
 }

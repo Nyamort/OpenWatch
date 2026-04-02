@@ -5,13 +5,14 @@ namespace App\Actions\Analytics\CacheEvent;
 use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\PeriodResult;
+use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 class BuildCacheEventIndexData
 {
     use PaginatesAnalyticsQuery;
+
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
      * Build graph buckets, global stats, and paginated cache key table.
@@ -26,28 +27,48 @@ class BuildCacheEventIndexData
         string $search = '',
         int $page = 1,
     ): array {
-        $base = DB::table('extraction_cache_events')
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->whereBetween('recorded_at', [$period->start, $period->end]);
+        $orgId = $ctx->organization->id;
+        $projId = $ctx->project->id;
+        $envId = $ctx->environment->id;
+        $start = ClickHouseService::escape($period->start);
+        $end = ClickHouseService::escape($period->end);
+
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
-        $stats = (clone $base)->selectRaw("
-            COUNT(*) as total,
-            CAST(SUM(CASE WHEN type = 'hit' THEN 1 ELSE 0 END) AS UNSIGNED) as hits,
-            CAST(SUM(CASE WHEN type = 'miss' THEN 1 ELSE 0 END) AS UNSIGNED) as misses,
-            CAST(SUM(CASE WHEN type = 'write' THEN 1 ELSE 0 END) AS UNSIGNED) as writes,
-            CAST(SUM(CASE WHEN type = 'delete' THEN 1 ELSE 0 END) AS UNSIGNED) as deletes,
-            CAST(SUM(CASE WHEN type IN ('write-failure','delete-failure') THEN 1 ELSE 0 END) AS UNSIGNED) as failures,
-            CAST(SUM(CASE WHEN type = 'write-failure' THEN 1 ELSE 0 END) AS UNSIGNED) as write_failures,
-            CAST(SUM(CASE WHEN type = 'delete-failure' THEN 1 ELSE 0 END) AS UNSIGNED) as delete_failures
-        ")->first();
+        $stats = $this->clickhouse->selectOne("
+            SELECT
+                count() AS total,
+                countIf(type = 'hit') AS hits,
+                countIf(type = 'miss') AS misses,
+                countIf(type = 'write') AS writes,
+                countIf(type = 'delete') AS deletes,
+                countIf(type IN ('write-failure', 'delete-failure')) AS failures,
+                countIf(type = 'write-failure') AS write_failures,
+                countIf(type = 'delete-failure') AS delete_failures
+            FROM extraction_cache_events
+            {$baseWhere}
+        ");
 
         // Time-bucketed graph data
         $bucketSeconds = $period->bucketSeconds;
-        $slotExpr = $this->bucketSlotExpression($bucketSeconds);
-        $bucketMap = $this->fetchBuckets($base, $slotExpr)->keyBy('bucket_slot');
+        $bucketMap = $this->clickhouse->select("
+            SELECT
+                intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
+                countIf(type = 'hit') AS hits,
+                countIf(type = 'miss') AS misses,
+                countIf(type = 'write') AS writes,
+                countIf(type = 'delete') AS deletes,
+                countIf(type = 'write-failure') AS write_failures,
+                countIf(type = 'delete-failure') AS delete_failures
+            FROM extraction_cache_events
+            {$baseWhere}
+            GROUP BY bucket_slot
+            ORDER BY bucket_slot
+        ")->keyBy('bucket_slot');
 
         $eventsGraph = [];
         $failuresGraph = [];
@@ -71,7 +92,7 @@ class BuildCacheEventIndexData
             ];
         }
 
-        $keys = $this->fetchKeys($base, $sort, $direction, $search, $page);
+        $keys = $this->fetchKeys($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'events_graph' => $eventsGraph,
@@ -92,18 +113,22 @@ class BuildCacheEventIndexData
     }
 
     /**
-     * Fetch per-key aggregates.
-     *
      * @return array<string, mixed>
      */
-    private function fetchKeys(Builder $base, string $sort, string $direction, string $search, int $page): array
+    private function fetchKeys(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
+        $baseWhere = "WHERE organization_id = {$orgId}
+            AND project_id = {$projId}
+            AND environment_id = {$envId}
+            AND recorded_at BETWEEN {$start} AND {$end}";
+
         if ($search !== '') {
-            $base = (clone $base)->where('key', 'like', '%'.$search.'%');
+            $escaped = ClickHouseService::escape('%'.$search.'%');
+            $baseWhere .= " AND key LIKE {$escaped}";
         }
 
         $allowedSorts = [
-            'key' => '`key`',
+            'key' => 'key',
             'hit_pct' => 'hit_pct',
             'hits' => 'hits',
             'misses' => 'misses',
@@ -112,31 +137,34 @@ class BuildCacheEventIndexData
             'failures' => 'failures',
             'total' => 'total',
         ];
-        $orderCol = $this->resolveSort($sort, $allowedSorts, 'total');
-        $orderDir = $direction === 'asc' ? 'asc' : 'desc';
+        $orderCol = $allowedSorts[$sort] ?? 'total';
+        $orderDir = $direction === 'asc' ? 'ASC' : 'DESC';
 
-        $totalKeys = (clone $base)->selectRaw('COUNT(DISTINCT `key`) as agg')->value('agg') ?? 0;
+        $totalKeys = (int) ($this->clickhouse->selectValue("
+            SELECT uniqExact(key) FROM extraction_cache_events {$baseWhere}
+        ") ?? 0);
+
         $offset = $this->pageOffset($page);
 
-        $rows = (clone $base)
-            ->selectRaw("
-                `key`,
-                COUNT(*) AS total,
-                CAST(SUM(CASE WHEN type = 'hit' THEN 1 ELSE 0 END) AS UNSIGNED) AS hits,
-                CAST(SUM(CASE WHEN type = 'miss' THEN 1 ELSE 0 END) AS UNSIGNED) AS misses,
-                CAST(SUM(CASE WHEN type = 'write' THEN 1 ELSE 0 END) AS UNSIGNED) AS writes,
-                CAST(SUM(CASE WHEN type = 'delete' THEN 1 ELSE 0 END) AS UNSIGNED) AS deletes,
-                CAST(SUM(CASE WHEN type IN ('write-failure','delete-failure') THEN 1 ELSE 0 END) AS UNSIGNED) AS failures,
-                CAST(ROUND(
-                    SUM(CASE WHEN type = 'hit' THEN 1 ELSE 0 END) * 100.0
-                    / NULLIF(SUM(CASE WHEN type IN ('hit','miss') THEN 1 ELSE 0 END), 0)
-                , 1) AS DOUBLE) AS hit_pct
-            ")
-            ->groupByRaw('`key`')
-            ->orderByRaw("{$orderCol} {$orderDir}")
-            ->limit($this->analyticsPerPage)
-            ->offset($offset)
-            ->get();
+        $rows = $this->clickhouse->select("
+            SELECT
+                key,
+                count() AS total,
+                countIf(type = 'hit') AS hits,
+                countIf(type = 'miss') AS misses,
+                countIf(type = 'write') AS writes,
+                countIf(type = 'delete') AS deletes,
+                countIf(type IN ('write-failure', 'delete-failure')) AS failures,
+                toFloat64(round(
+                    countIf(type = 'hit') * 100.0
+                    / nullIf(countIf(type IN ('hit', 'miss')), 0)
+                , 1)) AS hit_pct
+            FROM extraction_cache_events
+            {$baseWhere}
+            GROUP BY key
+            ORDER BY {$orderCol} {$orderDir}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
+        ");
 
         $data = $rows->map(fn ($row) => [
             'key' => $row->key,
@@ -153,33 +181,5 @@ class BuildCacheEventIndexData
             'data' => $data,
             'pagination' => $this->buildPaginationMeta($totalKeys, $page),
         ];
-    }
-
-    private function bucketSlotExpression(int $bucketSeconds): string
-    {
-        $epoch = match (DB::getDriverName()) {
-            'pgsql' => 'EXTRACT(EPOCH FROM recorded_at)',
-            'sqlite' => 'CAST(strftime(\'%s\', recorded_at) AS INTEGER)',
-            default => 'UNIX_TIMESTAMP(recorded_at)',
-        };
-
-        return "FLOOR({$epoch} / {$bucketSeconds})";
-    }
-
-    private function fetchBuckets(Builder $base, string $slotExpr): \Illuminate\Support\Collection
-    {
-        return (clone $base)
-            ->selectRaw("
-                {$slotExpr} AS bucket_slot,
-                CAST(SUM(CASE WHEN type = 'hit' THEN 1 ELSE 0 END) AS UNSIGNED) AS hits,
-                CAST(SUM(CASE WHEN type = 'miss' THEN 1 ELSE 0 END) AS UNSIGNED) AS misses,
-                CAST(SUM(CASE WHEN type = 'write' THEN 1 ELSE 0 END) AS UNSIGNED) AS writes,
-                CAST(SUM(CASE WHEN type = 'delete' THEN 1 ELSE 0 END) AS UNSIGNED) AS deletes,
-                CAST(SUM(CASE WHEN type = 'write-failure' THEN 1 ELSE 0 END) AS UNSIGNED) AS write_failures,
-                CAST(SUM(CASE WHEN type = 'delete-failure' THEN 1 ELSE 0 END) AS UNSIGNED) AS delete_failures
-            ")
-            ->groupByRaw($slotExpr)
-            ->orderByRaw($slotExpr)
-            ->get();
     }
 }

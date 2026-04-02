@@ -4,31 +4,42 @@ namespace App\Actions\Analytics\Log;
 
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
-use Illuminate\Support\Facades\DB;
+use App\Services\ClickHouse\ClickHouseService;
 
 class BuildLogDetailData
 {
+    public function __construct(private readonly ClickHouseService $clickhouse) {}
+
     /**
-     * Fetch a single log entry with full payload from telemetry_records.
+     * Fetch a single log entry with the full raw payload from telemetry_records.
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, int $logId): array
+    public function handle(AnalyticsContext $ctx, string $logId): array
     {
-        $log = DB::table('extraction_logs')
-            ->where('id', $logId)
-            ->where('organization_id', $ctx->organization->id)
-            ->where('project_id', $ctx->project->id)
-            ->where('environment_id', $ctx->environment->id)
-            ->first();
+        $orgId = $ctx->organization->id;
+        $escapedId = ClickHouseService::escape($logId);
+
+        $log = $this->clickhouse->selectOne("
+            SELECT *
+            FROM extraction_logs
+            WHERE id = {$escapedId}
+              AND organization_id = {$orgId}
+            LIMIT 1
+        ");
 
         if ($log === null) {
             abort(404, 'Log entry not found.');
         }
 
-        $telemetryRecord = DB::table('telemetry_records')
-            ->where('id', $log->telemetry_record_id)
-            ->first();
+        $telemetryRecordId = ClickHouseService::escape($log->telemetry_record_id ?? '');
+
+        $telemetryRecord = $this->clickhouse->selectOne("
+            SELECT payload
+            FROM telemetry_records
+            WHERE id = {$telemetryRecordId}
+            LIMIT 1
+        ");
 
         $payload = $telemetryRecord?->payload ? json_decode($telemetryRecord->payload, true) : null;
 
