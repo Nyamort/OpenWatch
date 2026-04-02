@@ -1,8 +1,10 @@
-# Nightwatch
+# OpenWatch
 
-> Application monitoring and telemetry platform built with Laravel 12 and React 19.
+> Open-source application monitoring and telemetry platform — a self-hosted alternative to Laravel Nightwatch.
 
-Nightwatch collects real-time telemetry from your PHP applications and gives you analytics, issue tracking, and threshold-based alerting — all in a single self-hosted dashboard.
+Open Watch collects real-time telemetry from your PHP applications and provides analytics, issue tracking, and threshold-based alerting, all in a single self-hosted dashboard.
+
+> **Status:** Active development — not yet production-ready.
 
 ![PHP](https://img.shields.io/badge/PHP-8.5-blue?logo=php)
 ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel)
@@ -22,10 +24,10 @@ Nightwatch collects real-time telemetry from your PHP applications and gives you
 - **Ingestion API** — lightweight gzip-compressed batch endpoint; tokens stored as SHA-256 hashes
 - **Data retention** — configurable per-environment TTL with automatic purge
 
-## Tech stack
+## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Backend | Laravel 12, PHP 8.5 |
 | Frontend | React 19, TypeScript, Inertia.js v2, Tailwind CSS v4 |
 | Database | MySQL 8 (SQLite for testing) |
@@ -45,8 +47,8 @@ Nightwatch collects real-time telemetry from your PHP applications and gives you
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/nightwatch.git
-cd nightwatch
+git clone https://github.com/your-org/openwatch.git
+cd openwatch
 
 # 2. Install PHP dependencies
 composer install
@@ -68,7 +70,7 @@ php artisan db:seed
 npm run build
 ```
 
-## Quick start (development)
+## Quick Start (Development)
 
 ```bash
 composer run dev   # starts PHP dev server + queue worker + Vite HMR
@@ -84,7 +86,7 @@ composer run dev   # starts PHP dev server + queue worker + Vite HMR
 
 ## Architecture
 
-### Multi-tenant hierarchy
+### Multi-tenant Hierarchy
 
 ```
 Organization → Project → Environment → Telemetry records
@@ -92,7 +94,7 @@ Organization → Project → Environment → Telemetry records
 
 Every telemetry record is scoped to an `(organization_id, project_id, environment_id)` tuple. Cross-org data isolation is enforced at the middleware and Eloquent scope levels.
 
-### Ingestion flow
+### Ingestion Flow
 
 ```
 Agent SDK  →  POST /api/agent-auth  →  session token (Redis, 1 h TTL)
@@ -102,13 +104,13 @@ Agent SDK  →  POST /api/agent-auth  →  session token (Redis, 1 h TTL)
 
 The ingestion token is stored as a SHA-256 hash. The raw token is returned exactly once at creation.
 
-### Telemetry types
+### Telemetry Types
 
 `request` · `query` · `cache-event` · `command` · `log` · `notification` · `mail` · `queued-job` · `job-attempt` · `scheduled-task` · `outgoing-request` · `exception` · `user`
 
 Each type fans out into a typed extraction table for efficient analytical queries.
 
-## Key API endpoints
+## Key API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -119,7 +121,7 @@ Each type fans out into a typed extraction table for efficient analytical querie
 | `GET` | `/organizations/{org}/analytics/{domain}` | Analytics per telemetry type |
 | `GET` | `/organizations/{org}/audit` | Immutable audit log (owner/admin only) |
 
-## Scheduled jobs
+## Scheduled Jobs
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
@@ -128,7 +130,7 @@ Each type fans out into a typed extraction table for efficient analytical querie
 | `PurgeExpiredTelemetryRecords` | Daily | Hard-delete records past the retention window |
 | `AnonymizeStaleAuditEvents` | Daily | Anonymize PII in old audit entries |
 
-## Development commands
+## Development Commands
 
 ```bash
 # Run the test suite
@@ -146,7 +148,7 @@ npm run build
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## Security
 
@@ -154,4 +156,4 @@ If you discover a security vulnerability, please follow the process described in
 
 ## License
 
-Nightwatch is open-source software licensed under the [MIT license](LICENSE).
+OpenWatch is open-source software licensed under the [MIT license](LICENSE).
