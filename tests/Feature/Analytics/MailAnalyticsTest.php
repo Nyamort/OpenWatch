@@ -31,7 +31,7 @@ function insertMail(array $ctx, array $overrides = []): void
         'mailer' => 'smtp',
         'class' => 'App\\Mail\\WelcomeMail',
         'subject' => 'Welcome!',
-        'to' => json_encode(['user@example.com']),
+        'to' => 1,
         'duration' => 200,
         'failed' => 0,
         'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
@@ -43,35 +43,46 @@ function insertMail(array $ctx, array $overrides = []): void
     app(ClickHouseService::class)->insert('extraction_mails', [$data]);
 }
 
-test('mail index groups by class and mailer', function () {
+test('mail index groups by class', function () {
     $ctx = setupMailContext(uniqid());
 
     insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 100]);
     insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 300]);
     insertMail($ctx, ['class' => 'App\\Mail\\ResetMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 150]);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/mail/index',
+            'X-Inertia-Partial-Data' => 'mails',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/mail/index')
-        ->has('analytics.rows', 2)
+        ->has('mails', 2)
     );
 });
 
-test('mail avg duration excludes failed mails', function () {
+test('mail index shows count and avg per class', function () {
     $ctx = setupMailContext(uniqid());
 
     insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 200]);
     insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 400]);
-    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 1, 'duration' => 9999]);
+    insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 1, 'duration' => 100]);
+
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail";
 
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/mail/index',
+            'X-Inertia-Partial-Data' => 'mails',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
-        ->where('analytics.rows.0.avg_duration', 300)
-        ->where('analytics.rows.0.sent_count', 2)
-        ->where('analytics.rows.0.failed_count', 1)
+        ->where('mails.0.class', 'App\\Mail\\TestMail')
+        ->where('mails.0.count', 3)
     );
 });

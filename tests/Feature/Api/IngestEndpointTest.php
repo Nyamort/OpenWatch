@@ -37,7 +37,7 @@ test('valid gzip JSON returns 200 with empty object', function () {
     $environment = Environment::factory()->create();
     $sessionToken = issueSessionToken($environment->id);
 
-    $payload = gzencode(json_encode([makeValidRecord()]));
+    $payload = gzencode(json_encode(['records' => [makeValidRecord()]]));
 
     $response = $this->call(
         'POST',

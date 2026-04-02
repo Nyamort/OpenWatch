@@ -49,8 +49,14 @@ test('jobs index shows job list', function () {
     insertJobAttempt($ctx, ['name' => 'App\\Jobs\\SendEmail', 'status' => 'failed']);
     insertJobAttempt($ctx, ['name' => 'App\\Jobs\\ProcessOrder', 'status' => 'processed']);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/jobs";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/jobs");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/jobs/index',
+            'X-Inertia-Partial-Data' => 'graph,stats,jobs,pagination',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/jobs/index')

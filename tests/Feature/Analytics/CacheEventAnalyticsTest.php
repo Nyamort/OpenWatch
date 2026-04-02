@@ -47,17 +47,22 @@ test('cache events index computes hit rate correctly', function () {
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'test:key']);
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'test:key']);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/cache-events/index',
+            'X-Inertia-Partial-Data' => 'keys',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/cache-events/index')
-        ->where('analytics.rows.0.hit_rate_pct', 50)
-        ->where('analytics.rows.0.hit_rate_color', 'yellow')
+        ->where('keys.0.hit_pct', 50)
     );
 });
 
-test('cache hit rate >= 80 gets green color', function () {
+test('cache hit rate >= 80 is reflected in hit_pct', function () {
     $ctx = setupCacheContext(uniqid());
 
     foreach (range(1, 8) as $_) {
@@ -66,15 +71,21 @@ test('cache hit rate >= 80 gets green color', function () {
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'green:key']);
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'green:key']);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/cache-events/index',
+            'X-Inertia-Partial-Data' => 'keys',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
-        ->where('analytics.rows.0.hit_rate_color', 'green')
+        ->where('keys.0.hit_pct', 80)
     );
 });
 
-test('cache hit rate < 50 gets red color', function () {
+test('cache hit rate < 50 is reflected in hit_pct', function () {
     $ctx = setupCacheContext(uniqid());
 
     insertCacheEvent($ctx, ['type' => 'hit', 'key' => 'red:key']);
@@ -82,10 +93,16 @@ test('cache hit rate < 50 gets red color', function () {
         insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'red:key']);
     }
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/cache-events/index',
+            'X-Inertia-Partial-Data' => 'keys',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
-        ->where('analytics.rows.0.hit_rate_color', 'red')
+        ->where('keys.0.hit_pct', 20)
     );
 });

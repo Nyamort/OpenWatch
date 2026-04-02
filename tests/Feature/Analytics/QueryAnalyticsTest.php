@@ -49,14 +49,20 @@ test('queries index returns rows grouped by sql_hash', function () {
     insertQuery($ctx, ['sql_hash' => $hash, 'sql_normalized' => 'SELECT 1', 'duration' => 500]);
     insertQuery($ctx, ['sql_hash' => $hash, 'sql_normalized' => 'SELECT 1', 'duration' => 1500]);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/queries";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/queries");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/queries/index',
+            'X-Inertia-Partial-Data' => 'queries',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/queries/index')
-        ->has('analytics.rows', 1)
-        ->where('analytics.rows.0.sql_hash', $hash)
-        ->where('analytics.rows.0.total', 2)
+        ->has('queries', 1)
+        ->where('queries.0.sql_hash', $hash)
+        ->where('queries.0.calls', 2)
     );
 });
 

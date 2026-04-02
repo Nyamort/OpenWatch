@@ -56,16 +56,22 @@ test('exceptions index groups by group_key', function () {
     insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => 1]);
     insertException($ctx, ['group_key' => hash('sha256', 'OtherException'), 'class' => 'App\\Exceptions\\OtherException', 'handled' => 0]);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/exceptions/index',
+            'X-Inertia-Partial-Data' => 'exceptions',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/exceptions/index')
-        ->has('analytics.rows', 2)
+        ->has('exceptions', 2)
     );
 });
 
-test('exceptions index row for group shows correct handled/unhandled counts', function () {
+test('exceptions index row for group shows correct count and global stats show handled breakdown', function () {
     $ctx = setupExceptionContext(uniqid());
     $groupKey = hash('sha256', 'CountException-'.uniqid());
 
@@ -73,13 +79,19 @@ test('exceptions index row for group shows correct handled/unhandled counts', fu
     insertException($ctx, ['group_key' => $groupKey, 'handled' => 0]);
     insertException($ctx, ['group_key' => $groupKey, 'handled' => 1]);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/exceptions/index',
+            'X-Inertia-Partial-Data' => 'exceptions,stats',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
-        ->where('analytics.rows.0.total', 3)
-        ->where('analytics.rows.0.unhandled_count', 2)
-        ->where('analytics.rows.0.handled_count', 1)
+        ->where('exceptions.0.count', 3)
+        ->where('stats.unhandled', 2)
+        ->where('stats.handled', 1)
     );
 });
 

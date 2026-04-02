@@ -4,7 +4,7 @@ use App\Jobs\ProcessTelemetryBatch;
 use App\Models\Environment;
 use App\Services\ClickHouse\ClickHouseService;
 
-test('ProcessTelemetryBatch inserts a telemetry_record for a request type', function () {
+test('ProcessTelemetryBatch inserts into extraction_requests for a request record', function () {
     $environment = Environment::factory()->create();
 
     $record = [
@@ -23,11 +23,6 @@ test('ProcessTelemetryBatch inserts a telemetry_record for a request type', func
         'status_code' => 200,
         'duration' => 150,
         'ip' => '127.0.0.1',
-        'request_size' => null,
-        'response_size' => null,
-        'peak_memory_usage' => null,
-        'exceptions' => 0,
-        'queries' => 0,
     ];
 
     $job = new ProcessTelemetryBatch(
@@ -40,34 +35,21 @@ test('ProcessTelemetryBatch inserts a telemetry_record for a request type', func
 
     $clickhouse = app(ClickHouseService::class);
 
-    $telemetry = $clickhouse->selectOne("
-        SELECT * FROM telemetry_records
-        WHERE environment_id = {$environment->id}
-        ORDER BY recorded_at DESC LIMIT 1
-    ");
-
-    expect($telemetry)->not->toBeNull();
-    expect($telemetry->record_type)->toBe('request');
-
-    $extraction = $clickhouse->selectOne("
+    $row = $clickhouse->selectOne("
         SELECT * FROM extraction_requests
         WHERE environment_id = {$environment->id}
-        AND method = 'GET'
-        AND status_code = 200
         LIMIT 1
     ");
 
-    expect($extraction)->not->toBeNull();
-    expect($extraction->telemetry_record_id)->toBe($telemetry->id);
+    expect($row)->not->toBeNull();
+    expect($row->method)->toBe('GET');
+    expect((int) $row->status_code)->toBe(200);
+    expect((int) $row->duration)->toBe(150);
 });
 
-test('ProcessTelemetryBatch fans out to extraction_requests table', function () {
+test('ProcessTelemetryBatch inserts into the correct extraction table per record type', function () {
     $environment = Environment::factory()->create();
-
     $clickhouse = app(ClickHouseService::class);
-    $before = (int) ($clickhouse->selectValue("
-        SELECT count() FROM extraction_requests WHERE environment_id = {$environment->id}
-    ") ?? 0);
 
     $record = [
         'v' => 1,
@@ -95,9 +77,9 @@ test('ProcessTelemetryBatch fans out to extraction_requests table', function () 
 
     app()->call([$job, 'handle']);
 
-    $after = (int) ($clickhouse->selectValue("
+    $count = (int) ($clickhouse->selectValue("
         SELECT count() FROM extraction_requests WHERE environment_id = {$environment->id}
     ") ?? 0);
 
-    expect($after)->toBe($before + 1);
+    expect($count)->toBe(1);
 });

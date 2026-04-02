@@ -46,8 +46,14 @@ test('commands index groups by name with status counters', function () {
     insertCommand($ctx, ['name' => 'app:sync', 'exit_code' => 1, 'duration' => 50]);
     insertCommand($ctx, ['name' => 'app:import', 'exit_code' => 0, 'duration' => 1000]);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/commands?sort=total&direction=desc";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/commands");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/commands/index',
+            'X-Inertia-Partial-Data' => 'graph,stats,commands,pagination',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/commands/index')

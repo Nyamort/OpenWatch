@@ -32,10 +32,10 @@ test('it validates an active token', function () {
     $environment = Environment::factory()->create();
     $result = (new GenerateToken)->handle($environment);
 
-    $resolvedEnvironment = (new ValidateIngestToken)->validate($result['token']);
+    $validation = (new ValidateIngestToken)->validate($result['token']);
 
-    expect($resolvedEnvironment)->not->toBeNull()
-        ->and($resolvedEnvironment->id)->toBe($environment->id);
+    expect($validation->environment)->not->toBeNull()
+        ->and($validation->environment->id)->toBe($environment->id);
 });
 
 test('it rotates a token with grace window and old token still valid during grace', function () {
@@ -48,14 +48,14 @@ test('it rotates a token with grace window and old token still valid during grac
     $newRaw = $newResult['token'];
 
     // New token is valid
-    $resolvedByNew = (new ValidateIngestToken)->validate($newRaw);
-    expect($resolvedByNew)->not->toBeNull()
-        ->and($resolvedByNew->id)->toBe($environment->id);
+    $validationByNew = (new ValidateIngestToken)->validate($newRaw);
+    expect($validationByNew->environment)->not->toBeNull()
+        ->and($validationByNew->environment->id)->toBe($environment->id);
 
     // Old token still valid within grace window
-    $resolvedByOld = (new ValidateIngestToken)->validate($originalRaw);
-    expect($resolvedByOld)->not->toBeNull()
-        ->and($resolvedByOld->id)->toBe($environment->id);
+    $validationByOld = (new ValidateIngestToken)->validate($originalRaw);
+    expect($validationByOld->environment)->not->toBeNull()
+        ->and($validationByOld->environment->id)->toBe($environment->id);
 
     $originalToken->refresh();
     expect($originalToken->status)->toBe('deprecated')
@@ -74,7 +74,7 @@ test('it rejects deprecated token past grace window', function () {
     $originalToken->update(['grace_until' => now()->subMinute()]);
 
     $resolved = (new ValidateIngestToken)->validate($originalRaw);
-    expect($resolved)->toBeNull();
+    expect($resolved->environment)->toBeNull();
 });
 
 test('it rejects revoked token immediately', function () {
@@ -86,5 +86,5 @@ test('it rejects revoked token immediately', function () {
     (new RevokeToken)->handle($token);
 
     $resolved = (new ValidateIngestToken)->validate($rawToken);
-    expect($resolved)->toBeNull();
+    expect($resolved->environment)->toBeNull();
 });

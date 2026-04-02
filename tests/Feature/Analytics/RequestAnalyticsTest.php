@@ -56,8 +56,14 @@ test('requests index returns graph and stats', function () {
     insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET']);
     insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'GET']);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/requests/index',
+            'X-Inertia-Partial-Data' => 'graph,stats,paths,pagination',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/requests/index')
@@ -92,8 +98,14 @@ test('request index groups paths correctly', function () {
     insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'route_methods' => 'GET|HEAD', 'status_code' => 500]);
     insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'POST', 'route_methods' => 'POST']);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests?sort=total&direction=desc";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/requests/index',
+            'X-Inertia-Partial-Data' => 'paths',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->has('paths', 2)
@@ -114,8 +126,14 @@ test('request index returns correct total count in stats', function () {
     insertRequest($ctx);
     insertRequest($ctx);
 
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests";
+
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/requests/index',
+            'X-Inertia-Partial-Data' => 'stats',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->where('stats.count', 3)
