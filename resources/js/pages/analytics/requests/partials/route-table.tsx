@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 import { HttpMethodBadge } from '@/components/analytics/http-method-badge';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
@@ -13,7 +14,12 @@ import {
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import { show as requestShow } from '@/routes/analytics/requests';
-import type { Pagination, RouteRequestRow, RouteSortKey, SortDir } from '../types';
+import type {
+    Pagination,
+    RouteRequestRow,
+    RouteSortKey,
+    SortDir,
+} from '../types';
 
 interface RouteTableProps {
     requests: RouteRequestRow[];
@@ -71,10 +77,10 @@ export function RouteTable({
                         >
                             Date
                         </SortableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Method
                         </TableHead>
-                        <TableHead className="h-11 px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                        <TableHead className="h-11 px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Details
                         </TableHead>
                         <SortableHead
@@ -114,9 +120,19 @@ export function RouteTable({
                         requests.map((row) => (
                             <TableRow
                                 key={row.id}
+                                onClick={() =>
+                                    router.visit(
+                                        requestShow.url({
+                                            organization,
+                                            project,
+                                            environment,
+                                            request: row.id,
+                                        }),
+                                    )
+                                }
                                 className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
-                                <TableCell className="h-11 w-px px-5 whitespace-nowrap tabular-nums text-sm text-muted-foreground">
+                                <TableCell className="h-11 w-px px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4">
@@ -137,19 +153,11 @@ export function RouteTable({
                                 </TableCell>
                                 <TableCell className="h-11 w-px pr-5">
                                     <div className="flex items-center justify-end">
-                                        <a
-                                            href={requestShow.url({
-                                                organization,
-                                                project,
-                                                environment,
-                                                request: row.id,
-                                            })}
-                                            className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500"
-                                        >
+                                        <span className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
                                             <span className="flex size-6 items-center justify-center">
                                                 <ArrowUpRight className="size-4" />
                                             </span>
-                                        </a>
+                                        </span>
                                     </div>
                                 </TableCell>
                             </TableRow>
