@@ -1,54 +1,193 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration } from '@/lib/utils';
+import { index as requestsIndex } from '@/routes/analytics/requests';
+import type { BreadcrumbItem } from '@/types';
 
-interface Analytics {
-    summary: Record<string, unknown>;
-    rows: {
-        queries: unknown[];
-        exceptions: unknown[];
-        logs: unknown[];
-    };
+interface RequestSummary {
+    id: string;
+    recorded_at: string;
+    method: string;
+    url: string;
+    route_path: string | null;
+    route_name: string | null;
+    status_code: number;
+    duration: number | null;
+    server: string;
+    user: string | null;
+    ip: string | null;
+    request_size: number | null;
+    response_size: number | null;
+    peak_memory_usage: number | null;
+    queries: number;
+    mail_count: number;
+    cache_events: number;
+    outgoing_requests: number;
+    notifications: number;
+    jobs_queued: number;
+    exceptions: number;
+    logs: number;
 }
 
 interface Props {
-    analytics: Analytics;
+    analytics: {
+        summary: RequestSummary;
+        rows: {
+            queries: unknown[];
+            exceptions: unknown[];
+            logs: unknown[];
+        };
+    };
+}
+
+function formatBytes(bytes: number | null): string {
+    if (bytes === null) return '—';
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+}
+
+function StatusCodeBadge({ code }: { code: number }) {
+    const className =
+        code < 400
+            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
+            : code < 500
+              ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+              : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
+
+    return (
+        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${className}`}>
+            {code}
+        </span>
+    );
+}
+
+function InfoRow({ label, value }: { label: string; value: ReactNode }) {
+    return (
+        <div className="flex items-baseline gap-2 py-1 text-sm first:pt-0 last:pb-0">
+            <span className="shrink-0 uppercase text-muted-foreground">{label}</span>
+            <span className="relative -bottom-px min-w-6 grow border-b-2 border-dotted border-neutral-300 dark:border-white/20" />
+            <span className="shrink-0 text-right font-medium">{value ?? '—'}</span>
+        </div>
+    );
+}
+
+function Section({ title, children }: { title?: string; children: ReactNode }) {
+    return (
+        <div className="flex flex-col gap-1">
+            {title && (
+                <h3 className="mb-1 text-base font-semibold text-foreground">
+                    {title}
+                </h3>
+            )}
+            {children}
+        </div>
+    );
 }
 
 export default function RequestShow({ analytics }: Props) {
-    const req = analytics.summary;
+    const { summary } = analytics;
+    const { props } = usePage();
+    const { activeOrganization, activeProject, activeEnvironment } = props as {
+        activeOrganization?: { slug: string } | null;
+        activeProject?: { slug: string } | null;
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Requests',
+            href:
+                activeOrganization && activeProject && activeEnvironment
+                    ? requestsIndex.url({
+                          organization: activeOrganization.slug,
+                          project: activeProject.slug,
+                          environment: activeEnvironment.slug,
+                      })
+                    : '#',
+        },
+        { title: summary.url, href: '#' },
+    ];
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head />
             <div className="flex flex-col gap-6 p-6">
-                <h1 className="text-xl font-semibold">Request Detail</h1>
-                <div className="rounded-lg border bg-card p-4">
-                    <dl className="grid grid-cols-2 gap-4 text-sm">
-                        {Object.entries(req).map(([k, v]) => (
-                            <div key={k}>
-                                <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="font-medium">
-                                    {String(v ?? '')}
-                                </dd>
+                <Card className="gap-0 bg-surface py-0">
+                    <CardHeader className="flex flex-row items-center gap-3 border-b py-4">
+                        <span className="font-mono text-sm font-bold text-foreground">
+                            {summary.method}
+                        </span>
+                        <span className="truncate font-mono text-sm font-medium">
+                            {summary.url}
+                        </span>
+                    </CardHeader>
+
+                    <CardContent className="flex flex-col gap-8 py-6">
+                        {/* Date & Status */}
+                        <Section>
+                            <InfoRow label="Date" value={summary.recorded_at} />
+                            <InfoRow
+                                label="Status Code"
+                                value={<StatusCodeBadge code={summary.status_code} />}
+                            />
+                        </Section>
+
+                        {/* Performance */}
+                        <Section>
+                            <InfoRow label="Server" value={summary.server || '—'} />
+                            <InfoRow
+                                label="Duration"
+                                value={formatDuration(summary.duration)}
+                            />
+                            <InfoRow
+                                label="Request Size"
+                                value={formatBytes(summary.request_size)}
+                            />
+                            <InfoRow
+                                label="Response Size"
+                                value={formatBytes(summary.response_size)}
+                            />
+                            <InfoRow
+                                label="Peak Memory"
+                                value={formatBytes(summary.peak_memory_usage)}
+                            />
+                        </Section>
+
+                        {/* User */}
+                        <Section title="User">
+                            <InfoRow label="IP Address" value={summary.ip} />
+                        </Section>
+
+                        {/* Events */}
+                        <Section title="Events">
+                            <div className="grid grid-cols-2 gap-x-8">
+                                <div>
+                                    <InfoRow label="Queries" value={summary.queries} />
+                                    <InfoRow label="Mail" value={summary.mail_count} />
+                                    <InfoRow label="Cache" value={summary.cache_events} />
+                                </div>
+                                <div>
+                                    <InfoRow
+                                        label="Outgoing Requests"
+                                        value={summary.outgoing_requests}
+                                    />
+                                    <InfoRow
+                                        label="Notifications"
+                                        value={summary.notifications}
+                                    />
+                                    <InfoRow
+                                        label="Queued Jobs"
+                                        value={summary.jobs_queued}
+                                    />
+                                </div>
                             </div>
-                        ))}
-                    </dl>
-                </div>
-                <section>
-                    <h2 className="mb-2 text-sm font-medium">
-                        Queries ({analytics.rows.queries.length})
-                    </h2>
-                </section>
-                <section>
-                    <h2 className="mb-2 text-sm font-medium">
-                        Exceptions ({analytics.rows.exceptions.length})
-                    </h2>
-                </section>
-                <section>
-                    <h2 className="mb-2 text-sm font-medium">
-                        Logs ({analytics.rows.logs.length})
-                    </h2>
-                </section>
+                        </Section>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

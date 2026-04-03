@@ -58,8 +58,15 @@ class BuildRequestDetailData
             ORDER BY recorded_at
         ")->toArray();
 
+        $mailCount = (int) ($this->clickhouse->selectOne("
+            SELECT count() AS count
+            FROM extraction_mails
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+        ")->count ?? 0);
+
         return (new AnalyticsResponseBuilder)
-            ->withSummary((array) $request)
+            ->withSummary(array_merge((array) $request, ['mail_count' => $mailCount]))
             ->withRows([
                 'queries' => $queries,
                 'exceptions' => $exceptions,
