@@ -47,6 +47,40 @@ test('ProcessTelemetryBatch inserts into extraction_requests for a request recor
     expect((int) $row->duration)->toBe(150);
 });
 
+test('ProcessTelemetryBatch inserts user record without deploy, server, or trace context', function () {
+    $environment = Environment::factory()->create();
+
+    $record = [
+        'v' => 1,
+        't' => 'user',
+        'timestamp' => now()->timestamp,
+        'id' => '42',
+        'name' => 'Test User',
+        'username' => 'test@example.com',
+    ];
+
+    $job = new ProcessTelemetryBatch(
+        environmentId: $environment->id,
+        records: [$record],
+        requestId: fake()->uuid(),
+    );
+
+    app()->call([$job, 'handle']);
+
+    $clickhouse = app(ClickHouseService::class);
+
+    $row = $clickhouse->selectOne("
+        SELECT * FROM extraction_user_activities
+        WHERE environment_id = {$environment->id}
+        LIMIT 1
+    ");
+
+    expect($row)->not->toBeNull();
+    expect($row->user_id)->toBe('42');
+    expect($row->name)->toBe('Test User');
+    expect($row->username)->toBe('test@example.com');
+});
+
 test('ProcessTelemetryBatch inserts into the correct extraction table per record type', function () {
     $environment = Environment::factory()->create();
     $clickhouse = app(ClickHouseService::class);
