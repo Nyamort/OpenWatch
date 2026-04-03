@@ -21,6 +21,22 @@ function setupUserAnalyticsContext(string $suffix = ''): array
     return compact('user', 'org', 'project', 'env');
 }
 
+function insertUserActivity(array $ctx, string $username, array $overrides = []): void
+{
+    app(ClickHouseService::class)->insert('extraction_user_activities', [
+        array_merge([
+            'telemetry_record_id' => nextTelemetryId(),
+            'organization_id' => $ctx['org']->id,
+            'project_id' => $ctx['project']->id,
+            'environment_id' => $ctx['env']->id,
+            'user_id' => $username,
+            'name' => 'Test User',
+            'username' => $username,
+            'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+        ], $overrides),
+    ]);
+}
+
 function insertUserRequest(array $ctx, string $userValue, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_requests', [
@@ -51,11 +67,16 @@ function insertUserRequest(array $ctx, string $userValue, array $overrides = [])
 test('user analytics returns graph and stats via deferred props', function () {
     $ctx = setupUserAnalyticsContext(uniqid());
 
-    $userId = 'user-'.uniqid();
-    insertUserRequest($ctx, $userId);
-    insertUserRequest($ctx, $userId);
-    insertUserRequest($ctx, 'another-user-'.uniqid());
-    insertUserRequest($ctx, ''); // guest
+    $email = 'alice@example.com';
+    $email2 = 'bob@example.com';
+
+    insertUserActivity($ctx, $email);
+    insertUserActivity($ctx, $email);  // duplicate — should count as 1 unique
+    insertUserActivity($ctx, $email2);
+
+    insertUserRequest($ctx, $email);
+    insertUserRequest($ctx, $email2);
+    insertUserRequest($ctx, '');  // guest
 
     $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
 
@@ -71,19 +92,20 @@ test('user analytics returns graph and stats via deferred props', function () {
         ->has('graph')
         ->has('stats')
         ->has('users', 2)
-        ->has('stats.authenticated_users')
-        ->has('stats.authenticated_requests')
-        ->has('stats.guest_requests')
+        ->where('stats.authenticated_users', 2)
+        ->where('stats.authenticated_requests', 2)
+        ->where('stats.guest_requests', 1)
     );
 });
 
 test('user analytics table rows contain expected columns', function () {
     $ctx = setupUserAnalyticsContext('cols-'.uniqid());
 
-    $userId = 'user-cols-'.uniqid();
-    insertUserRequest($ctx, $userId, ['status_code' => 200]);
-    insertUserRequest($ctx, $userId, ['status_code' => 404]);
-    insertUserRequest($ctx, $userId, ['status_code' => 500]);
+    $email = 'test@example.com';
+    insertUserActivity($ctx, $email, ['name' => 'Test User']);
+    insertUserRequest($ctx, $email, ['status_code' => 200]);
+    insertUserRequest($ctx, $email, ['status_code' => 404]);
+    insertUserRequest($ctx, $email, ['status_code' => 500]);
 
     $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
 
@@ -97,7 +119,8 @@ test('user analytics table rows contain expected columns', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/users/index')
         ->has('users', 1, fn ($row) => $row
-            ->where('user', $userId)
+            ->where('email', $email)
+            ->has('name')
             ->has('2xx')
             ->has('4xx')
             ->has('5xx')

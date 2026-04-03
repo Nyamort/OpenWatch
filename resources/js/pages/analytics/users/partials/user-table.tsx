@@ -31,7 +31,7 @@ export function UserTable({
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<SortKey>({
             search,
-            only: ['users', 'pagination', 'sort', 'direction'],
+            only: ['users', 'pagination'],
         });
 
     const onSort = (col: string) => handleSort(col as SortKey, sort, direction);
@@ -53,13 +53,13 @@ export function UserTable({
                 <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                     <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
                         <SortableHead
-                            column="user"
+                            column="email"
                             sort={sort}
                             direction={direction}
                             onSort={onSort}
                             className="h-11 pl-5 text-xs font-medium"
                         >
-                            User
+                            Email
                         </SortableHead>
                         <SortableHead
                             column="2xx"
@@ -150,9 +150,16 @@ export function UserTable({
                                 className="border-0 bg-surface shadow-sm shadow-black/4 [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden pl-5">
-                                    <span className="truncate text-sm font-medium">
-                                        {row.user}
-                                    </span>
+                                    <div className="flex min-w-0 flex-col">
+                                        <span className="truncate text-sm font-medium">
+                                            {row.email}
+                                        </span>
+                                        {row.name && (
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {row.name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {row['2xx'].toLocaleString()}

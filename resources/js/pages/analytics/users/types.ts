@@ -12,7 +12,8 @@ export interface Stats {
 }
 
 export interface UserRow {
-    user: string;
+    email: string;
+    name: string | null;
     '2xx': number;
     '4xx': number;
     '5xx': number;
@@ -23,7 +24,7 @@ export interface UserRow {
 }
 
 export type SortKey =
-    | 'user'
+    | 'email'
     | '2xx'
     | '4xx'
     | '5xx'
