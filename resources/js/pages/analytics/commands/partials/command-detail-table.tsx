@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import type { CommandDetailSortKey, CommandRunRow, Pagination, SortDir } from '../types';
+import type {
+    CommandDetailSortKey,
+    CommandRunRow,
+    Pagination,
+    SortDir,
+} from '../types';
 
 interface CommandDetailTableProps {
     runs: CommandRunRow[];
@@ -59,7 +64,7 @@ export function CommandDetailTable({
                         >
                             Date
                         </SortableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Command
                         </TableHead>
                         <SortableHead
@@ -101,7 +106,7 @@ export function CommandDetailTable({
                                 key={row.id}
                                 className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
-                                <TableCell className="h-11 px-5 text-sm whitespace-nowrap tabular-nums text-muted-foreground">
+                                <TableCell className="h-11 px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
@@ -113,9 +118,10 @@ export function CommandDetailTable({
                                     className={`h-11 w-px px-4 text-right whitespace-nowrap tabular-nums ${exitCodeColor(row.exit_code)}`}
                                 >
                                     <div className="flex items-center justify-end gap-1">
-                                        {row.exit_code !== null && row.exit_code !== 0 && (
-                                            <OctagonAlert className="size-3 shrink-0" />
-                                        )}
+                                        {row.exit_code !== null &&
+                                            row.exit_code !== 0 && (
+                                                <OctagonAlert className="size-3 shrink-0" />
+                                            )}
                                         {row.exit_code ?? '—'}
                                     </div>
                                 </TableCell>

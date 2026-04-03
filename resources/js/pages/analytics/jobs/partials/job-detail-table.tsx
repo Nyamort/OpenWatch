@@ -80,10 +80,10 @@ export function JobDetailTable({
                         >
                             Date
                         </SortableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Connection
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Queue
                         </TableHead>
                         <SortableHead
@@ -134,7 +134,7 @@ export function JobDetailTable({
                                 key={row.id}
                                 className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
-                                <TableCell className="h-11 px-5 text-sm whitespace-nowrap tabular-nums text-muted-foreground">
+                                <TableCell className="h-11 px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
