@@ -204,12 +204,6 @@ export default function RequestShow({ analytics }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head />
             <div className="flex flex-col gap-6 p-6">
-                {(summary.duration ?? 0) > 0 && (
-                    <Timeline
-                        totalDurationMs={summary.duration!}
-                        spans={spans}
-                    />
-                )}
                 <Card className="gap-0 bg-surface py-0">
                     <CardHeader className="flex flex-row items-center gap-3 border-b py-4">
                         <span className="font-mono text-sm font-bold text-foreground">
@@ -282,6 +276,12 @@ export default function RequestShow({ analytics }: Props) {
                         </Section>
                     </CardContent>
                 </Card>
+                {(summary.duration ?? 0) > 0 && (
+                    <Timeline
+                        totalDurationMs={summary.duration!}
+                        spans={spans}
+                    />
+                )}
             </div>
         </AppLayout>
     );
