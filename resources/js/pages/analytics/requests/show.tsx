@@ -89,10 +89,10 @@ function buildTimelineSpans(
     // Sequential lifecycle phases
     const phases: { id: string; label: string; us: number | null }[] = [
         { id: 'bootstrap', label: 'Bootstrap', us: summary.bootstrap },
-        { id: 'before_middleware', label: 'Before MW', us: summary.before_middleware },
+        { id: 'before_middleware', label: 'Middleware', us: summary.before_middleware },
         { id: 'action', label: 'Controller', us: summary.action },
         { id: 'render', label: 'Render', us: summary.render },
-        { id: 'after_middleware', label: 'After MW', us: summary.after_middleware },
+        { id: 'after_middleware', label: 'Middleware', us: summary.after_middleware },
         { id: 'sending', label: 'Sending', us: summary.sending },
         { id: 'terminating', label: 'Terminating', us: summary.terminating },
     ];
