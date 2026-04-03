@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatDuration } from '@/lib/utils';
@@ -31,15 +32,92 @@ interface RequestSummary {
     logs: number;
 }
 
+interface QueryRow {
+    id: number;
+    recorded_at: string;
+    duration: number;
+    sql_normalized: string;
+    connection: string;
+}
+
+interface ExceptionRow {
+    id: number;
+    recorded_at: string;
+    class: string;
+    message: string;
+    handled: boolean;
+}
+
+interface LogRow {
+    id: number;
+    recorded_at: string;
+    level: string;
+    message: string;
+}
+
 interface Props {
     analytics: {
         summary: RequestSummary;
         rows: {
-            queries: unknown[];
-            exceptions: unknown[];
-            logs: unknown[];
+            queries: QueryRow[];
+            exceptions: ExceptionRow[];
+            logs: LogRow[];
         };
     };
+}
+
+function buildTimelineSpans(
+    summary: RequestSummary,
+    queries: QueryRow[],
+    exceptions: ExceptionRow[],
+    logs: LogRow[],
+): TimelineSpan[] {
+    const totalMs = summary.duration ?? 0;
+    const requestEndMs = new Date(summary.recorded_at).getTime();
+    const requestStartMs = requestEndMs - totalMs;
+
+    const toOffset = (recordedAt: string): number =>
+        Math.max(0, Math.min(totalMs, new Date(recordedAt).getTime() - requestStartMs));
+
+    const children: TimelineSpan[] = [
+        ...queries.map((q, i): TimelineSpan => {
+            const durationMs = q.duration;
+            const offsetMs = Math.max(0, toOffset(q.recorded_at) - durationMs);
+            return {
+                id: `query-${i}`,
+                label: 'DB',
+                sublabel: q.sql_normalized.replace(/\s+/g, ' ').slice(0, 80),
+                durationMs,
+                offsetMs,
+            };
+        }),
+        ...exceptions.map((e, i): TimelineSpan => ({
+            id: `exception-${i}`,
+            label: 'Exception',
+            sublabel: e.class.split('\\').pop(),
+            durationMs: null,
+            offsetMs: toOffset(e.recorded_at),
+        })),
+        ...logs.map((l, i): TimelineSpan => ({
+            id: `log-${i}`,
+            label: l.level.toUpperCase(),
+            sublabel: l.message.slice(0, 60),
+            durationMs: null,
+            offsetMs: toOffset(l.recorded_at),
+        })),
+    ].sort((a, b) => a.offsetMs - b.offsetMs);
+
+    return [
+        {
+            id: 'request',
+            label: 'Request',
+            sublabel: summary.route_path ?? summary.url,
+            durationMs: totalMs,
+            offsetMs: 0,
+            color: 'teal',
+            children: children.length > 0 ? children : undefined,
+        },
+    ];
 }
 
 function formatBytes(bytes: number | null): string {
@@ -89,7 +167,8 @@ function Section({ title, children }: { title?: string; children: ReactNode }) {
 }
 
 export default function RequestShow({ analytics }: Props) {
-    const { summary } = analytics;
+    const { summary, rows } = analytics;
+    const spans = buildTimelineSpans(summary, rows.queries, rows.exceptions, rows.logs);
     const { props } = usePage();
     const { activeOrganization, activeProject, activeEnvironment } = props as {
         activeOrganization?: { slug: string } | null;
@@ -125,6 +204,12 @@ export default function RequestShow({ analytics }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head />
             <div className="flex flex-col gap-6 p-6">
+                {(summary.duration ?? 0) > 0 && (
+                    <Timeline
+                        totalDurationMs={summary.duration!}
+                        spans={spans}
+                    />
+                )}
                 <Card className="gap-0 bg-surface py-0">
                     <CardHeader className="flex flex-row items-center gap-3 border-b py-4">
                         <span className="font-mono text-sm font-bold text-foreground">
