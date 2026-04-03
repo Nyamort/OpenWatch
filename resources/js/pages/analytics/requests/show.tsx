@@ -16,6 +16,13 @@ interface RequestSummary {
     route_name: string | null;
     status_code: number;
     duration: number | null;
+    bootstrap: number | null;
+    before_middleware: number | null;
+    action: number | null;
+    render: number | null;
+    after_middleware: number | null;
+    sending: number | null;
+    terminating: number | null;
     server: string;
     user: string | null;
     ip: string | null;
@@ -79,7 +86,34 @@ function buildTimelineSpans(
     const toOffset = (recordedAt: string): number =>
         Math.max(0, Math.min(totalMs, new Date(recordedAt).getTime() - requestStartMs));
 
-    const children: TimelineSpan[] = [
+    // Sequential lifecycle phases
+    const phases: { id: string; label: string; us: number | null }[] = [
+        { id: 'bootstrap', label: 'Bootstrap', us: summary.bootstrap },
+        { id: 'before_middleware', label: 'Before MW', us: summary.before_middleware },
+        { id: 'action', label: 'Controller', us: summary.action },
+        { id: 'render', label: 'Render', us: summary.render },
+        { id: 'after_middleware', label: 'After MW', us: summary.after_middleware },
+        { id: 'sending', label: 'Sending', us: summary.sending },
+        { id: 'terminating', label: 'Terminating', us: summary.terminating },
+    ];
+
+    let cursorMs = 0;
+    const phaseSpans: TimelineSpan[] = phases
+        .filter((p) => p.us != null && p.us > 0)
+        .map((p): TimelineSpan => {
+            const durationMs = p.us! / 1000;
+            const span: TimelineSpan = {
+                id: p.id,
+                label: p.label,
+                durationMs,
+                offsetMs: cursorMs,
+            };
+            cursorMs += durationMs;
+            return span;
+        });
+
+    // Events positioned by their actual timestamp offset
+    const eventSpans: TimelineSpan[] = [
         ...queries.map((q, i): TimelineSpan => {
             const durationMs = q.duration / 1000;
             const offsetMs = Math.max(0, toOffset(q.recorded_at) - durationMs);
@@ -106,6 +140,8 @@ function buildTimelineSpans(
             offsetMs: toOffset(l.recorded_at),
         })),
     ].sort((a, b) => a.offsetMs - b.offsetMs);
+
+    const children = [...phaseSpans, ...eventSpans];
 
     return [
         {
