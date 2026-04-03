@@ -66,7 +66,6 @@ export function RequestPathsTable({
                 {
                     query: {
                         route_path: row.path ?? '',
-                        method: row.methods[0] ?? '',
                     },
                 },
             ),
