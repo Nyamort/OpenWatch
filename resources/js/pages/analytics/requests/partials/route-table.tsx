@@ -41,13 +41,6 @@ function statusClass(code: number): string {
     return '';
 }
 
-function urlPath(url: string): string {
-    try {
-        return new URL(url).pathname;
-    } catch {
-        return url;
-    }
-}
 
 export function RouteTable({
     requests,
@@ -142,7 +135,7 @@ export function RouteTable({
                                 </TableCell>
                                 <TableCell className="h-11 max-w-xs px-4">
                                     <span className="block truncate font-mono text-xs text-muted-foreground">
-                                        {urlPath(row.url)}
+                                        {row.route_path}
                                     </span>
                                 </TableCell>
                                 <TableCell

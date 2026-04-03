@@ -47,7 +47,7 @@ export interface RouteRequestRow {
     id: number;
     recorded_at: string;
     method: string;
-    url: string;
+    route_path: string;
     status_code: number;
     duration: number | null;
     exceptions: number;

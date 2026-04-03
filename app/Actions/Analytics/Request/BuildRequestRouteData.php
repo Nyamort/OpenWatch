@@ -133,7 +133,7 @@ class BuildRequestRouteData
         $offset = $this->pageOffset($page);
 
         $rows = $this->clickhouse->select("
-            SELECT id, method, url, status_code, duration, exceptions, queries, recorded_at
+            SELECT id, method, route_path, status_code, duration, exceptions, queries, recorded_at
             FROM extraction_requests
             {$baseWhere}
             ORDER BY {$orderCol} {$orderDir}
@@ -144,7 +144,7 @@ class BuildRequestRouteData
             'id' => $row->id,
             'recorded_at' => $row->recorded_at,
             'method' => $row->method,
-            'url' => $row->url,
+            'route_path' => $row->route_path,
             'status_code' => (int) $row->status_code,
             'duration' => $row->duration,
             'exceptions' => (int) ($row->exceptions ?? 0),
