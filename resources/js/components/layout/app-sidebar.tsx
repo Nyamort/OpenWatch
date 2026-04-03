@@ -10,7 +10,9 @@ import {
     HardDrive,
     LayoutGrid,
     Mail,
+    ScrollText,
     Terminal,
+    Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { NavMain } from '@/components/layout/nav-main';
@@ -35,6 +37,8 @@ import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requ
 import { index as queriesIndex } from '@/routes/analytics/queries';
 import { index as requestsIndex } from '@/routes/analytics/requests';
 import { index as scheduledTasksIndex } from '@/routes/analytics/scheduled-tasks';
+import { index as logsIndex } from '@/routes/analytics/logs';
+import { index as usersIndex } from '@/routes/analytics/users';
 import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
@@ -178,6 +182,33 @@ export function AppSidebar() {
                                   }),
                               ),
                               icon: ArrowUpRight,
+                          },
+                      ],
+                  },
+                  {
+                      label: 'Monitoring',
+                      items: [
+                          {
+                              title: 'Users',
+                              href: analyticsHref(
+                                  usersIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: Users,
+                          },
+                          {
+                              title: 'Logs',
+                              href: analyticsHref(
+                                  logsIndex.url({
+                                      organization: activeOrganization!.slug,
+                                      project: activeProject!.slug,
+                                      environment: activeEnvironment!.slug,
+                                  }),
+                              ),
+                              icon: ScrollText,
                           },
                       ],
                   },
