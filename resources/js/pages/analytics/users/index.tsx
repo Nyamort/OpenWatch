@@ -1,39 +1,80 @@
-import { Head } from '@inertiajs/react';
-import { DataTable } from '@/components/analytics/data-table';
+import { Deferred, Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    } | null;
-}
+import { UserCharts } from './partials/user-charts';
+import { UserTable } from './partials/user-table';
+import type { GraphBucket, Pagination, SortDir, SortKey, Stats, UserRow } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: GraphBucket[];
+    stats?: Stats;
+    users?: UserRow[];
+    pagination?: Pagination;
     period: string;
+    sort: SortKey;
+    direction: SortDir;
+    search: string;
 }
 
-const columns = [
-    { key: 'user', label: 'User' },
-    { key: 'request_count', label: 'Requests' },
-    { key: 'exception_count', label: 'Exceptions' },
-    { key: 'job_count', label: 'Jobs' },
-];
+const breadcrumbs = [{ title: 'Users', href: '#' }];
 
-export default function UsersIndex({ analytics, period }: Props) {
+function ChartsSkeleton() {
     return (
-        <AnalyticsLayout period={period}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[0, 1].map((i) => (
+                <div
+                    key={i}
+                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
+                />
+            ))}
+        </div>
+    );
+}
+
+function TableSkeleton() {
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="h-10 w-64 animate-pulse rounded-lg bg-muted/40" />
+            <div className="flex flex-col gap-1.5">
+                <div className="h-11 animate-pulse rounded-lg bg-muted/40" />
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="h-11 animate-pulse rounded-lg bg-muted/20"
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export default function UsersIndex({
+    graph,
+    stats,
+    users,
+    pagination,
+    period,
+    sort,
+    direction,
+    search,
+}: Props) {
+    return (
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <DataTable
-                columns={columns}
-                rows={analytics.rows}
-                pagination={analytics.pagination}
-            />
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <UserCharts graph={graph!} stats={stats!} />
+            </Deferred>
+            <Deferred
+                data={['users', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
+                <UserTable
+                    users={users!}
+                    pagination={pagination!}
+                    sort={sort}
+                    direction={direction}
+                    search={search}
+                />
+            </Deferred>
         </AnalyticsLayout>
     );
 }

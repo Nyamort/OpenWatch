@@ -48,20 +48,64 @@ function insertUserRequest(array $ctx, string $userValue, array $overrides = [])
     ]);
 }
 
-test('user analytics aggregates by user field', function () {
+test('user analytics returns graph and stats via deferred props', function () {
     $ctx = setupUserAnalyticsContext(uniqid());
 
     $userId = 'user-'.uniqid();
     insertUserRequest($ctx, $userId);
     insertUserRequest($ctx, $userId);
     insertUserRequest($ctx, 'another-user-'.uniqid());
+    insertUserRequest($ctx, ''); // guest
+
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
 
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users");
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/users/index',
+            'X-Inertia-Partial-Data' => 'graph,stats,users,pagination',
+        ])
+        ->get($url);
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/users/index')
-        ->has('analytics.users', 2)
+        ->has('graph')
+        ->has('stats')
+        ->has('users', 2)
+        ->has('stats.authenticated_users')
+        ->has('stats.authenticated_requests')
+        ->has('stats.guest_requests')
+    );
+});
+
+test('user analytics table rows contain expected columns', function () {
+    $ctx = setupUserAnalyticsContext('cols-'.uniqid());
+
+    $userId = 'user-cols-'.uniqid();
+    insertUserRequest($ctx, $userId, ['status_code' => 200]);
+    insertUserRequest($ctx, $userId, ['status_code' => 404]);
+    insertUserRequest($ctx, $userId, ['status_code' => 500]);
+
+    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
+
+    $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/users/index',
+            'X-Inertia-Partial-Data' => 'users,pagination',
+        ])
+        ->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/users/index')
+        ->has('users', 1, fn ($row) => $row
+            ->where('user', $userId)
+            ->has('2xx')
+            ->has('4xx')
+            ->has('5xx')
+            ->has('request_count')
+            ->has('job_count')
+            ->has('exception_count')
+            ->has('last_seen')
+        )
     );
 });
 
