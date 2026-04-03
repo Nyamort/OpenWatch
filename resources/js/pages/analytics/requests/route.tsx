@@ -94,8 +94,6 @@ export default function RequestsRoute({
                     pagination={pagination!}
                     sort={sort}
                     direction={direction}
-                    organization={activeOrganization?.slug ?? ''}
-                    project={activeProject?.slug ?? ''}
                     environment={activeEnvironment?.slug ?? ''}
                 />
             </Deferred>
