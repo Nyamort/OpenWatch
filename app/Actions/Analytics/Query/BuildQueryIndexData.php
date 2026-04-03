@@ -42,10 +42,10 @@ class BuildQueryIndexData
         $stats = $this->clickhouse->selectOne("
             SELECT
                 count() AS count,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(min(duration)) AS min,
-                toFloat64(max(duration)) AS max,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(min(duration)) AS min,
+                toUInt32(max(duration)) AS max,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_queries
             {$baseWhere}
         ");
@@ -58,8 +58,8 @@ class BuildQueryIndexData
             SELECT
                 intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
                 count() AS calls,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_queries
             {$baseWhere}
             GROUP BY bucket_slot
@@ -134,9 +134,9 @@ class BuildQueryIndexData
                 any(sql_normalized) AS query,
                 any(connection) AS connection,
                 count() AS calls,
-                toFloat64(sum(duration)) AS total,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(sum(duration)) AS total,
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_queries
             {$baseWhere}
             GROUP BY sql_hash

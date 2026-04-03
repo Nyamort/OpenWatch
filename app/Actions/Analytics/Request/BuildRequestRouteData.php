@@ -53,10 +53,10 @@ class BuildRequestRouteData
                 countIf(status_code < 400) AS `2xx`,
                 countIf(status_code >= 400 AND status_code < 500) AS `4xx`,
                 countIf(status_code >= 500) AS `5xx`,
-                toFloat64(min(duration)) AS min,
-                toFloat64(max(duration)) AS max,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(min(duration)) AS min,
+                toUInt32(max(duration)) AS max,
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_requests
             {$baseWhere}
         ");
@@ -72,8 +72,8 @@ class BuildRequestRouteData
                 countIf(status_code < 400) AS `2xx`,
                 countIf(status_code >= 400 AND status_code < 500) AS `4xx`,
                 countIf(status_code >= 500) AS `5xx`,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_requests
             {$baseWhere}
             GROUP BY bucket_slot

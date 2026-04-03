@@ -40,8 +40,8 @@ class BuildScheduledTaskIndexData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'skipped') AS skipped,
                 countIf(status = 'failed') AS failed,
-                toFloat64(round(avgIf(duration, status != 'skipped'), 2)) AS avg,
-                toFloat64(quantileIf(0.95)(duration, status != 'skipped')) AS p95
+                toUInt32(round(avgIf(duration, status != 'skipped'))) AS avg,
+                toUInt32(round(quantileIf(0.95)(duration, status != 'skipped'))) AS p95
             FROM extraction_scheduled_tasks
             {$baseWhere}
         ");
@@ -56,8 +56,8 @@ class BuildScheduledTaskIndexData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'skipped') AS skipped,
                 countIf(status = 'failed') AS failed,
-                toFloat64(round(avgIf(duration, status != 'skipped'), 2)) AS avg,
-                toFloat64(quantileIf(0.95)(duration, status != 'skipped')) AS p95
+                toUInt32(round(avgIf(duration, status != 'skipped'))) AS avg,
+                toUInt32(round(quantileIf(0.95)(duration, status != 'skipped'))) AS p95
             FROM extraction_scheduled_tasks
             {$baseWhere}
             GROUP BY bucket_slot
@@ -130,8 +130,8 @@ class BuildScheduledTaskIndexData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'skipped') AS skipped,
                 countIf(status = 'failed') AS failed,
-                toFloat64(round(avgIf(duration, status != 'skipped'), 2)) AS avg,
-                toFloat64(quantileIf(0.95)(duration, status != 'skipped')) AS p95
+                toUInt32(round(avgIf(duration, status != 'skipped'))) AS avg,
+                toUInt32(round(quantileIf(0.95)(duration, status != 'skipped'))) AS p95
             FROM extraction_scheduled_tasks
             {$baseWhere}
             GROUP BY name

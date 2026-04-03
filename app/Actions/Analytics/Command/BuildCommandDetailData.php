@@ -40,10 +40,10 @@ class BuildCommandDetailData
                 count() AS count,
                 countIf(exit_code = 0) AS successful,
                 countIf(exit_code != 0) AS failed,
-                toFloat64(min(duration)) AS min,
-                toFloat64(max(duration)) AS max,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(min(duration)) AS min,
+                toUInt32(max(duration)) AS max,
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_commands
             {$baseWhere}
         ");
@@ -57,8 +57,8 @@ class BuildCommandDetailData
                 intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
                 countIf(exit_code = 0) AS successful,
                 countIf(exit_code != 0) AS failed,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_commands
             {$baseWhere}
             GROUP BY bucket_slot

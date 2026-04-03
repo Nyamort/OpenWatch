@@ -47,10 +47,10 @@ class BuildJobDetailData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'failed') AS failed,
                 countIf(status = 'released') AS released,
-                toFloat64(min(duration)) AS min,
-                toFloat64(max(duration)) AS max,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(min(duration)) AS min,
+                toUInt32(max(duration)) AS max,
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_job_attempts
             {$baseWhere}
         ");
@@ -66,8 +66,8 @@ class BuildJobDetailData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'failed') AS failed,
                 countIf(status = 'released') AS released,
-                toFloat64(round(avg(duration), 2)) AS avg,
-                toFloat64(quantile(0.95)(duration)) AS p95
+                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(round(quantile(0.95)(duration))) AS p95
             FROM extraction_job_attempts
             {$baseWhere}
             GROUP BY bucket_slot
