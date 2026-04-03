@@ -1,0 +1,245 @@
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface TimelineSpan {
+    id: string;
+    /** Short uppercase label, e.g. "COMMAND", "BOOTSTRAP" */
+    label: string;
+    /** Monospace detail shown next to the label, e.g. a class name or command */
+    sublabel?: string;
+    /** Duration in milliseconds. Null renders the span as a text marker instead of a bar. */
+    durationMs: number | null;
+    /** Start offset from the beginning of the trace, in milliseconds */
+    offsetMs: number;
+    color?: 'teal' | 'default';
+    children?: TimelineSpan[];
+}
+
+interface TimelineProps {
+    /** Total duration used as the 100 % reference for bar widths */
+    totalDurationMs: number;
+    spans: TimelineSpan[];
+    className?: string;
+}
+
+interface FlatSpan {
+    span: TimelineSpan;
+    depth: number;
+    hasChildren: boolean;
+}
+
+function flattenSpans(spans: TimelineSpan[], expandedIds: Set<string>, depth = 0): FlatSpan[] {
+    const result: FlatSpan[] = [];
+    for (const span of spans) {
+        const hasChildren = !!span.children?.length;
+        result.push({ span, depth, hasChildren });
+        if (hasChildren && expandedIds.has(span.id)) {
+            result.push(...flattenSpans(span.children!, expandedIds, depth + 1));
+        }
+    }
+    return result;
+}
+
+function computeTicks(totalMs: number, count = 4): number[] {
+    const step = totalMs / count;
+    return Array.from({ length: count + 1 }, (_, i) => Math.round(i * step * 100) / 100);
+}
+
+function allExpandableIds(spans: TimelineSpan[]): string[] {
+    const ids: string[] = [];
+    for (const s of spans) {
+        if (s.children?.length) {
+            ids.push(s.id);
+            ids.push(...allExpandableIds(s.children));
+        }
+    }
+    return ids;
+}
+
+export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(
+        () => new Set(allExpandableIds(spans)),
+    );
+    const [cursor, setCursor] = useState<{ x: number; ms: number } | null>(null);
+    const innerRef = useRef<HTMLDivElement>(null);
+
+    const toggleExpand = useCallback((id: string) => {
+        setExpandedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }, []);
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            const rect = innerRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            const x = e.clientX - rect.left;
+            const ms = (x / rect.width) * totalDurationMs;
+            setCursor({ x, ms });
+        },
+        [totalDurationMs],
+    );
+
+    const handleMouseLeave = useCallback(() => setCursor(null), []);
+
+    const flatSpans = flattenSpans(spans, expandedIds);
+    const ticks = computeTicks(totalDurationMs);
+
+    const pct = (ms: number) => `${(ms / totalDurationMs) * 100}%`;
+
+    return (
+        <div
+            className={cn(
+                'flex overflow-hidden rounded-lg border border-white/10 bg-zinc-950 font-mono text-xs',
+                className,
+            )}
+        >
+            {/* ── Left label panel ─────────────────────────────────── */}
+            <div className="flex w-64 shrink-0 flex-col border-r border-white/10">
+                <div className="flex h-9 shrink-0 items-center border-b border-white/10 px-3">
+                    <span className="font-sans text-xs font-semibold tracking-wide text-zinc-200">
+                        Timeline
+                    </span>
+                </div>
+
+                {flatSpans.map(({ span, depth, hasChildren }) => (
+                    <div
+                        key={span.id}
+                        className="flex h-9 shrink-0 items-center gap-1 border-b border-white/5"
+                        style={{ paddingLeft: `${8 + depth * 16}px` }}
+                    >
+                        {hasChildren ? (
+                            <button
+                                onClick={() => toggleExpand(span.id)}
+                                className="flex size-4 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-300"
+                            >
+                                {expandedIds.has(span.id) ? (
+                                    <ChevronDown className="size-3" />
+                                ) : (
+                                    <ChevronRight className="size-3" />
+                                )}
+                            </button>
+                        ) : (
+                            <span className="size-4 shrink-0" />
+                        )}
+
+                        <span className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                            {span.label}
+                        </span>
+
+                        {span.sublabel && (
+                            <span className="ml-1 truncate text-[10px] text-zinc-600">
+                                {span.sublabel}
+                            </span>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Right timeline panel ──────────────────────────────── */}
+            <div className="relative min-w-0 flex-1 overflow-x-auto overflow-y-hidden">
+                <div
+                    ref={innerRef}
+                    className="relative"
+                    style={{ minWidth: '600px' }}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    {/* Time axis */}
+                    <div className="relative h-9 shrink-0 border-b border-white/10">
+                        {ticks.map((ms, i) => (
+                            <span
+                                key={ms}
+                                className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
+                                style={{
+                                    left: pct(ms),
+                                    transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+                                }}
+                            >
+                                {ms}ms
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Span rows */}
+                    {flatSpans.map(({ span }) =>
+                        span.durationMs === null ? (
+                            /* Text marker (e.g. TERMINATING) */
+                            <div
+                                key={span.id}
+                                className="relative h-9 shrink-0 border-b border-white/5"
+                            >
+                                <span
+                                    className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
+                                    style={{ left: pct(span.offsetMs) }}
+                                >
+                                    {span.label}
+                                    {span.sublabel && (
+                                        <span className="ml-1.5 font-normal normal-case text-zinc-600">
+                                            {span.sublabel}
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                        ) : (
+                            /* Bar */
+                            <div
+                                key={span.id}
+                                className="relative h-9 shrink-0 border-b border-white/5"
+                            >
+                                <div
+                                    className={cn(
+                                        'absolute top-1/2 flex h-[22px] -translate-y-1/2 items-center overflow-hidden rounded-sm px-2',
+                                        span.color === 'teal'
+                                            ? 'bg-teal-900/80 text-teal-300'
+                                            : 'bg-zinc-700/60 text-zinc-400',
+                                    )}
+                                    style={{
+                                        left: pct(span.offsetMs),
+                                        width: pct(span.durationMs),
+                                        minWidth: '2px',
+                                    }}
+                                >
+                                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                        {span.label}
+                                    </span>
+                                    <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
+                                        {span.durationMs.toFixed(2)}ms
+                                    </span>
+                                    {span.sublabel && (
+                                        <span className="ml-2 truncate font-mono text-[10px] opacity-50">
+                                            {span.sublabel}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ),
+                    )}
+
+                    {/* Cursor line + tooltip */}
+                    {cursor !== null && (
+                        <>
+                            <div
+                                className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/70"
+                                style={{ left: `${cursor.x}px` }}
+                            />
+                            <div
+                                className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
+                                style={{ left: `${cursor.x}px` }}
+                            >
+                                {`${Math.round(cursor.ms)}ms`}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
