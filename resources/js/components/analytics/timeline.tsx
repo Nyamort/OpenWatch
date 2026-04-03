@@ -97,7 +97,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     return (
         <div
             className={cn(
-                'flex overflow-hidden rounded-lg border border-white/10 bg-zinc-950 font-mono text-xs',
+                'flex overflow-hidden rounded-lg border border-white/10 bg-surface font-mono text-xs',
                 className,
             )}
         >
@@ -144,7 +144,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
             </div>
 
             {/* ── Right timeline panel ──────────────────────────────── */}
-            <div className="relative min-w-0 flex-1 overflow-x-auto overflow-y-hidden">
+            <div className="relative min-w-0 flex-1 overflow-x-auto overflow-y-hidden min-h-200">
                 <div
                     ref={innerRef}
                     className="relative"
@@ -196,7 +196,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                             >
                                 <div
                                     className={cn(
-                                        'absolute top-1/2 flex h-[22px] -translate-y-1/2 items-center overflow-hidden rounded-sm px-2',
+                                        'absolute top-1/2 flex h-5.5 -translate-y-1/2 items-center overflow-hidden rounded-sm px-2',
                                         span.color === 'teal'
                                             ? 'bg-teal-900/80 text-teal-300'
                                             : 'bg-zinc-700/60 text-zinc-400',
