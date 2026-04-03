@@ -72,7 +72,7 @@ function buildTimelineSpans(
     exceptions: ExceptionRow[],
     logs: LogRow[],
 ): TimelineSpan[] {
-    const totalMs = summary.duration ?? 0;
+    const totalMs = (summary.duration ?? 0) / 1000;
     const requestEndMs = new Date(summary.recorded_at).getTime();
     const requestStartMs = requestEndMs - totalMs;
 
@@ -81,7 +81,7 @@ function buildTimelineSpans(
 
     const children: TimelineSpan[] = [
         ...queries.map((q, i): TimelineSpan => {
-            const durationMs = q.duration;
+            const durationMs = q.duration / 1000;
             const offsetMs = Math.max(0, toOffset(q.recorded_at) - durationMs);
             return {
                 id: `query-${i}`,
@@ -278,7 +278,7 @@ export default function RequestShow({ analytics }: Props) {
                 </Card>
                 {(summary.duration ?? 0) > 0 && (
                     <Timeline
-                        totalDurationMs={summary.duration!}
+                        totalDurationMs={summary.duration! / 1000}
                         spans={spans}
                     />
                 )}
