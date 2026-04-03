@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatDuration } from '@/lib/utils';
-import { index as requestsIndex } from '@/routes/analytics/requests';
+import { index as requestsIndex, route as requestsRoute } from '@/routes/analytics/requests';
 import type { BreadcrumbItem } from '@/types';
 
 interface RequestSummary {
@@ -97,13 +97,26 @@ export default function RequestShow({ analytics }: Props) {
         activeEnvironment?: { slug: string } | null;
     };
 
+    const envSlug = activeEnvironment?.slug ?? '';
+
+    const routeHref =
+        envSlug && summary.route_path
+            ? requestsRoute.url(
+                  { environment: envSlug },
+                  { query: { route_path: summary.route_path } },
+              )
+            : envSlug
+              ? requestsIndex.url({ environment: envSlug })
+              : '#';
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Requests',
-            href:
-                activeOrganization && activeProject && activeEnvironment
-                    ? requestsIndex.url({ environment: activeEnvironment.slug })
-                    : '#',
+            href: envSlug ? requestsIndex.url({ environment: envSlug }) : '#',
+        },
+        {
+            title: summary.route_path ?? summary.url,
+            href: routeHref,
         },
         { title: summary.url, href: '#' },
     ];
