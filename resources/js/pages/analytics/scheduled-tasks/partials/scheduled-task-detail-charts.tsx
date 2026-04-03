@@ -20,7 +20,10 @@ import {
     type ChartConfig,
 } from '@/components/ui/chart';
 import { formatDuration } from '@/lib/utils';
-import type { ScheduledTaskDetailGraphBucket, ScheduledTaskDetailStats } from '../types';
+import type {
+    ScheduledTaskDetailGraphBucket,
+    ScheduledTaskDetailStats,
+} from '../types';
 
 const runsChartConfig = {
     processed: { label: 'Processed', color: 'oklch(0.50 0 0)' },
@@ -38,7 +41,10 @@ interface ScheduledTaskDetailChartsProps {
     stats: ScheduledTaskDetailStats;
 }
 
-export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailChartsProps) {
+export function ScheduledTaskDetailCharts({
+    graph,
+    stats,
+}: ScheduledTaskDetailChartsProps) {
     const runsStats = (
         <div className="flex gap-4 text-sm">
             {(['processed', 'skipped', 'failed'] as const).map((key) => (
@@ -46,7 +52,9 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                     <span className="flex items-center gap-1 text-muted-foreground">
                         <span
                             className="inline-block h-3 w-1 rounded-sm"
-                            style={{ backgroundColor: runsChartConfig[key].color }}
+                            style={{
+                                backgroundColor: runsChartConfig[key].color,
+                            }}
                         />
                         {runsChartConfig[key].label}
                     </span>
@@ -65,7 +73,9 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                     <span className="flex items-center gap-1 text-muted-foreground">
                         <span
                             className="inline-block h-3 w-1 rounded-sm"
-                            style={{ backgroundColor: durationChartConfig[key].color }}
+                            style={{
+                                backgroundColor: durationChartConfig[key].color,
+                            }}
                         />
                         {key.toUpperCase()}
                     </span>
@@ -109,19 +119,34 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                                     label={label}
                                     rows={[
                                         {
-                                            color: runsChartConfig.processed.color,
+                                            color: runsChartConfig.processed
+                                                .color,
                                             label: 'Processed',
-                                            value: payload?.find((p) => p.dataKey === 'processed')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey ===
+                                                        'processed',
+                                                )?.value ?? 0,
                                         },
                                         {
-                                            color: runsChartConfig.skipped.color,
+                                            color: runsChartConfig.skipped
+                                                .color,
                                             label: 'Skipped',
-                                            value: payload?.find((p) => p.dataKey === 'skipped')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'skipped',
+                                                )?.value ?? 0,
                                         },
                                         {
                                             color: runsChartConfig.failed.color,
                                             label: 'Failed',
-                                            value: payload?.find((p) => p.dataKey === 'failed')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'failed',
+                                                )?.value ?? 0,
                                         },
                                     ]}
                                     footer={
@@ -129,7 +154,10 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                                             <span>Total</span>
                                             <span className="font-medium tabular-nums">
                                                 {payload?.reduce(
-                                                    (sum, p) => sum + ((p.value as number) ?? 0),
+                                                    (sum, p) =>
+                                                        sum +
+                                                        ((p.value as number) ??
+                                                            0),
                                                     0,
                                                 ) ?? 0}
                                             </span>
@@ -138,10 +166,28 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
-                        <Bar dataKey="processed" stackId="a" fill={runsChartConfig.processed.color} radius={0} />
-                        <Bar dataKey="skipped" stackId="a" fill={runsChartConfig.skipped.color} radius={0} />
-                        <Bar dataKey="failed" stackId="a" fill={runsChartConfig.failed.color} radius={[3, 3, 0, 0]} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
+                        <Bar
+                            dataKey="processed"
+                            stackId="a"
+                            fill={runsChartConfig.processed.color}
+                            radius={0}
+                        />
+                        <Bar
+                            dataKey="skipped"
+                            stackId="a"
+                            fill={runsChartConfig.skipped.color}
+                            radius={0}
+                        />
+                        <Bar
+                            dataKey="failed"
+                            stackId="a"
+                            fill={runsChartConfig.failed.color}
+                            radius={[3, 3, 0, 0]}
+                        />
                     </BarChart>
                 )}
             </ChartPanel>
@@ -165,13 +211,41 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
                         <defs>
-                            <linearGradient id="fillStDetAvg" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={durationChartConfig.avg.color} stopOpacity={0.3} />
-                                <stop offset="95%" stopColor={durationChartConfig.avg.color} stopOpacity={0} />
+                            <linearGradient
+                                id="fillStDetAvg"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor={durationChartConfig.avg.color}
+                                    stopOpacity={0.3}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor={durationChartConfig.avg.color}
+                                    stopOpacity={0}
+                                />
                             </linearGradient>
-                            <linearGradient id="fillStDetP95" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={durationChartConfig.p95.color} stopOpacity={0.2} />
-                                <stop offset="95%" stopColor={durationChartConfig.p95.color} stopOpacity={0} />
+                            <linearGradient
+                                id="fillStDetP95"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor={durationChartConfig.p95.color}
+                                    stopOpacity={0.2}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor={durationChartConfig.p95.color}
+                                    stopOpacity={0}
+                                />
                             </linearGradient>
                         </defs>
                         <CartesianGrid
@@ -189,31 +263,44 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                                     label={label}
                                     rows={[
                                         {
-                                            color: durationChartConfig.avg.color,
+                                            color: durationChartConfig.avg
+                                                .color,
                                             label: 'AVG',
                                             value: formatDuration(
-                                                (payload?.find((p) => p.dataKey === 'avg')?.value as number) ?? null,
+                                                (payload?.find(
+                                                    (p) => p.dataKey === 'avg',
+                                                )?.value as number) ?? null,
                                             ),
                                         },
                                         {
-                                            color: durationChartConfig.p95.color,
+                                            color: durationChartConfig.p95
+                                                .color,
                                             label: 'P95',
                                             value: formatDuration(
-                                                (payload?.find((p) => p.dataKey === 'p95')?.value as number) ?? null,
+                                                (payload?.find(
+                                                    (p) => p.dataKey === 'p95',
+                                                )?.value as number) ?? null,
                                             ),
                                         },
                                     ]}
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Area
                             type="linear"
                             dataKey="p95"
                             stroke={durationChartConfig.p95.color}
                             strokeWidth={2}
                             fill="url(#fillStDetP95)"
-                            dot={isolatedDot(graph, 'p95', durationChartConfig.p95.color)}
+                            dot={isolatedDot(
+                                graph,
+                                'p95',
+                                durationChartConfig.p95.color,
+                            )}
                         />
                         <Area
                             type="linear"
@@ -221,7 +308,11 @@ export function ScheduledTaskDetailCharts({ graph, stats }: ScheduledTaskDetailC
                             stroke={durationChartConfig.avg.color}
                             strokeWidth={2}
                             fill="url(#fillStDetAvg)"
-                            dot={isolatedDot(graph, 'avg', durationChartConfig.avg.color)}
+                            dot={isolatedDot(
+                                graph,
+                                'avg',
+                                durationChartConfig.avg.color,
+                            )}
                         />
                     </AreaChart>
                 )}

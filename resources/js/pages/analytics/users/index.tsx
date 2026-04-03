@@ -2,7 +2,14 @@ import { Deferred, Head } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { UserCharts } from './partials/user-charts';
 import { UserTable } from './partials/user-table';
-import type { GraphBucket, Pagination, SortDir, SortKey, Stats, UserRow } from './types';
+import type {
+    GraphBucket,
+    Pagination,
+    SortDir,
+    SortKey,
+    Stats,
+    UserRow,
+} from './types';
 
 interface Props {
     graph?: GraphBucket[];

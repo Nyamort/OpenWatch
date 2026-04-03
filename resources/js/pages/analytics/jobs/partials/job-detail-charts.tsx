@@ -47,8 +47,7 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                         <span
                             className="inline-block h-3 w-1 rounded-sm"
                             style={{
-                                backgroundColor:
-                                    attemptsChartConfig[key].color,
+                                backgroundColor: attemptsChartConfig[key].color,
                             }}
                         />
                         {attemptsChartConfig[key].label}
@@ -141,7 +140,8 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                                             value:
                                                 payload?.find(
                                                     (p) =>
-                                                        p.dataKey === 'released',
+                                                        p.dataKey ===
+                                                        'released',
                                                 )?.value ?? 0,
                                         },
                                     ]}

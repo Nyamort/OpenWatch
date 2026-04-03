@@ -193,11 +193,7 @@ export function ScheduledTaskCharts({
             <ChartPanel
                 config={durationChartConfig}
                 title="Duration"
-                heroValue={
-                    stats.avg !== null
-                        ? formatDuration(stats.avg)
-                        : '—'
-                }
+                heroValue={stats.avg !== null ? formatDuration(stats.avg) : '—'}
                 legendStats={durationStats}
                 firstBucket={graph[0]?.bucket}
                 lastBucket={graph[graph.length - 1]?.bucket}

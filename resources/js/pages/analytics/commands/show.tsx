@@ -88,7 +88,10 @@ export default function CommandShow({
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <CommandDetailCharts graph={graph!} stats={stats!} />
             </Deferred>
-            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['runs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <CommandDetailTable
                     runs={runs!}
                     pagination={pagination!}

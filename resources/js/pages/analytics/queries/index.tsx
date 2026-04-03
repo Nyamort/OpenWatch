@@ -67,10 +67,7 @@ export default function QueriesIndex({
     return (
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <Deferred
-                data={['graph', 'stats']}
-                fallback={<ChartsSkeleton />}
-            >
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <QueryCharts graph={graph!} stats={stats!} />
             </Deferred>
             <Deferred

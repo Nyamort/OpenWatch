@@ -88,7 +88,10 @@ export default function ScheduledTaskShow({
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <ScheduledTaskDetailCharts graph={graph!} stats={stats!} />
             </Deferred>
-            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['runs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <ScheduledTaskDetailTable
                     runs={runs!}
                     pagination={pagination!}

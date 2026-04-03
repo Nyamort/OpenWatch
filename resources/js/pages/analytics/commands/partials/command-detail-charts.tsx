@@ -37,7 +37,10 @@ interface CommandDetailChartsProps {
     stats: CommandDetailStats;
 }
 
-export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) {
+export function CommandDetailCharts({
+    graph,
+    stats,
+}: CommandDetailChartsProps) {
     const callsStats = (
         <div className="flex gap-4 text-sm">
             {(['successful', 'failed'] as const).map((key) => (
@@ -112,19 +115,24 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                     label={label}
                                     rows={[
                                         {
-                                            color: callsChartConfig.successful.color,
+                                            color: callsChartConfig.successful
+                                                .color,
                                             label: 'Successful',
                                             value:
                                                 payload?.find(
-                                                    (p) => p.dataKey === 'successful',
+                                                    (p) =>
+                                                        p.dataKey ===
+                                                        'successful',
                                                 )?.value ?? 0,
                                         },
                                         {
-                                            color: callsChartConfig.failed.color,
+                                            color: callsChartConfig.failed
+                                                .color,
                                             label: 'Failed',
                                             value:
                                                 payload?.find(
-                                                    (p) => p.dataKey === 'failed',
+                                                    (p) =>
+                                                        p.dataKey === 'failed',
                                                 )?.value ?? 0,
                                         },
                                     ]}
@@ -134,7 +142,9 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                             <span className="font-medium tabular-nums">
                                                 {payload?.reduce(
                                                     (sum, p) =>
-                                                        sum + ((p.value as number) ?? 0),
+                                                        sum +
+                                                        ((p.value as number) ??
+                                                            0),
                                                     0,
                                                 ) ?? 0}
                                             </span>
@@ -143,7 +153,10 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Bar
                             dataKey="successful"
                             stackId="a"
@@ -231,7 +244,8 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                     label={label}
                                     rows={[
                                         {
-                                            color: durationChartConfig.avg.color,
+                                            color: durationChartConfig.avg
+                                                .color,
                                             label: 'AVG',
                                             value: formatDuration(
                                                 (payload?.find(
@@ -240,7 +254,8 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                             ),
                                         },
                                         {
-                                            color: durationChartConfig.p95.color,
+                                            color: durationChartConfig.p95
+                                                .color,
                                             label: 'P95',
                                             value: formatDuration(
                                                 (payload?.find(
@@ -252,14 +267,21 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Area
                             type="linear"
                             dataKey="p95"
                             stroke={durationChartConfig.p95.color}
                             strokeWidth={2}
                             fill="url(#fillCmdDetP95)"
-                            dot={isolatedDot(graph, 'p95', durationChartConfig.p95.color)}
+                            dot={isolatedDot(
+                                graph,
+                                'p95',
+                                durationChartConfig.p95.color,
+                            )}
                         />
                         <Area
                             type="linear"
@@ -267,7 +289,11 @@ export function CommandDetailCharts({ graph, stats }: CommandDetailChartsProps) 
                             stroke={durationChartConfig.avg.color}
                             strokeWidth={2}
                             fill="url(#fillCmdDetAvg)"
-                            dot={isolatedDot(graph, 'avg', durationChartConfig.avg.color)}
+                            dot={isolatedDot(
+                                graph,
+                                'avg',
+                                durationChartConfig.avg.color,
+                            )}
                         />
                     </AreaChart>
                 )}
