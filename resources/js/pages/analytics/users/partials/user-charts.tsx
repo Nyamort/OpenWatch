@@ -1,6 +1,4 @@
 import {
-    Area,
-    AreaChart,
     Bar,
     BarChart,
     CartesianGrid,
@@ -10,7 +8,6 @@ import {
 import {
     BarCursor,
     ChartPanel,
-    isolatedDot,
     tooltipProps,
 } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
@@ -100,46 +97,21 @@ export function UserCharts({ graph, stats }: UserChartsProps) {
                 lastBucket={graph[graph.length - 1]?.bucket}
             >
                 {(legendContent) => (
-                    <AreaChart
+                    <BarChart
                         syncId="users"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
-                        <defs>
-                            <linearGradient
-                                id="fillAuthUsers"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                            >
-                                <stop
-                                    offset="5%"
-                                    stopColor={
-                                        usersChartConfig.authenticated_users
-                                            .color
-                                    }
-                                    stopOpacity={0.3}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor={
-                                        usersChartConfig.authenticated_users
-                                            .color
-                                    }
-                                    stopOpacity={0}
-                                />
-                            </linearGradient>
-                        </defs>
                         <CartesianGrid
                             vertical={false}
                             strokeDasharray="3 3"
                             className="stroke-border"
                         />
                         <XAxis dataKey="bucket" hide />
-                        <YAxis hide domain={[0, 'auto']} />
+                        <YAxis hide />
                         <ChartTooltip
                             {...tooltipProps}
+                            cursor={<BarCursor />}
                             content={({ active, label, payload }) => (
                                 <AnalyticsTooltip
                                     active={active}
@@ -164,19 +136,12 @@ export function UserCharts({ graph, stats }: UserChartsProps) {
                             verticalAlign="top"
                             content={legendContent}
                         />
-                        <Area
-                            type="linear"
+                        <Bar
                             dataKey="authenticated_users"
-                            stroke={usersChartConfig.authenticated_users.color}
-                            strokeWidth={2}
-                            fill="url(#fillAuthUsers)"
-                            dot={isolatedDot(
-                                graph,
-                                'authenticated_users',
-                                usersChartConfig.authenticated_users.color,
-                            )}
+                            fill={usersChartConfig.authenticated_users.color}
+                            radius={[3, 3, 0, 0]}
                         />
-                    </AreaChart>
+                    </BarChart>
                 )}
             </ChartPanel>
 
