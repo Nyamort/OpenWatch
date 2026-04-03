@@ -150,7 +150,7 @@ class BuildUserIndexData
                 coalesce(e.exception_count, 0) AS exception_count,
                 ua.last_activity AS last_seen
             FROM (
-                SELECT username, any(name) AS name, max(recorded_at) AS last_activity
+                SELECT username, any(user_id) AS user_id, any(name) AS name, max(recorded_at) AS last_activity
                 FROM extraction_user_activities
                 WHERE {$baseConditions} AND {$emailFilter}
                 GROUP BY username
@@ -165,19 +165,19 @@ class BuildUserIndexData
                 FROM extraction_requests
                 WHERE {$baseConditions} AND user != ''
                 GROUP BY user
-            ) AS r ON ua.username = r.user
+            ) AS r ON ua.user_id = r.user
             LEFT JOIN (
                 SELECT user, count() AS job_count
                 FROM extraction_queued_jobs
                 WHERE {$baseConditions} AND user != ''
                 GROUP BY user
-            ) AS j ON ua.username = j.user
+            ) AS j ON ua.user_id = j.user
             LEFT JOIN (
                 SELECT user, count() AS exception_count
                 FROM extraction_exceptions
                 WHERE {$baseConditions} AND user != ''
                 GROUP BY user
-            ) AS e ON ua.username = e.user
+            ) AS e ON ua.user_id = e.user
             ORDER BY {$orderCol} {$orderDir}
             LIMIT {$this->analyticsPerPage} OFFSET {$offset}
         ");
