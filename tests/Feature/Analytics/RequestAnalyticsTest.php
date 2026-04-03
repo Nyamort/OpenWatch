@@ -56,7 +56,7 @@ test('requests index returns graph and stats', function () {
     insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET']);
     insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'GET']);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests";
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -78,7 +78,7 @@ test('requests index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+        ->get("/environments/{$ctx['env']->slug}/analytics/requests");
 
     $response->assertStatus(403);
 });
@@ -86,7 +86,7 @@ test('requests index is blocked for non-members', function () {
 test('requests route view requires auth', function () {
     $ctx = setupAnalyticsContext('req-auth-'.uniqid());
 
-    $response = $this->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests");
+    $response = $this->get("/environments/{$ctx['env']->slug}/analytics/requests");
 
     $response->assertRedirect();
 });
@@ -98,7 +98,7 @@ test('request index groups paths correctly', function () {
     insertRequest($ctx, ['route_path' => '/api/users', 'method' => 'GET', 'route_methods' => 'GET|HEAD', 'status_code' => 500]);
     insertRequest($ctx, ['route_path' => '/api/posts', 'method' => 'POST', 'route_methods' => 'POST']);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests?sort=total&direction=desc";
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests?sort=total&direction=desc";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -126,7 +126,7 @@ test('request index returns correct total count in stats', function () {
     insertRequest($ctx);
     insertRequest($ctx);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/requests";
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([

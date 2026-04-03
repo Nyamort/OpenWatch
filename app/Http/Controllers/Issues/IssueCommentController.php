@@ -11,8 +11,6 @@ use App\Http\Requests\Issues\UpdateCommentRequest;
 use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\IssueComment;
-use App\Models\Organization;
-use App\Models\Project;
 use App\Services\Authorization\PermissionResolver;
 use Illuminate\Http\RedirectResponse;
 
@@ -23,13 +21,11 @@ class IssueCommentController extends Controller
      */
     public function store(
         StoreCommentRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         Issue $issue,
         AddComment $action,
     ): RedirectResponse {
-        $this->abortIfViewer($organization->id);
+        $this->abortIfViewer($environment->project->organization->id);
 
         $action->handle($issue, $request->validated('body'), auth()->user());
 
@@ -41,8 +37,6 @@ class IssueCommentController extends Controller
      */
     public function update(
         UpdateCommentRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         Issue $issue,
         IssueComment $comment,
@@ -57,8 +51,6 @@ class IssueCommentController extends Controller
      * Delete a comment (author or admin/owner).
      */
     public function destroy(
-        Organization $organization,
-        Project $project,
         Environment $environment,
         Issue $issue,
         IssueComment $comment,

@@ -18,9 +18,9 @@ class ExceptionController extends AnalyticsController
     /**
      * Display aggregated exception analytics grouped by group_key.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'last_seen');
@@ -48,9 +48,9 @@ class ExceptionController extends AnalyticsController
     /**
      * Display detail for a specific exception group.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $group): Response
+    public function show(Request $request, string $environment, string $group): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $data = $this->buildDetail->handle($ctx, $period, $group);

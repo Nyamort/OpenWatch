@@ -16,9 +16,9 @@ class CacheEventController extends AnalyticsController
     /**
      * Display aggregated cache event analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'total');

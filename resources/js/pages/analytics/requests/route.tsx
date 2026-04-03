@@ -73,11 +73,7 @@ export default function RequestsRoute({
             title: 'Requests',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? requestsIndex.url({
-                          organization: activeOrganization.slug,
-                          project: activeProject.slug,
-                          environment: activeEnvironment.slug,
-                      })
+                    ? requestsIndex.url({ environment: activeEnvironment.slug })
                     : '#',
         },
         { title: route_path || 'Unmatched Route', href: '#' },

@@ -12,8 +12,6 @@ use App\Http\Requests\Alerts\DeleteAlertRuleRequest;
 use App\Http\Requests\Alerts\UpdateAlertRuleRequest;
 use App\Models\AlertRule;
 use App\Models\Environment;
-use App\Models\Organization;
-use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,8 +21,11 @@ class AlertRuleController extends Controller
     /**
      * Display a listing of alert rules for the environment.
      */
-    public function index(Organization $organization, Project $project, Environment $environment): Response
+    public function index(Environment $environment): Response
     {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->authorize('view', $organization);
 
         $rules = AlertRule::query()
@@ -46,8 +47,11 @@ class AlertRuleController extends Controller
     /**
      * Show the form for creating a new alert rule.
      */
-    public function create(Organization $organization, Project $project, Environment $environment): Response
+    public function create(Environment $environment): Response
     {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->authorize('create', new AlertRule(['organization_id' => $organization->id]));
 
         $members = $organization->members()->with('user', 'role')->get();
@@ -65,23 +69,27 @@ class AlertRuleController extends Controller
      */
     public function store(
         CreateAlertRuleRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         CreateAlertRule $action,
     ): RedirectResponse {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->authorize('create', new AlertRule(['organization_id' => $organization->id]));
 
         $action->handle($organization, $project, $environment, $request->validated());
 
-        return to_route('organizations.alert-rules.index', [$organization, $project, $environment]);
+        return to_route('alert-rules.index', $environment);
     }
 
     /**
      * Show the form for editing an existing alert rule.
      */
-    public function edit(Organization $organization, Project $project, Environment $environment, AlertRule $alertRule): Response
+    public function edit(Environment $environment, AlertRule $alertRule): Response
     {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->authorize('update', $alertRule);
 
         $members = $organization->members()->with('user', 'role')->get();
@@ -100,17 +108,17 @@ class AlertRuleController extends Controller
      */
     public function update(
         UpdateAlertRuleRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         AlertRule $alertRule,
         UpdateAlertRule $action,
     ): RedirectResponse {
+        $organization = $environment->project->organization;
+
         $this->authorize('update', $alertRule);
 
         $action->handle($organization, $alertRule, $request->validated());
 
-        return to_route('organizations.alert-rules.index', [$organization, $project, $environment]);
+        return to_route('alert-rules.index', $environment);
     }
 
     /**
@@ -118,8 +126,6 @@ class AlertRuleController extends Controller
      */
     public function destroy(
         DeleteAlertRuleRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         AlertRule $alertRule,
         DeleteAlertRule $action,
@@ -128,15 +134,13 @@ class AlertRuleController extends Controller
 
         $action->handle($alertRule, $request->validated()['confirmation']);
 
-        return to_route('organizations.alert-rules.index', [$organization, $project, $environment]);
+        return to_route('alert-rules.index', $environment);
     }
 
     /**
      * Toggle the enabled state of the specified alert rule.
      */
     public function toggle(
-        Organization $organization,
-        Project $project,
         Environment $environment,
         AlertRule $alertRule,
         ToggleAlertRule $action,
@@ -145,6 +149,6 @@ class AlertRuleController extends Controller
 
         $action->handle($alertRule);
 
-        return to_route('organizations.alert-rules.index', [$organization, $project, $environment]);
+        return to_route('alert-rules.index', $environment);
     }
 }

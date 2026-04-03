@@ -50,7 +50,7 @@ test('mail index groups by class', function () {
     insertMail($ctx, ['class' => 'App\\Mail\\WelcomeMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 300]);
     insertMail($ctx, ['class' => 'App\\Mail\\ResetMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 150]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail";
+    $url = "/environments/{$ctx['env']->slug}/analytics/mail";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -72,7 +72,7 @@ test('mail index shows count and avg per class', function () {
     insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 0, 'duration' => 400]);
     insertMail($ctx, ['class' => 'App\\Mail\\TestMail', 'mailer' => 'smtp', 'failed' => 1, 'duration' => 100]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/mail";
+    $url = "/environments/{$ctx['env']->slug}/analytics/mail";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
 use Closure;
@@ -19,9 +20,17 @@ class EnsureOrganizationMember
     {
         $resolved = $request->route('organization');
 
-        $organization = $resolved instanceof Organization
-            ? $resolved
-            : Organization::where('slug', $resolved)->firstOrFail();
+        if ($resolved !== null) {
+            $organization = $resolved instanceof Organization
+                ? $resolved
+                : Organization::where('slug', $resolved)->firstOrFail();
+        } else {
+            $env = $request->route('environment');
+            $environment = $env instanceof Environment
+                ? $env
+                : Environment::with('project.organization')->where('slug', $env)->firstOrFail();
+            $organization = $environment->project->organization;
+        }
 
         $member = OrganizationMember::query()
             ->where('organization_id', $organization->id)

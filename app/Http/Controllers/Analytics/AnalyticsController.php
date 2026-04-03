@@ -16,12 +16,12 @@ abstract class AnalyticsController extends Controller
     /**
      * Resolve the analytics context from the request route parameters.
      */
-    protected function resolveContext(Request $request, string $org, string $project, string $env): AnalyticsContext
+    protected function resolveContext(Request $request, string $env): AnalyticsContext
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        return app(AnalyticsContextResolver::class)->resolve($org, $project, $env, $user);
+        return app(AnalyticsContextResolver::class)->resolve($env, $user);
     }
 
     /**

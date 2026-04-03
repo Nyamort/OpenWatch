@@ -30,9 +30,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('wizard/app', [WizardController::class, 'store'])->name('wizard.app');
     Route::patch('wizard/app/{project}', [WizardController::class, 'update'])->name('wizard.app.update');
 
-    Route::middleware(['organization.member'])->prefix('organizations/{organization}')->name('organizations.')->group(function () {
+    Route::middleware(['organization.member'])->group(function () {
         // Issues
-        Route::prefix('projects/{project}/environments/{environment}/issues')
+        Route::prefix('environments/{environment}/issues')
             ->name('issues.')
             ->group(function () {
                 Route::get('/', [IssueController::class, 'index'])->name('index');
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             });
 
         // Alert Rules
-        Route::prefix('projects/{project}/environments/{environment}/alert-rules')
+        Route::prefix('environments/{environment}/alert-rules')
             ->name('alert-rules.')
             ->group(function () {
                 Route::get('/', [AlertRuleController::class, 'index'])->name('index');

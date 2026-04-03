@@ -224,9 +224,6 @@ export function QueryTable({
                                 onClick={() =>
                                     router.visit(
                                         show.url({
-                                            organization:
-                                                activeOrganization.slug,
-                                            project: activeProject.slug,
                                             environment: activeEnvironment.slug,
                                             query: row.sql_hash,
                                         }),

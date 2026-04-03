@@ -15,7 +15,7 @@ use App\Http\Controllers\Analytics\UserAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'organization.member'])
-    ->prefix('organizations/{organization}/projects/{project}/environments/{environment}/analytics')
+    ->prefix('environments/{environment}/analytics')
     ->name('analytics.')
     ->group(function () {
         // Request analytics

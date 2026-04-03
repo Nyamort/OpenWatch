@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import { index } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
 
 interface Issue {
@@ -93,7 +94,7 @@ export default function IssuesIndex({
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [search, setSearch] = useState(filters.search ?? '');
 
-    const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/issues`;
+    const baseUrl = index.url(environment);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {

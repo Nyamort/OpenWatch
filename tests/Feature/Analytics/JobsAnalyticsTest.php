@@ -49,7 +49,7 @@ test('jobs index shows job list', function () {
     insertJobAttempt($ctx, ['name' => 'App\\Jobs\\SendEmail', 'status' => 'failed']);
     insertJobAttempt($ctx, ['name' => 'App\\Jobs\\ProcessOrder', 'status' => 'processed']);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/jobs";
+    $url = "/environments/{$ctx['env']->slug}/analytics/jobs";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -72,7 +72,7 @@ test('jobs index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/jobs");
+        ->get("/environments/{$ctx['env']->slug}/analytics/jobs");
 
     $response->assertStatus(403);
 });

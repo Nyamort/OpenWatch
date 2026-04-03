@@ -4,6 +4,7 @@ import { SnapshotRenderer } from '@/components/issues/snapshot-renderer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { index, show } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
 
 interface IssueSource {
@@ -114,8 +115,8 @@ export default function IssueShow({
     issue,
     comments,
 }: Props) {
-    const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/issues`;
-    const issueUrl = `${baseUrl}/${issue.id}`;
+    const baseUrl = index.url(environment);
+    const issueUrl = show.url({ environment, issue: issue.id });
 
     const breadcrumbs: BreadcrumbItem[] = [
         {

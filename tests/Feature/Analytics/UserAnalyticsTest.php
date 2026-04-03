@@ -78,7 +78,7 @@ test('user analytics returns graph and stats via deferred props', function () {
     insertUserRequest($ctx, $email2);
     insertUserRequest($ctx, '');  // guest
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
+    $url = "/environments/{$ctx['env']->slug}/analytics/users";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -107,7 +107,7 @@ test('user analytics table rows contain expected columns', function () {
     insertUserRequest($ctx, $email, ['status_code' => 404]);
     insertUserRequest($ctx, $email, ['status_code' => 500]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users";
+    $url = "/environments/{$ctx['env']->slug}/analytics/users";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -137,7 +137,7 @@ test('user analytics is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/users");
+        ->get("/environments/{$ctx['env']->slug}/analytics/users");
 
     $response->assertStatus(403);
 });

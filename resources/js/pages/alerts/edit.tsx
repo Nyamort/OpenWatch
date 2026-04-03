@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { update } from '@/actions/App/Http/Controllers/Alerts/AlertRuleController';
 
 interface Member {
     id: number;
@@ -22,21 +23,17 @@ interface AlertRule {
 }
 
 interface Props {
-    organization: { slug: string };
-    project: { slug: string };
     environment: { slug: string };
     alertRule: AlertRule;
     members: Member[];
 }
 
 export default function EditAlertRule({
-    organization,
-    project,
     environment,
     alertRule,
     members,
 }: Props) {
-    const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/alert-rules/${alertRule.id}`;
+    const baseUrl = update.url({ environment, alertRule: alertRule.id });
     const { data, setData, patch, errors } = useForm({
         name: alertRule.name,
         metric: alertRule.metric,

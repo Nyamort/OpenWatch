@@ -128,9 +128,6 @@ export function NotificationTable({
                                 onClick={() =>
                                     router.visit(
                                         show.url({
-                                            organization:
-                                                activeOrganization.slug,
-                                            project: activeProject.slug,
                                             environment: activeEnvironment.slug,
                                             notification: row.sample_id,
                                         }),

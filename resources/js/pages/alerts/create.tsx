@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { store } from '@/actions/App/Http/Controllers/Alerts/AlertRuleController';
 
 interface Member {
     id: number;
@@ -8,19 +9,15 @@ interface Member {
 }
 
 interface Props {
-    organization: { slug: string };
-    project: { slug: string };
     environment: { slug: string };
     members: Member[];
 }
 
 export default function CreateAlertRule({
-    organization,
-    project,
     environment,
     members,
 }: Props) {
-    const baseUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/alert-rules`;
+    const baseUrl = store.url(environment);
     const { data, setData, post, errors } = useForm({
         name: '',
         metric: 'error_rate',

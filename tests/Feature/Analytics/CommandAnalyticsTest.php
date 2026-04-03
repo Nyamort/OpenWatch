@@ -46,7 +46,7 @@ test('commands index groups by name with status counters', function () {
     insertCommand($ctx, ['name' => 'app:sync', 'exit_code' => 1, 'duration' => 50]);
     insertCommand($ctx, ['name' => 'app:import', 'exit_code' => 0, 'duration' => 1000]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/commands?sort=total&direction=desc";
+    $url = "/environments/{$ctx['env']->slug}/analytics/commands?sort=total&direction=desc";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -73,7 +73,7 @@ test('commands index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/commands");
+        ->get("/environments/{$ctx['env']->slug}/analytics/commands");
 
     $response->assertStatus(403);
 });

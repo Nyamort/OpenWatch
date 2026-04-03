@@ -18,9 +18,9 @@ class ScheduledTaskController extends AnalyticsController
     /**
      * Display aggregated scheduled task analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'task');
@@ -48,9 +48,9 @@ class ScheduledTaskController extends AnalyticsController
     /**
      * Display detail analytics for a scheduled task (name + cron).
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $scheduledTask): Response
+    public function show(Request $request, string $environment, string $scheduledTask): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $name = (string) $request->query('name', '');

@@ -72,11 +72,7 @@ export default function ScheduledTaskShow({
             title: 'Scheduled Tasks',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? scheduledTasksIndex.url({
-                          organization: activeOrganization.slug,
-                          project: activeProject.slug,
-                          environment: activeEnvironment.slug,
-                      })
+                    ? scheduledTasksIndex.url({ environment: activeEnvironment.slug })
                     : '#',
         },
         { title: name || 'Unknown Task', href: '#' },

@@ -102,11 +102,7 @@ export default function RequestShow({ analytics }: Props) {
             title: 'Requests',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? requestsIndex.url({
-                          organization: activeOrganization.slug,
-                          project: activeProject.slug,
-                          environment: activeEnvironment.slug,
-                      })
+                    ? requestsIndex.url({ environment: activeEnvironment.slug })
                     : '#',
         },
         { title: summary.url, href: '#' },

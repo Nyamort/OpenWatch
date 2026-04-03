@@ -18,9 +18,9 @@ class MailController extends AnalyticsController
     /**
      * Display aggregated mail analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'mail');
@@ -48,9 +48,9 @@ class MailController extends AnalyticsController
     /**
      * Display a single mail record.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $mail): Response
+    public function show(Request $request, string $environment, string $mail): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
 
         $data = $this->buildDetail->handle($ctx, $mail);
 

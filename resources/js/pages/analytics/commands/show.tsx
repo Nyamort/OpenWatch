@@ -72,11 +72,7 @@ export default function CommandShow({
             title: 'Commands',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? commandsIndex.url({
-                          organization: activeOrganization.slug,
-                          project: activeProject.slug,
-                          environment: activeEnvironment.slug,
-                      })
+                    ? commandsIndex.url({ environment: activeEnvironment.slug })
                     : '#',
         },
         { title: name || 'Unknown Command', href: '#' },

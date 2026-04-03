@@ -46,7 +46,7 @@ test('issue detail loads all sections', function () {
         'trace_id' => 'trace-abc123',
     ]);
 
-    $baseUrl = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/issues";
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
 
     $response = $this->actingAs($ctx['user'])->get("{$baseUrl}/{$issue->id}");
 
@@ -68,7 +68,7 @@ test('viewer cannot add comment', function () {
         'fingerprint' => hash('sha256', 'viewer-comment-'.uniqid()),
     ]);
 
-    $baseUrl = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/issues";
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
 
     $response = $this->actingAs($viewer)->post("{$baseUrl}/{$issue->id}/comments", [
         'body' => 'This should be blocked.',

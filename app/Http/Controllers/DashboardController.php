@@ -72,7 +72,7 @@ class DashboardController extends Controller
         }
 
         try {
-            $ctx = $this->contextResolver->resolve($orgSlug, $projectSlug, $envSlug, $user);
+            $ctx = $this->contextResolver->resolve($envSlug, $user);
             $period = $this->periodService->parse($periodStr);
         } catch (\Throwable) {
             return Inertia::render('dashboard', [

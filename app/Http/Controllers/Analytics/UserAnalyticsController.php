@@ -18,9 +18,9 @@ class UserAnalyticsController extends AnalyticsController
     /**
      * Display aggregated user analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'request_count');
@@ -48,9 +48,9 @@ class UserAnalyticsController extends AnalyticsController
     /**
      * Display detail view for a specific user.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $user): Response
+    public function show(Request $request, string $environment, string $user): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $data = $this->buildDetail->handle($ctx, $period, $user);

@@ -62,8 +62,6 @@ export function JobTable({
         return analyticsHref(
             jobShow.url(
                 {
-                    organization: activeOrganization.slug,
-                    project: activeProject.slug,
                     environment: activeEnvironment.slug,
                     job: 0,
                 },

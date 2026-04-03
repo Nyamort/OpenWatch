@@ -123,9 +123,6 @@ export function MailTable({
                                 onClick={() =>
                                     router.visit(
                                         show.url({
-                                            organization:
-                                                activeOrganization.slug,
-                                            project: activeProject.slug,
                                             environment: activeEnvironment.slug,
                                             mail: row.sample_id,
                                         }),

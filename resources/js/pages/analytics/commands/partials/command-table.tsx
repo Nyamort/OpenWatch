@@ -57,8 +57,6 @@ export function CommandTable({
         return analyticsHref(
             commandShow.url(
                 {
-                    organization: activeOrganization.slug,
-                    project: activeProject.slug,
                     environment: activeEnvironment.slug,
                     command: 0,
                 },

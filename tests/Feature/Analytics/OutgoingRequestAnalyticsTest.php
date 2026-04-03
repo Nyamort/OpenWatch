@@ -46,7 +46,7 @@ test('outgoing requests index returns graph, stats and hosts', function () {
     insertOutgoingRequest($ctx, ['host' => 'api.example.com', 'status_code' => 404]);
     insertOutgoingRequest($ctx, ['host' => 'cdn.example.com', 'status_code' => 200]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
+    $url = "/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -73,7 +73,7 @@ test('outgoing requests stats count success, 4xx, and 5xx correctly', function (
     insertOutgoingRequest($ctx, ['status_code' => 404]);
     insertOutgoingRequest($ctx, ['status_code' => 500]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
+    $url = "/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -97,7 +97,7 @@ test('outgoing requests table groups by host', function () {
     insertOutgoingRequest($ctx, ['host' => 'api.example.com', 'status_code' => 200, 'duration' => 300]);
     insertOutgoingRequest($ctx, ['host' => 'cdn.example.com', 'status_code' => 404, 'duration' => 50]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
+    $url = "/environments/{$ctx['env']->slug}/analytics/outgoing-requests";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -122,7 +122,7 @@ test('outgoing requests index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/outgoing-requests");
+        ->get("/environments/{$ctx['env']->slug}/analytics/outgoing-requests");
 
     $response->assertStatus(403);
 });
@@ -130,7 +130,7 @@ test('outgoing requests index is blocked for non-members', function () {
 test('outgoing requests index requires auth', function () {
     $ctx = setupOutgoingContext(uniqid());
 
-    $response = $this->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/outgoing-requests");
+    $response = $this->get("/environments/{$ctx['env']->slug}/analytics/outgoing-requests");
 
     $response->assertRedirect();
 });

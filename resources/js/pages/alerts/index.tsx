@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { create } from '@/actions/App/Http/Controllers/Alerts/AlertRuleController';
 
 interface AlertRule {
     id: number;
@@ -13,18 +14,14 @@ interface AlertRule {
 
 interface Props {
     alertRules: AlertRule[];
-    organization: { slug: string };
-    project: { slug: string };
     environment: { slug: string };
 }
 
 export default function AlertsIndex({
     alertRules,
-    organization,
-    project,
     environment,
 }: Props) {
-    const createUrl = `/organizations/${organization.slug}/projects/${project.slug}/environments/${environment.slug}/alert-rules/create`;
+    const createUrl = create.url(environment);
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Alert Rules', href: '#' }]}>

@@ -56,7 +56,7 @@ test('exceptions index groups by group_key', function () {
     insertException($ctx, ['group_key' => $groupKey, 'class' => 'App\\Exceptions\\MyException', 'handled' => 1]);
     insertException($ctx, ['group_key' => hash('sha256', 'OtherException'), 'class' => 'App\\Exceptions\\OtherException', 'handled' => 0]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions";
+    $url = "/environments/{$ctx['env']->slug}/analytics/exceptions";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -79,7 +79,7 @@ test('exceptions index row for group shows correct count and global stats show h
     insertException($ctx, ['group_key' => $groupKey, 'handled' => 0]);
     insertException($ctx, ['group_key' => $groupKey, 'handled' => 1]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions";
+    $url = "/environments/{$ctx['env']->slug}/analytics/exceptions";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -100,7 +100,7 @@ test('exceptions index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/exceptions");
+        ->get("/environments/{$ctx['env']->slug}/analytics/exceptions");
 
     $response->assertStatus(403);
 });

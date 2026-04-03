@@ -49,7 +49,7 @@ test('queries index returns rows grouped by sql_hash', function () {
     insertQuery($ctx, ['sql_hash' => $hash, 'sql_normalized' => 'SELECT 1', 'duration' => 500]);
     insertQuery($ctx, ['sql_hash' => $hash, 'sql_normalized' => 'SELECT 1', 'duration' => 1500]);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/queries";
+    $url = "/environments/{$ctx['env']->slug}/analytics/queries";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -71,7 +71,7 @@ test('queries index is blocked for non-members', function () {
     $outsider = User::factory()->create();
 
     $response = $this->actingAs($outsider)
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/queries");
+        ->get("/environments/{$ctx['env']->slug}/analytics/queries");
 
     $response->assertStatus(403);
 });

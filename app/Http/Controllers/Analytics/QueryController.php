@@ -18,9 +18,9 @@ class QueryController extends AnalyticsController
     /**
      * Display aggregated query analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'query');
@@ -55,9 +55,9 @@ class QueryController extends AnalyticsController
     /**
      * Display detail for a specific sql_hash.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $query): Response
+    public function show(Request $request, string $environment, string $query): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $data = $this->buildDetail->handle($ctx, $period, $query);

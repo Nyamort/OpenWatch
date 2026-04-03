@@ -18,9 +18,9 @@ class LogController extends AnalyticsController
     /**
      * Display the log feed.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $data = $this->buildIndex->handle(
@@ -39,9 +39,9 @@ class LogController extends AnalyticsController
     /**
      * Display a single log entry.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $log): Response
+    public function show(Request $request, string $environment, string $log): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
 
         $data = $this->buildDetail->handle($ctx, $log);
 

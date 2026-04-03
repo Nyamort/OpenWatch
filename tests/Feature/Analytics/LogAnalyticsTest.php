@@ -45,7 +45,7 @@ test('log feed is ordered newest-first', function () {
     insertLog($ctx, ['message' => 'Third log', 'recorded_at' => now()->utc()->format('Y-m-d H:i:s')]);
 
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/logs");
+        ->get("/environments/{$ctx['env']->slug}/analytics/logs");
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/logs/index')
@@ -63,7 +63,7 @@ test('log feed filters by level', function () {
     insertLog($ctx, ['level' => 'debug', 'message' => 'Debug message']);
 
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/logs?level=error");
+        ->get("/environments/{$ctx['env']->slug}/analytics/logs?level=error");
 
     $response->assertInertia(fn ($page) => $page
         ->has('analytics.rows', 1)
@@ -78,7 +78,7 @@ test('log feed with unknown level returns all logs', function () {
     insertLog($ctx, ['level' => 'error']);
 
     $response = $this->actingAs($ctx['user'])
-        ->get("/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/logs?level=unknown");
+        ->get("/environments/{$ctx['env']->slug}/analytics/logs?level=unknown");
 
     $response->assertInertia(fn ($page) => $page
         ->has('analytics.rows', 2)

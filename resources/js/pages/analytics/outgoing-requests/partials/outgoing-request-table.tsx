@@ -56,11 +56,7 @@ export function OutgoingRequestTable({
     function handleRowClick(host: string) {
         router.visit(
             hostRoute.url(
-                {
-                    organization: activeOrganization.slug,
-                    project: activeProject.slug,
-                    environment: activeEnvironment.slug,
-                },
+                { environment: activeEnvironment.slug },
                 { query: { host } },
             ),
         );

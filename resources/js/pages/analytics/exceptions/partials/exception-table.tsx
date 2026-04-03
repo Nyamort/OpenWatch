@@ -127,9 +127,6 @@ export function ExceptionTable({
                                 onClick={() =>
                                     router.visit(
                                         show.url({
-                                            organization:
-                                                activeOrganization.slug,
-                                            project: activeProject.slug,
                                             environment: activeEnvironment.slug,
                                             group: row.group_key,
                                         }),

@@ -63,8 +63,6 @@ export function ScheduledTaskTable({
         return analyticsHref(
             scheduledTaskShow.url(
                 {
-                    organization: activeOrganization.slug,
-                    project: activeProject.slug,
                     environment: activeEnvironment.slug,
                     scheduledTask: 0,
                 },

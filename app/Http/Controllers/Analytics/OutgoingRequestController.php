@@ -18,9 +18,9 @@ class OutgoingRequestController extends AnalyticsController
     /**
      * Display aggregated outgoing request analytics by host.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'host');
@@ -48,9 +48,9 @@ class OutgoingRequestController extends AnalyticsController
     /**
      * Display individual requests for a specific host.
      */
-    public function host(Request $request, string $organization, string $project, string $environment): Response
+    public function host(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $data = $this->buildHost->handle(

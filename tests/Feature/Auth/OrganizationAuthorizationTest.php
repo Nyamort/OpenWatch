@@ -21,7 +21,7 @@ test('member of org A cannot access org B resources', function () {
 
     // User A tries to access Org B's analytics
     $response = $this->actingAs($userA)
-        ->get("/organizations/{$orgB->slug}/projects/{$projectB->slug}/environments/{$envB->slug}/analytics/requests");
+        ->get("/environments/{$envB->slug}/analytics/requests");
 
     $response->assertStatus(403);
 });

@@ -18,9 +18,9 @@ class CommandController extends AnalyticsController
     /**
      * Display aggregated command analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'name');
@@ -48,9 +48,9 @@ class CommandController extends AnalyticsController
     /**
      * Display detail analytics for a command name.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $command): Response
+    public function show(Request $request, string $environment, string $command): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $name = (string) $request->query('name', '');

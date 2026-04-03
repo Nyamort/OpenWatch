@@ -20,9 +20,9 @@ class RequestController extends AnalyticsController
     /**
      * Display aggregated request analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'path');
@@ -50,9 +50,9 @@ class RequestController extends AnalyticsController
     /**
      * Display analytics for a single route.
      */
-    public function route(Request $request, string $organization, string $project, string $environment): Response
+    public function route(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $routePath = (string) $request->query('route_path', '');
@@ -82,9 +82,9 @@ class RequestController extends AnalyticsController
     /**
      * Display detail for a single request.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $requestRecord): Response
+    public function show(Request $request, string $environment, string $requestRecord): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
 
         $data = $this->buildDetail->handle($ctx, $requestRecord);
 

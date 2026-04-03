@@ -18,9 +18,9 @@ class JobsController extends AnalyticsController
     /**
      * Display aggregated jobs analytics.
      */
-    public function index(Request $request, string $organization, string $project, string $environment): Response
+    public function index(Request $request, string $environment): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $sort = (string) $request->query('sort', 'name');
@@ -48,9 +48,9 @@ class JobsController extends AnalyticsController
     /**
      * Display charts and attempts for a single job class.
      */
-    public function show(Request $request, string $organization, string $project, string $environment, string $job): Response
+    public function show(Request $request, string $environment, string $job): Response
     {
-        $ctx = $this->resolveContext($request, $organization, $project, $environment);
+        $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
         $name = (string) $request->query('name', '');

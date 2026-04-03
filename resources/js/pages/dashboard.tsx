@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { index as issuesIndex } from '@/routes/issues';
 import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -228,7 +229,7 @@ export default function Dashboard({
                                 </h2>
                                 {context && (
                                     <a
-                                        href={`/organizations/${context.org}/projects/${context.project}/environments/${context.env}/issues`}
+                                        href={issuesIndex.url(context.env)}
                                         className="text-sm text-primary hover:underline"
                                     >
                                         View all →

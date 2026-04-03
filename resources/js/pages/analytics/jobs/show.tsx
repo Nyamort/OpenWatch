@@ -72,11 +72,7 @@ export default function JobShow({
             title: 'Jobs',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? jobsIndex.url({
-                          organization: activeOrganization.slug,
-                          project: activeProject.slug,
-                          environment: activeEnvironment.slug,
-                      })
+                    ? jobsIndex.url({ environment: activeEnvironment.slug })
                     : '#',
         },
         { title: name || 'Unknown Job', href: '#' },

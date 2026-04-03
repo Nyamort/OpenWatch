@@ -62,11 +62,7 @@ export function RequestPathsTable({
 
         return analyticsHref(
             requestRoute.url(
-                {
-                    organization: activeOrganization.slug,
-                    project: activeProject.slug,
-                    environment: activeEnvironment.slug,
-                },
+                { environment: activeEnvironment.slug },
                 {
                     query: {
                         route_path: row.path ?? '',

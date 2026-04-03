@@ -47,7 +47,7 @@ test('cache events index computes hit rate correctly', function () {
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'test:key']);
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'test:key']);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+    $url = "/environments/{$ctx['env']->slug}/analytics/cache-events";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -71,7 +71,7 @@ test('cache hit rate >= 80 is reflected in hit_pct', function () {
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'green:key']);
     insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'green:key']);
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+    $url = "/environments/{$ctx['env']->slug}/analytics/cache-events";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
@@ -93,7 +93,7 @@ test('cache hit rate < 50 is reflected in hit_pct', function () {
         insertCacheEvent($ctx, ['type' => 'miss', 'key' => 'red:key']);
     }
 
-    $url = "/organizations/{$ctx['org']->slug}/projects/{$ctx['project']->slug}/environments/{$ctx['env']->slug}/analytics/cache-events";
+    $url = "/environments/{$ctx['env']->slug}/analytics/cache-events";
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([

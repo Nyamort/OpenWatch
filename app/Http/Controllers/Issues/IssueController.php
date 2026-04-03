@@ -13,8 +13,6 @@ use App\Http\Requests\Issues\StoreIssueRequest;
 use App\Http\Requests\Issues\UpdateIssueRequest;
 use App\Models\Environment;
 use App\Models\Issue;
-use App\Models\Organization;
-use App\Models\Project;
 use App\Services\Authorization\PermissionResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -27,11 +25,12 @@ class IssueController extends Controller
      * Display a listing of issues for the environment.
      */
     public function index(
-        Organization $organization,
-        Project $project,
         Environment $environment,
         BuildIssueListData $action,
     ): Response {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $data = $action->handle($organization, $project, $environment, request());
 
         return Inertia::render('issues/index', [
@@ -49,16 +48,17 @@ class IssueController extends Controller
      */
     public function store(
         StoreIssueRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         CreateIssue $action,
     ): RedirectResponse {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->abortIfViewer($organization->id);
 
         $issue = $action->handle($organization, $project, $environment, auth()->user(), $request->validated());
 
-        return to_route('organizations.issues.show', [$organization, $project, $environment, $issue]);
+        return to_route('issues.show', [$environment, $issue]);
     }
 
     /**
@@ -66,13 +66,13 @@ class IssueController extends Controller
      */
     public function update(
         UpdateIssueRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         Issue $issue,
         UpdateIssueStatus $updateStatus,
         AssignIssue $assignIssue,
     ): RedirectResponse {
+        $organization = $environment->project->organization;
+
         $this->abortIfViewer($organization->id);
 
         $validated = $request->validated();
@@ -93,11 +93,12 @@ class IssueController extends Controller
      */
     public function bulkUpdate(
         BulkUpdateIssuesRequest $request,
-        Organization $organization,
-        Project $project,
         Environment $environment,
         BulkUpdateIssues $action,
     ): JsonResponse {
+        $project = $environment->project;
+        $organization = $project->organization;
+
         $this->abortIfViewer($organization->id);
 
         $validated = $request->validated();
