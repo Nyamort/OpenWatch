@@ -11,7 +11,7 @@ class BuildAttemptDetailData
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
-     * Fetch a single job attempt with related logs, queries, and exceptions by attempt_id.
+     * Fetch a single job attempt with its user details and related events.
      *
      * @return array<string, mixed>
      */
@@ -58,13 +58,38 @@ class BuildAttemptDetailData
             ORDER BY recorded_at
         ")->toArray();
 
+        $userDetails = $this->fetchUserDetails($orgId, $attempt->user ?? null);
+        $summary = array_merge((array) $attempt, [
+            'user_name' => $userDetails?->name,
+            'user_email' => $userDetails?->username,
+        ]);
+
         return (new AnalyticsResponseBuilder)
-            ->withSummary((array) $attempt)
+            ->withSummary($summary)
             ->withRows([
                 'logs' => $logs,
                 'queries' => $queries,
                 'exceptions' => $exceptions,
             ])
             ->build();
+    }
+
+    private function fetchUserDetails(int $orgId, ?string $userId): ?object
+    {
+        if ($userId === null || $userId === '') {
+            return null;
+        }
+
+        $escapedUserId = ClickHouseService::escape($userId);
+
+        return $this->clickhouse->selectOne("
+            SELECT any(name) AS name, username
+            FROM extraction_user_activities
+            WHERE organization_id = {$orgId}
+              AND user_id = {$escapedUserId}
+              AND username != ''
+            GROUP BY username
+            LIMIT 1
+        ");
     }
 }

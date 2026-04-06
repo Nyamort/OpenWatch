@@ -1,5 +1,6 @@
 import type { VariantProps } from 'class-variance-authority';
 import { ArrowUpRight } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge, type badgeVariants } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import { show as jobShow } from '@/routes/analytics/jobs';
 import type {
     JobAttemptRow,
     JobDetailSortKey,
@@ -25,6 +27,7 @@ interface JobDetailTableProps {
     pagination: Pagination;
     sort: JobDetailSortKey;
     direction: SortDir;
+    environment: string;
 }
 
 const statusVariant: Record<string, VariantProps<typeof badgeVariants>['variant']> = {
@@ -38,6 +41,7 @@ export function JobDetailTable({
     pagination,
     sort,
     direction,
+    environment,
 }: JobDetailTableProps) {
     const { handlePage, handleSort } = useAnalyticsTable<JobDetailSortKey>({
         search: '',
@@ -116,7 +120,8 @@ export function JobDetailTable({
                         attempts.map((row) => (
                             <TableRow
                                 key={row.id}
-                                className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
+                                onClick={() => router.visit(jobShow.url({ environment, job: 0, attempt: row.attempt_id }))}
+                                className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}

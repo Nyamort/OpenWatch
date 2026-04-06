@@ -97,7 +97,7 @@ class BuildJobTypeData
         $offset = $this->pageOffset($page);
 
         $rows = $this->clickhouse->select("
-            SELECT id, recorded_at, connection, queue, status, attempt, duration
+            SELECT id, recorded_at, connection, queue, status, attempt, duration, attempt_id
             FROM extraction_job_attempts
             {$baseWhere}
             ORDER BY {$orderCol} {$orderDir}
@@ -106,6 +106,7 @@ class BuildJobTypeData
 
         $data = $rows->map(fn ($row) => [
             'id' => $row->id,
+            'attempt_id' => $row->attempt_id,
             'recorded_at' => Carbon::parse($row->recorded_at)->format('Y-m-d H:i:s'),
             'connection' => $row->connection,
             'queue' => $row->queue,

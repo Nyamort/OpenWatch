@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Analytics;
 
+use App\Actions\Analytics\Job\BuildAttemptDetailData;
 use App\Actions\Analytics\Job\BuildJobsIndexData;
 use App\Actions\Analytics\Job\BuildJobTypeData;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ class JobsController extends AnalyticsController
     public function __construct(
         private readonly BuildJobsIndexData $buildIndex,
         private readonly BuildJobTypeData $buildDetail,
+        private readonly BuildAttemptDetailData $buildAttemptDetail,
     ) {}
 
     /**
@@ -63,7 +65,7 @@ class JobsController extends AnalyticsController
             return $data ??= $this->buildDetail->handle(ctx: $ctx, period: $period, name: $name, sort: $sort, direction: $direction, page: $page);
         };
 
-        return Inertia::render('analytics/jobs/show', [
+        return Inertia::render('analytics/jobs/type', [
             'graph' => Inertia::defer(fn () => $resolve()['graph']),
             'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'attempts' => Inertia::defer(fn () => $resolve()['attempts']),
@@ -72,6 +74,19 @@ class JobsController extends AnalyticsController
             'period' => $request->query('period', '24h'),
             'sort' => $sort,
             'direction' => $direction,
+        ]);
+    }
+
+    /**
+     * Display details for a specific job attempt.
+     */
+    public function show(Request $request, string $environment, string $job, string $attempt): Response
+    {
+        $ctx = $this->resolveContext($request, $environment);
+        $data = $this->buildAttemptDetail->handle($ctx, $attempt);
+
+        return Inertia::render('analytics/jobs/show', [
+            'analytics' => $data,
         ]);
     }
 }

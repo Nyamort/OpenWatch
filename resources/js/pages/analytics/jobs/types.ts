@@ -63,6 +63,7 @@ export interface JobDetailStats {
 
 export interface JobAttemptRow {
     id: number;
+    attempt_id: string;
     recorded_at: string;
     connection: string;
     queue: string;
