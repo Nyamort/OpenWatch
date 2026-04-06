@@ -76,22 +76,22 @@ function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
         id: execution.id,
         label: execution.name,
         sublabel: execution.description || undefined,
-        durationMs: execution.duration / 1000,
-        offsetMs: execution.offset / 1000,
+        durationUs: execution.duration,
+        offsetUs: execution.offset,
         color: 'teal' as const,
         children: execution.stages.map((stage) => ({
             id: `${execution.id}-${stage.id}`,
             label: stage.name,
             sublabel: stage.description || undefined,
-            durationMs: stage.duration / 1000,
-            offsetMs: stage.offset / 1000,
+            durationUs: stage.duration,
+            offsetUs: stage.offset,
             children: stage.spans.length > 0
                 ? stage.spans.map((span, i) => ({
                     id: `${stage.id}-span-${i}`,
                     label: span.name.toUpperCase(),
                     sublabel: span.description || undefined,
-                    durationMs: span.duration > 0 ? span.duration / 1000 : null,
-                    offsetMs: span.offset / 1000,
+                    durationUs: span.duration > 0 ? span.duration : null,
+                    offsetUs: span.offset,
                 }))
                 : undefined,
         })),
@@ -256,7 +256,7 @@ export default function RequestShow({ analytics }: Props) {
                 </Card>
                 {(summary.duration ?? 0) > 0 && (
                     <Timeline
-                        totalDurationMs={summary.duration! / 1000}
+                        totalDurationUs={summary.duration!}
                         spans={spans}
                     />
                 )}

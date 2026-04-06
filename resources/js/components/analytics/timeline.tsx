@@ -9,17 +9,17 @@ export interface TimelineSpan {
     label: string;
     /** Monospace detail shown next to the label, e.g. a class name or command */
     sublabel?: string;
-    /** Duration in milliseconds. Null renders the span as a text marker instead of a bar. */
-    durationMs: number | null;
-    /** Start offset from the beginning of the trace, in milliseconds */
-    offsetMs: number;
+    /** Duration in microseconds. Null renders the span as a text marker instead of a bar. */
+    durationUs: number | null;
+    /** Start offset from the beginning of the trace, in microseconds */
+    offsetUs: number;
     color?: 'teal' | 'default';
     children?: TimelineSpan[];
 }
 
 interface TimelineProps {
     /** Total duration used as the 100 % reference for bar widths */
-    totalDurationMs: number;
+    totalDurationUs: number;
     spans: TimelineSpan[];
     className?: string;
 }
@@ -47,13 +47,13 @@ function flattenSpans(spans: TimelineSpan[], expandedIds: Set<string>, depth = 0
     return result;
 }
 
-function computeTicks(totalMs: number, targetCount = 4): number[] {
-    const roughStep = totalMs / targetCount;
+function computeTicks(totalUs: number, targetCount = 4): number[] {
+    const roughStep = totalUs / targetCount;
     const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
     const normalised = roughStep / magnitude;
     const niceStep = normalised <= 1 ? magnitude : normalised <= 2 ? 2 * magnitude : normalised <= 5 ? 5 * magnitude : 10 * magnitude;
     const ticks: number[] = [];
-    for (let t = 0; t <= totalMs + niceStep; t += niceStep) {
+    for (let t = 0; t <= totalUs + niceStep; t += niceStep) {
         ticks.push(Math.round(t * 100) / 100);
     }
     return ticks;
@@ -70,11 +70,11 @@ function allExpandableIds(spans: TimelineSpan[]): string[] {
     return ids;
 }
 
-export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
+export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(
         () => new Set(allExpandableIds(spans)),
     );
-    const [cursor, setCursor] = useState<{ x: number; ms: number } | null>(null);
+    const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
     const innerRef = useRef<HTMLDivElement>(null);
     const ticksInnerRef = useRef<HTMLDivElement>(null);
 
@@ -89,10 +89,10 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
         }
     }, []);
 
-    const ticks = useMemo(() => computeTicks(totalDurationMs), [totalDurationMs]);
+    const ticks = useMemo(() => computeTicks(totalDurationUs), [totalDurationUs]);
     const tickStep = ticks[ticks.length - 1] - ticks[ticks.length - 2];
     // Extend the axis by half a tick step so the last bar isn't clipped at the edge
-    const axisDurationMs = ticks[ticks.length - 1] + tickStep / 2;
+    const axisDurationUs = ticks[ticks.length - 1] + tickStep / 2;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -111,17 +111,17 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
             const rect = innerRef.current?.getBoundingClientRect();
             if (!rect) return;
             const x = e.clientX - rect.left;
-            const ms = (x / rect.width) * axisDurationMs;
-            setCursor({ x, ms });
+            const us = (x / rect.width) * axisDurationUs;
+            setCursor({ x, us });
         },
-        [axisDurationMs],
+        [axisDurationUs],
     );
 
     const handleMouseLeave = useCallback(() => setCursor(null), []);
 
     const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
-    const pct = useCallback((ms: number) => `${(ms / axisDurationMs) * 100}%`, [axisDurationMs]);
+    const pct = useCallback((us: number) => `${(us / axisDurationUs) * 100}%`, [axisDurationUs]);
 
     return (
         <div
@@ -180,16 +180,16 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                     {/* Ticks header */}
                     <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
                         <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: MIN_BAR_WIDTH }}>
-                            {ticks.map((ms, i) => (
+                            {ticks.map((us, i) => (
                                 <span
-                                    key={ms}
+                                    key={us}
                                     className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
                                     style={{
-                                        left: pct(ms),
+                                        left: pct(us),
                                         transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
                                     }}
                                 >
-                                    {formatDuration(ms * 1000)}
+                                    {formatDuration(us)}
                                 </span>
                             ))}
                         </div>
@@ -202,7 +202,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                 className="pointer-events-none absolute -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
                                 style={{ left: `${cursor.x}px` }}
                             >
-                                {formatDuration(cursor.ms * 1000)}
+                                {formatDuration(cursor.us)}
                             </div>
                         </div>
                     )}
@@ -218,10 +218,10 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                         >
                             {flatSpans.map(({ span }) => (
                                 <div key={span.id} className={cn('relative shrink-0 overflow-hidden', ROW_HEIGHT)}>
-                                    {span.durationMs === null ? (
+                                    {span.durationUs === null ? (
                                         <span
                                             className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
-                                            style={{ left: pct(span.offsetMs) }}
+                                            style={{ left: pct(span.offsetUs) }}
                                         >
                                             {span.label}
                                             {span.sublabel && (
@@ -239,8 +239,8 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                                     : 'border-neutral-700 bg-neutral-800 text-white',
                                             )}
                                             style={{
-                                                left: pct(span.offsetMs),
-                                                width: pct(span.durationMs),
+                                                left: pct(span.offsetUs),
+                                                width: pct(span.durationUs),
                                                 minWidth: '2px',
                                             }}
                                         >
@@ -248,7 +248,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                                 {span.label}
                                             </span>
                                             <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
-                                                {formatDuration(span.durationMs * 1000)}
+                                                {formatDuration(span.durationUs)}
                                             </span>
                                             {span.sublabel && (
                                                 <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
