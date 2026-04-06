@@ -75,8 +75,8 @@ export function JobDetailTable({
                             sort={sort}
                             direction={direction}
                             onSort={onSort}
-                            align="right"
-                            className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                            align="center"
+                            className="h-11 w-px px-4 text-center text-xs font-medium whitespace-nowrap"
                         >
                             Attempt
                         </SortableHead>
@@ -131,7 +131,7 @@ export function JobDetailTable({
                                         {row.queue}
                                     </span>
                                 </TableCell>
-                                <TableCell className="h-11 w-px px-4 text-right tabular-nums">
+                                <TableCell className="h-11 w-px px-4 text-center tabular-nums">
                                     {row.attempt}
                                 </TableCell>
                                 <TableCell className="h-11 px-4">
