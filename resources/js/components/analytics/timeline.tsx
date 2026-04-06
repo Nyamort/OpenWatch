@@ -110,7 +110,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         (e: React.MouseEvent<HTMLDivElement>) => {
             const rect = innerRef.current?.getBoundingClientRect();
             if (!rect) return;
-            const x = e.clientX - rect.left;
+            const x = Math.max(0, e.clientX - rect.left);
             const us = (x / rect.width) * axisDurationUs;
             setCursor({ x, us });
         },
