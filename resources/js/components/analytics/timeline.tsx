@@ -79,6 +79,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     );
     const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
+    const [containerWidth, setContainerWidth] = useState(BASE_WIDTH);
     const zoomRef = useRef(1);
     const dragRef = useRef<{ startX: number; startZoom: number } | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -89,6 +90,18 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     useEffect(() => {
         setExpandedIds(new Set(allExpandableIds(spans)));
     }, [spans]);
+
+    // Track scroll container width so zoom=1 exactly fills the available space
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver(([entry]) => {
+            const width = entry.contentRect.width;
+            if (width > 0) setContainerWidth(width);
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     // Drag-to-zoom on the ticks header
     useEffect(() => {
@@ -148,7 +161,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     // Extend the axis by half a tick step so the last bar isn't clipped at the edge
     const axisDurationUs = ticks[ticks.length - 1] + tickStep / 2;
 
-    const barWidth = `${BASE_WIDTH * zoomLevel}px`;
+    const barWidth = `${containerWidth * zoomLevel}px`;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -182,7 +195,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     return (
         <div
             className={cn(
-                'rounded-lg border border-white/10 bg-surface font-mono text-xs overflow-clip',
+                'rounded-lg border border-white/10 bg-surface font-mono text-xs overflow-clip contain-inline-size',
                 className,
             )}
         >
