@@ -97,18 +97,37 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     return (
         <div
             className={cn(
-                'flex overflow-hidden rounded-lg border border-white/10 bg-surface font-mono text-xs',
+                'flex flex-col overflow-hidden rounded-lg border border-white/10 bg-surface font-mono text-xs',
                 className,
             )}
         >
-            {/* ── Left label panel ─────────────────────────────────── */}
-            <div className="flex w-64 shrink-0 flex-col border-r border-white/10">
-                <div className="flex h-9 shrink-0 items-center border-b border-white/10 px-3">
+            {/* ── Header ───────────────────────────────────────────── */}
+            <header className="flex h-9 shrink-0 border-b border-white/10">
+                <div className="flex w-64 shrink-0 items-center border-r border-white/10 px-3">
                     <span className="font-sans text-xs font-semibold tracking-wide text-zinc-200">
                         Timeline
                     </span>
                 </div>
+                <div className="relative min-w-0 flex-1 overflow-hidden" style={{ minWidth: '600px' }}>
+                    {ticks.map((ms, i) => (
+                        <span
+                            key={ms}
+                            className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
+                            style={{
+                                left: pct(ms),
+                                transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+                            }}
+                        >
+                            {ms}ms
+                        </span>
+                    ))}
+                </div>
+            </header>
 
+            {/* ── Body ─────────────────────────────────────────────── */}
+            <div className="flex min-h-0 flex-1">
+            {/* ── Left label panel ─────────────────────────────────── */}
+            <div className="flex w-64 shrink-0 flex-col border-r border-white/10">
                 {flatSpans.map(({ span, depth, hasChildren }) => (
                     <div
                         key={span.id}
@@ -152,22 +171,6 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* Time axis */}
-                    <div className="relative h-9 shrink-0 border-b border-white/10">
-                        {ticks.map((ms, i) => (
-                            <span
-                                key={ms}
-                                className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
-                                style={{
-                                    left: pct(ms),
-                                    transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-                                }}
-                            >
-                                {ms}ms
-                            </span>
-                        ))}
-                    </div>
-
                     {/* Span rows */}
                     {flatSpans.map(({ span }) =>
                         span.durationMs === null ? (
@@ -239,6 +242,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                         </>
                     )}
                 </div>
+            </div>
             </div>
         </div>
     );
