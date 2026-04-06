@@ -38,9 +38,9 @@ class BuildQueryDetailData
             SELECT
                 any(sql_normalized) AS sql_preview,
                 count() AS total,
-                toUInt32(round(avg(duration) / 1000.0)) AS avg_duration_ms,
-                toUInt32(round(quantile(0.95)(duration) / 1000.0)) AS p95_duration_ms,
-                toUInt32(round(max(duration) / 1000.0)) AS max_duration_ms
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration) / 1000.0), 0)) AS avg_duration_ms,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration) / 1000.0), 0)) AS p95_duration_ms,
+                toUInt32(if(isFinite(max(duration)), round(max(duration) / 1000.0), 0)) AS max_duration_ms
             FROM extraction_queries
             {$baseWhere}
         ");

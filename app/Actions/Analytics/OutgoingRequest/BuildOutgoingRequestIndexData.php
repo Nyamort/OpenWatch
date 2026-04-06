@@ -45,10 +45,10 @@ class BuildOutgoingRequestIndexData
                 countIf(status_code IS NOT NULL AND status_code < 400) AS success,
                 countIf(status_code >= 400 AND status_code < 500) AS count_4xx,
                 countIf(status_code >= 500) AS count_5xx,
-                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
                 toUInt32(min(duration)) AS min,
                 toUInt32(max(duration)) AS max,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_outgoing_requests
             {$baseWhere}
         ");
@@ -63,8 +63,8 @@ class BuildOutgoingRequestIndexData
                 countIf(status_code IS NOT NULL AND status_code < 400) AS success,
                 countIf(status_code >= 400 AND status_code < 500) AS count_4xx,
                 countIf(status_code >= 500) AS count_5xx,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_outgoing_requests
             {$baseWhere}
             GROUP BY bucket_slot
@@ -138,8 +138,8 @@ class BuildOutgoingRequestIndexData
                 countIf(status_code IS NOT NULL AND status_code < 400) AS success,
                 countIf(status_code >= 400 AND status_code < 500) AS count_4xx,
                 countIf(status_code >= 500) AS count_5xx,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_outgoing_requests
             {$baseWhere}
             GROUP BY host

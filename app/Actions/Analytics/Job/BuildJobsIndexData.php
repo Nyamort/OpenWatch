@@ -41,8 +41,8 @@ class BuildJobsIndexData
                 countIf(status = 'released') AS released,
                 toUInt32(min(duration)) AS min,
                 toUInt32(max(duration)) AS max,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_job_attempts
             {$baseWhere}
         ");
@@ -58,8 +58,8 @@ class BuildJobsIndexData
                 countIf(status = 'processed') AS processed,
                 countIf(status = 'failed') AS failed,
                 countIf(status = 'released') AS released,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_job_attempts
             {$baseWhere}
             GROUP BY bucket_slot
@@ -142,8 +142,8 @@ class BuildJobsIndexData
                 countIf(a.status = 'processed') AS processed,
                 countIf(a.status = 'failed') AS failed,
                 countIf(a.status = 'released') AS released,
-                toUInt32(round(avg(a.duration))) AS avg,
-                toUInt32(round(quantile(0.95)(a.duration))) AS p95,
+                toUInt32(if(isFinite(avg(a.duration)), round(avg(a.duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(a.duration)), round(quantile(0.95)(a.duration)), 0)) AS p95,
                 coalesce(any(q.queued), 0) AS queued
             FROM extraction_job_attempts AS a
             LEFT JOIN (

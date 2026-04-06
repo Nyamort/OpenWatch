@@ -42,10 +42,10 @@ class BuildNotificationIndexData
         $stats = $this->clickhouse->selectOne("
             SELECT
                 count() AS count,
-                toUInt32(round(avg(duration))) AS avg,
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
                 toUInt32(min(duration)) AS min,
                 toUInt32(max(duration)) AS max,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_notifications
             {$baseWhere}
         ");
@@ -58,8 +58,8 @@ class BuildNotificationIndexData
             SELECT
                 intDiv(toUnixTimestamp(recorded_at), {$bucketSeconds}) AS bucket_slot,
                 count() AS count,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_notifications
             {$baseWhere}
             GROUP BY bucket_slot
@@ -126,8 +126,8 @@ class BuildNotificationIndexData
                 class,
                 any(id) AS sample_id,
                 count() AS count,
-                toUInt32(round(avg(duration))) AS avg,
-                toUInt32(round(quantile(0.95)(duration))) AS p95
+                toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
+                toUInt32(if(isFinite(quantile(0.95)(duration)), round(quantile(0.95)(duration)), 0)) AS p95
             FROM extraction_notifications
             {$baseWhere}
             GROUP BY class
