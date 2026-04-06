@@ -71,6 +71,13 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     );
     const [cursor, setCursor] = useState<{ x: number; ms: number } | null>(null);
     const innerRef = useRef<HTMLDivElement>(null);
+    const ticksInnerRef = useRef<HTMLDivElement>(null);
+
+    const handleBarsScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+        if (ticksInnerRef.current) {
+            ticksInnerRef.current.style.transform = `translateX(-${(e.target as HTMLDivElement).scrollLeft}px)`;
+        }
+    }, []);
 
     const ticks = useMemo(() => computeTicks(totalDurationMs), [totalDurationMs]);
     const axisDurationMs = ticks[ticks.length - 1] + (ticks[ticks.length - 1] - ticks[ticks.length - 2]) / 2;
@@ -163,7 +170,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                 <ResizablePanel className="!overflow-visible">
                     {/* Ticks header */}
                     <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
-                        <div className="relative h-full" style={{ minWidth: '600px' }}>
+                        <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: '600px' }}>
                             {ticks.map((ms, i) => (
                                 <span
                                     key={ms}
@@ -180,6 +187,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                     </div>
 
                     {/* Bar rows */}
+                    <div className="overflow-x-auto" onScroll={handleBarsScroll}>
                     <div
                         ref={innerRef}
                         className="relative"
@@ -246,6 +254,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                 </div>
                             </>
                         )}
+                    </div>
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
