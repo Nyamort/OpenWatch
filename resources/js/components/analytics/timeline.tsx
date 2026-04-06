@@ -65,6 +65,8 @@ function allExpandableIds(spans: TimelineSpan[]): string[] {
 }
 
 
+const LABEL_COL_PX = 256; // w-64
+
 export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(
         () => new Set(allExpandableIds(spans)),
@@ -92,7 +94,10 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
             const rect = innerRef.current?.getBoundingClientRect();
             if (!rect) return;
             const x = e.clientX - rect.left;
-            const ms = (x / rect.width) * axisDurationMs;
+            const barX = x - LABEL_COL_PX;
+            const barWidth = rect.width - LABEL_COL_PX;
+            if (barX < 0) return;
+            const ms = (barX / barWidth) * axisDurationMs;
             setCursor({ x, ms });
         },
         [axisDurationMs],
@@ -111,130 +116,114 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                 className,
             )}
         >
-            {/* ── Header ───────────────────────────────────────────── */}
-            <header className="flex h-9 shrink-0 border-b border-white/10">
-                <div className="flex w-64 shrink-0 items-center border-r border-white/10 px-3">
-                    <span className="font-sans text-xs font-semibold tracking-wide text-zinc-200">
-                        Timeline
-                    </span>
-                </div>
-                <div className="relative min-w-0 flex-1 overflow-hidden" style={{ minWidth: '600px' }}>
-                    {ticks.map((ms, i) => (
-                        <span
-                            key={ms}
-                            className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
-                            style={{
-                                left: pct(ms),
-                                transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-                            }}
-                        >
-                            {ms}ms
-                        </span>
-                    ))}
-                </div>
-            </header>
-
-            {/* ── Body ─────────────────────────────────────────────── */}
-            <div className="flex min-h-0 flex-1">
-            {/* ── Left label panel ─────────────────────────────────── */}
-            <div className="flex w-64 shrink-0 flex-col border-r border-white/10">
-                {flatSpans.map(({ span, depth, hasChildren }) => (
-                    <div
-                        key={span.id}
-                        className="flex h-9 shrink-0 items-center gap-1 border-b border-white/5"
-                        style={{ paddingLeft: `${8 + depth * 16}px` }}
-                    >
-                        {hasChildren ? (
-                            <button
-                                onClick={() => toggleExpand(span.id)}
-                                className="flex size-4 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-300"
-                            >
-                                {expandedIds.has(span.id) ? (
-                                    <ChevronDown className="size-3" />
-                                ) : (
-                                    <ChevronRight className="size-3" />
-                                )}
-                            </button>
-                        ) : (
-                            <span className="size-4 shrink-0" />
-                        )}
-
-                        <span className="shrink-0 text-[11px] uppercase tracking-wider text-white">
-                            {span.label}
-                        </span>
-
-                        {span.sublabel && (
-                            <span className="ml-1 truncate text-[10px] text-white/50">
-                                {span.sublabel}
-                            </span>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {/* ── Right timeline panel ──────────────────────────────── */}
-            <div className="relative min-w-0 flex-1 overflow-x-auto overflow-y-hidden min-h-200">
+            {/* ── Single scrollable container ───────────────────────── */}
+            <div className="overflow-auto min-h-200">
                 <div
                     ref={innerRef}
                     className="relative"
-                    style={{ minWidth: '600px' }}
+                    style={{ minWidth: '800px' }}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* Span rows */}
-                    {flatSpans.map(({ span }) =>
-                        span.durationMs === null ? (
-                            /* Text marker (e.g. TERMINATING) */
-                            <div
-                                key={span.id}
-                                className="relative h-9 shrink-0 border-b border-white/5"
-                            >
+                    {/* ── Sticky header row ────────────────────────────── */}
+                    <div className="sticky top-0 z-10 flex h-9 border-b border-white/10 bg-surface">
+                        <div className="sticky left-0 z-20 flex w-64 shrink-0 items-center border-r border-white/10 bg-surface px-3">
+                            <span className="font-sans text-xs font-semibold tracking-wide text-zinc-200">
+                                Timeline
+                            </span>
+                        </div>
+                        <div className="relative flex-1">
+                            {ticks.map((ms, i) => (
                                 <span
-                                    className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
-                                    style={{ left: pct(span.offsetMs) }}
-                                >
-                                    {span.label}
-                                    {span.sublabel && (
-                                        <span className="ml-1.5 font-normal normal-case text-zinc-600">
-                                            {span.sublabel}
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                        ) : (
-                            /* Bar */
-                            <div
-                                key={span.id}
-                                className="relative h-9 shrink-0 border-b border-white/5"
-                            >
-                                <div
-                                    className={cn(
-                                        'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border px-2 backdrop-blur-sm',
-                                        span.color === 'teal'
-                                            ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
-                                            : 'border-neutral-700 bg-neutral-800 text-white',
-                                    )}
+                                    key={ms}
+                                    className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
                                     style={{
-                                        left: pct(span.offsetMs),
-                                        width: pct(span.durationMs),
-                                        minWidth: '2px',
+                                        left: pct(ms),
+                                        transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
                                     }}
                                 >
-                                    <span className="shrink-0 text-[10px] uppercase tracking-wider">
-                                        {span.label}
+                                    {ms}ms
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── Span rows ────────────────────────────────────── */}
+                    {flatSpans.map(({ span, depth, hasChildren }) => (
+                        <div key={span.id} className="flex h-9">
+                            {/* Label cell */}
+                            <div
+                                className="sticky left-0 z-10 flex w-64 shrink-0 items-center gap-1 border-r border-white/10 bg-surface"
+                                style={{ paddingLeft: `${8 + depth * 16}px` }}
+                            >
+                                {hasChildren ? (
+                                    <button
+                                        onClick={() => toggleExpand(span.id)}
+                                        className="flex size-4 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-300"
+                                    >
+                                        {expandedIds.has(span.id) ? (
+                                            <ChevronDown className="size-3" />
+                                        ) : (
+                                            <ChevronRight className="size-3" />
+                                        )}
+                                    </button>
+                                ) : (
+                                    <span className="size-4 shrink-0" />
+                                )}
+                                <span className="shrink-0 text-[11px] uppercase tracking-wider text-white">
+                                    {span.label}
+                                </span>
+                                {span.sublabel && (
+                                    <span className="ml-1 truncate text-[10px] text-white/50">
+                                        {span.sublabel}
                                     </span>
-                                    <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
-                                        {span.durationMs.toFixed(2)}ms
-                                    </span>
-                                    {span.sublabel && (
-                                        <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
-                                            {span.sublabel}
-                                        </span>
-                                    )}
-                                </div>
+                                )}
                             </div>
-                        ),
-                    )}
+
+                            {/* Bar cell */}
+                            <div className="relative flex-1">
+                                {span.durationMs === null ? (
+                                    <span
+                                        className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
+                                        style={{ left: pct(span.offsetMs) }}
+                                    >
+                                        {span.label}
+                                        {span.sublabel && (
+                                            <span className="ml-1.5 font-normal normal-case text-zinc-600">
+                                                {span.sublabel}
+                                            </span>
+                                        )}
+                                    </span>
+                                ) : (
+                                    <div
+                                        className={cn(
+                                            'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border px-2 backdrop-blur-sm',
+                                            span.color === 'teal'
+                                                ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
+                                                : 'border-neutral-700 bg-neutral-800 text-white',
+                                        )}
+                                        style={{
+                                            left: pct(span.offsetMs),
+                                            width: pct(span.durationMs),
+                                            minWidth: '2px',
+                                        }}
+                                    >
+                                        <span className="shrink-0 text-[10px] uppercase tracking-wider">
+                                            {span.label}
+                                        </span>
+                                        <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
+                                            {span.durationMs.toFixed(2)}ms
+                                        </span>
+                                        {span.sublabel && (
+                                            <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
+                                                {span.sublabel}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
 
                     {/* Cursor line + tooltip */}
                     {cursor !== null && (
@@ -244,7 +233,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                 style={{ left: `${cursor.x}px` }}
                             />
                             <div
-                                className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
+                                className="pointer-events-none absolute top-1 z-30 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
                                 style={{ left: `${cursor.x}px` }}
                             >
                                 {`${Math.round(cursor.ms)}ms`}
@@ -252,7 +241,6 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                         </>
                     )}
                 </div>
-            </div>
             </div>
         </div>
     );
