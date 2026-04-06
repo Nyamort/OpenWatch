@@ -226,7 +226,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                     ) : (
                                         <div
                                             className={cn(
-                                                'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border px-2 backdrop-blur-sm',
+                                                'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border backdrop-blur-sm',
                                                 span.color === 'teal'
                                                     ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
                                                     : 'border-neutral-700 bg-neutral-800 text-white',
@@ -237,7 +237,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                                 minWidth: '2px',
                                             }}
                                         >
-                                            <span className="shrink-0 text-[10px] uppercase tracking-wider">
+                                            <span className="shrink-0 px-2 text-[10px] uppercase tracking-wider">
                                                 {span.label}
                                             </span>
                                             <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
