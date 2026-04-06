@@ -139,7 +139,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         () => new Set(allExpandableIds(spans)),
     );
     const [prevSpans, setPrevSpans] = useState(spans);
-    const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
+    const [cursor, setCursor] = useState<{ x: number; tooltipX: number; us: number } | null>(null);
 
     const { zoomLevel, barWidth, scrollRef, innerRef, ticksInnerRef, handleBarsScroll, handleTicksMouseDown, handleTicksDoubleClick } =
         useTimelineZoom();
@@ -171,12 +171,14 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const handleMouseMove = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             const rect = innerRef.current?.getBoundingClientRect();
-            if (!rect) return;
+            const scrollRect = scrollRef.current?.getBoundingClientRect();
+            if (!rect || !scrollRect) return;
             const x = Math.max(0, e.clientX - rect.left);
+            const tooltipX = Math.max(0, e.clientX - scrollRect.left);
             const us = (x / rect.width) * axisDurationUs;
-            setCursor({ x, us });
+            setCursor({ x, tooltipX, us });
         },
-        [axisDurationUs, innerRef],
+        [axisDurationUs, innerRef, scrollRef],
     );
 
     const handleMouseLeave = useCallback(() => setCursor(null), []);
@@ -219,7 +221,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                     <div className="overflow-x-clip">
                         {/* Ticks header — drag left/right to zoom, double-click to reset */}
                         <div
-                            className={cn(STICKY, 'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-surface select-none', ROW_HEIGHT)}
+                            className={cn(STICKY, 'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-surface px-3 select-none', ROW_HEIGHT)}
                             onMouseDown={handleTicksMouseDown}
                             onDoubleClick={handleTicksDoubleClick}
                         >
@@ -254,7 +256,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                             <div className={CURSOR_STICKY}>
                                 <div
                                     className="pointer-events-none absolute -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
-                                    style={{ left: `${cursor.x}px` }}
+                                    style={{ left: `${cursor.tooltipX}px` }}
                                 >
                                     {formatDuration(cursor.us)}
                                 </div>
@@ -262,7 +264,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                         )}
 
                         {/* Bar rows */}
-                        <div ref={scrollRef} className="overflow-x-auto" onScroll={handleBarsScroll}>
+                        <div ref={scrollRef} className="overflow-x-auto px-3" onScroll={handleBarsScroll}>
                             <div
                                 ref={innerRef}
                                 className="relative"
