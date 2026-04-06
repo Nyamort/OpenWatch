@@ -45,12 +45,12 @@ CREATE TABLE IF NOT EXISTS extraction_requests
     files_read          UInt32 DEFAULT 0,
     files_written       UInt32 DEFAULT 0,
     exception_preview   Nullable(String),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_exceptions
@@ -78,12 +78,12 @@ CREATE TABLE IF NOT EXISTS extraction_exceptions
     handled             UInt8 DEFAULT 0,
     php_version         Nullable(String),
     laravel_version     Nullable(String),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_queries
@@ -108,12 +108,12 @@ CREATE TABLE IF NOT EXISTS extraction_queries
     connection          String,
     connection_type     String,
     duration            UInt32,
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_logs
@@ -135,12 +135,12 @@ CREATE TABLE IF NOT EXISTS extraction_logs
     message             String,
     context             String DEFAULT '{}',
     extra               String DEFAULT '{}',
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_cache_events
@@ -163,12 +163,12 @@ CREATE TABLE IF NOT EXISTS extraction_cache_events
     type                LowCardinality(String),
     duration            UInt32,
     ttl                 Nullable(UInt32),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_commands
@@ -201,12 +201,12 @@ CREATE TABLE IF NOT EXISTS extraction_commands
     files_read          UInt32 DEFAULT 0,
     files_written       UInt32 DEFAULT 0,
     exception_preview   Nullable(String),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_notifications
@@ -228,12 +228,12 @@ CREATE TABLE IF NOT EXISTS extraction_notifications
     class               String,
     duration            Nullable(UInt32),
     failed              UInt8 DEFAULT 0,
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_mails
@@ -260,12 +260,12 @@ CREATE TABLE IF NOT EXISTS extraction_mails
     attachments         UInt16 DEFAULT 0,
     duration            Nullable(UInt32),
     failed              UInt8 DEFAULT 0,
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_queued_jobs
@@ -288,12 +288,12 @@ CREATE TABLE IF NOT EXISTS extraction_queued_jobs
     connection          String,
     queue               String,
     duration            Nullable(UInt32),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_job_attempts
@@ -327,12 +327,12 @@ CREATE TABLE IF NOT EXISTS extraction_job_attempts
     files_read          UInt32 DEFAULT 0,
     files_written       UInt32 DEFAULT 0,
     exception_preview   Nullable(String),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_scheduled_tasks
@@ -366,12 +366,12 @@ CREATE TABLE IF NOT EXISTS extraction_scheduled_tasks
     files_read              UInt32 DEFAULT 0,
     files_written           UInt32 DEFAULT 0,
     exception_preview       Nullable(String),
-    recorded_at             DateTime('UTC')
+    recorded_at             DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_outgoing_requests
@@ -396,12 +396,12 @@ CREATE TABLE IF NOT EXISTS extraction_outgoing_requests
     duration            UInt32,
     request_size        Nullable(UInt32),
     response_size       Nullable(UInt32),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;
 
 CREATE TABLE IF NOT EXISTS extraction_user_activities
@@ -416,10 +416,10 @@ CREATE TABLE IF NOT EXISTS extraction_user_activities
     user_id             Nullable(String),
     name                Nullable(String),
     username            Nullable(String),
-    recorded_at         DateTime('UTC')
+    recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(recorded_at)
 ORDER BY (organization_id, project_id, environment_id, recorded_at)
-TTL recorded_at + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
+TTL toDateTime(recorded_at) + INTERVAL {telemetry_retention_days:UInt32} DAY DELETE
 SETTINGS index_granularity = 8192;

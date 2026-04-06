@@ -126,8 +126,8 @@ class BuildRequestDetailData
         $requestEndUs = (int) Carbon::parse($request->recorded_at)->getPreciseTimestamp(6);
         $requestStartUs = $requestEndUs - $totalDurationUs;
 
-        $toOffset = function (string $recordedAt, int $eventDurationUs = 0) use ($requestStartUs, $totalDurationUs): int {
-            $ts = (int) Carbon::parse($recordedAt)->getPreciseTimestamp(6);
+        $toOffset = function (object $row, int $eventDurationUs = 0) use ($requestStartUs, $totalDurationUs): int {
+            $ts = (int) Carbon::parse($row->recorded_at)->getPreciseTimestamp(6);
 
             return max(0, min($totalDurationUs, $ts - $requestStartUs - $eventDurationUs));
         };
@@ -141,7 +141,7 @@ class BuildRequestDetailData
                 'span_type' => 'query',
                 'timestamp' => $q->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($q->recorded_at, $duration),
+                'offset' => $toOffset($q, $duration),
                 'name' => 'query',
                 'description' => $q->sql_normalized,
                 'connection' => $q->connection,
@@ -154,7 +154,7 @@ class BuildRequestDetailData
                 'span_type' => 'exception',
                 'timestamp' => $e->recorded_at,
                 'duration' => 0,
-                'offset' => $toOffset($e->recorded_at),
+                'offset' => $toOffset($e),
                 'name' => 'exception',
                 'description' => $e->class,
                 'message' => $e->message,
@@ -167,7 +167,7 @@ class BuildRequestDetailData
                 'span_type' => 'log',
                 'timestamp' => $l->recorded_at,
                 'duration' => 0,
-                'offset' => $toOffset($l->recorded_at),
+                'offset' => $toOffset($l),
                 'name' => $l->level,
                 'description' => $l->message,
             ];
@@ -179,7 +179,7 @@ class BuildRequestDetailData
                 'span_type' => 'mail',
                 'timestamp' => $m->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($m->recorded_at, $duration),
+                'offset' => $toOffset($m, $duration),
                 'name' => 'mail',
                 'description' => $m->subject ?: $m->class,
             ];
@@ -191,7 +191,7 @@ class BuildRequestDetailData
                 'span_type' => 'notification',
                 'timestamp' => $n->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($n->recorded_at, $duration),
+                'offset' => $toOffset($n, $duration),
                 'name' => 'notification',
                 'description' => $n->class,
                 'channel' => $n->channel,
@@ -204,7 +204,7 @@ class BuildRequestDetailData
                 'span_type' => 'cache',
                 'timestamp' => $c->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($c->recorded_at, $duration),
+                'offset' => $toOffset($c, $duration),
                 'name' => $c->type,
                 'description' => $c->key,
             ];
@@ -216,7 +216,7 @@ class BuildRequestDetailData
                 'span_type' => 'outgoing_request',
                 'timestamp' => $r->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($r->recorded_at, $duration),
+                'offset' => $toOffset($r, $duration),
                 'name' => $r->method,
                 'description' => $r->url,
                 'status' => $r->status_code,

@@ -52,7 +52,7 @@ class ProcessTelemetryBatch implements ShouldQueue
                 }
 
                 $type = $record['t'];
-                $recordedAt = Carbon::createFromTimestamp($record['timestamp'])->utc()->format('Y-m-d H:i:s');
+                $recordedAt = Carbon::createFromTimestamp((float) $record['timestamp'])->utc()->format('Y-m-d H:i:s.u');
                 $telemetryRecordId = Str::uuid()->toString();
 
                 $extractionRow = $this->buildExtractionRow(
