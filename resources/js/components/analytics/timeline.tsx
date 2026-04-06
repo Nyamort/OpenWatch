@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useTimelineZoom } from '@/hooks/use-timeline-zoom';
 import { cn, formatDuration } from '@/lib/utils';
@@ -138,15 +138,18 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(
         () => new Set(allExpandableIds(spans)),
     );
+    const [prevSpans, setPrevSpans] = useState(spans);
     const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
 
     const { zoomLevel, barWidth, scrollRef, innerRef, ticksInnerRef, handleBarsScroll, handleTicksMouseDown, handleTicksDoubleClick } =
         useTimelineZoom();
 
     // Re-expand all nodes when spans are replaced (e.g. new data loaded)
-    useEffect(() => {
+    // Using the "derived state during render" pattern to avoid setState in an effect.
+    if (prevSpans !== spans) {
+        setPrevSpans(spans);
         setExpandedIds(new Set(allExpandableIds(spans)));
-    }, [spans]);
+    }
 
     const ticks = useMemo(() => computeTicks(totalDurationUs), [totalDurationUs]);
     const tickStep = ticks[ticks.length - 1] - ticks[ticks.length - 2];
