@@ -37,10 +37,8 @@ export function OutgoingRequestTable({
     search,
 }: OutgoingRequestTableProps) {
     const { props } = usePage();
-    const { activeOrganization, activeProject, activeEnvironment } =
+    const { activeEnvironment } =
         props as unknown as {
-            activeOrganization: { slug: string };
-            activeProject: { slug: string };
             activeEnvironment: { slug: string };
         };
 

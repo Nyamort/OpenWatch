@@ -148,9 +148,7 @@ export default function RequestShow({ analytics }: Props) {
     const { summary, rows } = analytics;
     const spans = executionsToTimelineSpans(rows.executions);
     const { props } = usePage();
-    const { activeOrganization, activeProject, activeEnvironment } = props as {
-        activeOrganization?: { slug: string } | null;
-        activeProject?: { slug: string } | null;
+    const { activeEnvironment } = props as {
         activeEnvironment?: { slug: string } | null;
     };
 
