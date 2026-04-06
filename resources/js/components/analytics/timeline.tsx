@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +29,11 @@ interface FlatSpan {
     depth: number;
     hasChildren: boolean;
 }
+
+const ROW_HEIGHT = 'h-9';
+const MIN_BAR_WIDTH = '600px';
+const STICKY = 'sticky top-16 z-10 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-12';
+const CURSOR_STICKY = 'pointer-events-none sticky top-25 z-30 h-0 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-21';
 
 function flattenSpans(spans: TimelineSpan[], expandedIds: Set<string>, depth = 0): FlatSpan[] {
     const result: FlatSpan[] = [];
@@ -73,6 +78,11 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const innerRef = useRef<HTMLDivElement>(null);
     const ticksInnerRef = useRef<HTMLDivElement>(null);
 
+    // Re-expand all nodes when spans are replaced (e.g. new data loaded)
+    useEffect(() => {
+        setExpandedIds(new Set(allExpandableIds(spans)));
+    }, [spans]);
+
     const handleBarsScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         if (ticksInnerRef.current) {
             ticksInnerRef.current.style.transform = `translateX(-${(e.target as HTMLDivElement).scrollLeft}px)`;
@@ -80,7 +90,9 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     }, []);
 
     const ticks = useMemo(() => computeTicks(totalDurationMs), [totalDurationMs]);
-    const axisDurationMs = ticks[ticks.length - 1] + (ticks[ticks.length - 1] - ticks[ticks.length - 2]) / 2;
+    const tickStep = ticks[ticks.length - 1] - ticks[ticks.length - 2];
+    // Extend the axis by half a tick step so the last bar isn't clipped at the edge
+    const axisDurationMs = ticks[ticks.length - 1] + tickStep / 2;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -110,9 +122,6 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
     const pct = useCallback((ms: number) => `${(ms / axisDurationMs) * 100}%`, [axisDurationMs]);
-
-    const ROW_HEIGHT = 'h-9';
-    const STICKY = 'sticky top-16 z-10 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-12';
 
     return (
         <div
@@ -170,7 +179,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                 <ResizablePanel className="overflow-visible!">
                     {/* Ticks header */}
                     <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
-                        <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: '600px' }}>
+                        <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: MIN_BAR_WIDTH }}>
                             {ticks.map((ms, i) => (
                                 <span
                                     key={ms}
@@ -188,7 +197,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
 
                     {/* Cursor tooltip — outside overflow-x-auto so sticky works against page scroll */}
                     {cursor !== null && (
-                        <div className="pointer-events-none sticky top-25 z-30 h-0 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-21">
+                        <div className={CURSOR_STICKY}>
                             <div
                                 className="pointer-events-none absolute -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
                                 style={{ left: `${cursor.x}px` }}
@@ -200,65 +209,65 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
 
                     {/* Bar rows */}
                     <div className="overflow-x-auto" onScroll={handleBarsScroll}>
-                    <div
-                        ref={innerRef}
-                        className="relative"
-                        style={{ minWidth: '600px' }}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {flatSpans.map(({ span }) => (
-                            <div key={span.id} className={cn('relative shrink-0 overflow-hidden', ROW_HEIGHT)}>
-                                {span.durationMs === null ? (
-                                    <span
-                                        className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
-                                        style={{ left: pct(span.offsetMs) }}
-                                    >
-                                        {span.label}
-                                        {span.sublabel && (
-                                            <span className="ml-1.5 font-normal normal-case text-zinc-600">
-                                                {span.sublabel}
-                                            </span>
-                                        )}
-                                    </span>
-                                ) : (
-                                    <div
-                                        className={cn(
-                                            'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border backdrop-blur-sm',
-                                            span.color === 'teal'
-                                                ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
-                                                : 'border-neutral-700 bg-neutral-800 text-white',
-                                        )}
-                                        style={{
-                                            left: pct(span.offsetMs),
-                                            width: pct(span.durationMs),
-                                            minWidth: '2px',
-                                        }}
-                                    >
-                                        <span className="shrink-0 px-2 text-[10px] uppercase tracking-wider">
+                        <div
+                            ref={innerRef}
+                            className="relative"
+                            style={{ minWidth: MIN_BAR_WIDTH }}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            {flatSpans.map(({ span }) => (
+                                <div key={span.id} className={cn('relative shrink-0 overflow-hidden', ROW_HEIGHT)}>
+                                    {span.durationMs === null ? (
+                                        <span
+                                            className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
+                                            style={{ left: pct(span.offsetMs) }}
+                                        >
                                             {span.label}
+                                            {span.sublabel && (
+                                                <span className="ml-1.5 font-normal normal-case text-zinc-600">
+                                                    {span.sublabel}
+                                                </span>
+                                            )}
                                         </span>
-                                        <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
-                                            {span.durationMs.toFixed(2)}ms
-                                        </span>
-                                        {span.sublabel && (
-                                            <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
-                                                {span.sublabel}
+                                    ) : (
+                                        <div
+                                            className={cn(
+                                                'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border backdrop-blur-sm',
+                                                span.color === 'teal'
+                                                    ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
+                                                    : 'border-neutral-700 bg-neutral-800 text-white',
+                                            )}
+                                            style={{
+                                                left: pct(span.offsetMs),
+                                                width: pct(span.durationMs),
+                                                minWidth: '2px',
+                                            }}
+                                        >
+                                            <span className="shrink-0 px-2 text-[10px] uppercase tracking-wider">
+                                                {span.label}
                                             </span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                            <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
+                                                {span.durationMs.toFixed(2)}ms
+                                            </span>
+                                            {span.sublabel && (
+                                                <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
+                                                    {span.sublabel}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
 
-                        {/* Cursor line */}
-                        {cursor !== null && (
-                            <div
-                                className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/70"
-                                style={{ left: `${cursor.x}px` }}
-                            />
-                        )}
-                    </div>
+                            {/* Cursor line */}
+                            {cursor !== null && (
+                                <div
+                                    className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/70"
+                                    style={{ left: `${cursor.x}px` }}
+                                />
+                            )}
+                        </div>
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
