@@ -41,9 +41,16 @@ function flattenSpans(spans: TimelineSpan[], expandedIds: Set<string>, depth = 0
     return result;
 }
 
-function computeTicks(totalMs: number, count = 4): number[] {
-    const step = totalMs / count;
-    return Array.from({ length: count + 1 }, (_, i) => Math.round(i * step * 100) / 100);
+function computeTicks(totalMs: number, targetCount = 4): number[] {
+    const roughStep = totalMs / targetCount;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+    const normalised = roughStep / magnitude;
+    const niceStep = normalised <= 1 ? magnitude : normalised <= 2 ? 2 * magnitude : normalised <= 5 ? 5 * magnitude : 10 * magnitude;
+    const ticks: number[] = [];
+    for (let t = 0; t <= totalMs + niceStep * 0.01; t += niceStep) {
+        ticks.push(Math.round(t * 100) / 100);
+    }
+    return ticks;
 }
 
 function allExpandableIds(spans: TimelineSpan[]): string[] {
