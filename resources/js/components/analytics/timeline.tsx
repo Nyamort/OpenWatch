@@ -189,10 +189,10 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                                         transform: i === 0 ? 'translateX(0)' : 'translateX(-50%)',
                                     }}
                                 >
-                                    <span className="w-px flex-1 bg-white/10" />
                                     <span className="px-1 py-0.5 text-[10px] text-zinc-600">
                                         {formatDuration(us)}
                                     </span>
+                                    <span className="w-px flex-1 bg-white/10" />
                                 </span>
                             ))}
                         </div>
