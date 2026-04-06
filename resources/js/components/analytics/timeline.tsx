@@ -30,10 +30,13 @@ interface FlatSpan {
     hasChildren: boolean;
 }
 
-const ROW_HEIGHT = 'h-9';
-const MIN_BAR_WIDTH = '600px';
+const BASE_WIDTH = 600;
 const STICKY = 'sticky top-16 z-10 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-12';
 const CURSOR_STICKY = 'pointer-events-none sticky top-25 z-30 h-0 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-21';
+const ROW_HEIGHT = 'h-9';
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 20;
+const ZOOM_FACTOR = 1.12;
 
 function flattenSpans(spans: TimelineSpan[], expandedIds: Set<string>, depth = 0): FlatSpan[] {
     const result: FlatSpan[] = [];
@@ -75,6 +78,9 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         () => new Set(allExpandableIds(spans)),
     );
     const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const zoomRef = useRef(1);
+    const scrollRef = useRef<HTMLDivElement>(null);
     const innerRef = useRef<HTMLDivElement>(null);
     const ticksInnerRef = useRef<HTMLDivElement>(null);
 
@@ -83,9 +89,45 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         setExpandedIds(new Set(allExpandableIds(spans)));
     }, [spans]);
 
+    // Non-passive wheel listener so we can preventDefault and zoom without scrolling the page
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const onWheel = (e: WheelEvent) => {
+            e.preventDefault();
+
+            const oldZoom = zoomRef.current;
+            const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+            const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom * factor));
+            if (newZoom === oldZoom) return;
+
+            zoomRef.current = newZoom;
+            setZoomLevel(newZoom);
+
+            // Keep the point under the cursor visually stable after zoom
+            const cursorX = e.clientX - el.getBoundingClientRect().left;
+            const ratio = newZoom / oldZoom;
+            requestAnimationFrame(() => {
+                el.scrollLeft = (el.scrollLeft + cursorX) * ratio - cursorX;
+            });
+        };
+
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, []);
+
     const handleBarsScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         if (ticksInnerRef.current) {
             ticksInnerRef.current.style.transform = `translateX(-${(e.target as HTMLDivElement).scrollLeft}px)`;
+        }
+    }, []);
+
+    const handleDoubleClick = useCallback(() => {
+        zoomRef.current = 1;
+        setZoomLevel(1);
+        if (scrollRef.current) {
+            scrollRef.current.scrollLeft = 0;
         }
     }, []);
 
@@ -93,6 +135,8 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const tickStep = ticks[ticks.length - 1] - ticks[ticks.length - 2];
     // Extend the axis by half a tick step so the last bar isn't clipped at the edge
     const axisDurationUs = ticks[ticks.length - 1] + tickStep / 2;
+
+    const barWidth = `${BASE_WIDTH * zoomLevel}px`;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -122,6 +166,8 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
     const pct = useCallback((us: number) => `${(us / axisDurationUs) * 100}%`, [axisDurationUs]);
+
+    const cursorStyle = zoomLevel >= MAX_ZOOM ? 'cursor-zoom-out' : zoomLevel <= MIN_ZOOM ? 'cursor-zoom-in' : 'cursor-zoom-in';
 
     return (
         <div
@@ -179,7 +225,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                 <ResizablePanel className="overflow-visible!">
                     {/* Ticks header */}
                     <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
-                        <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: MIN_BAR_WIDTH }}>
+                        <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: barWidth }}>
                             {ticks.map((us, i) => (
                                 <span
                                     key={us}
@@ -195,6 +241,13 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                                     <span className="w-px flex-1 bg-white/10" />
                                 </span>
                             ))}
+
+                            {/* Zoom badge */}
+                            {zoomLevel > 1 && (
+                                <span className="sticky right-2 top-1/2 float-right -translate-y-1/2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-zinc-400">
+                                    {zoomLevel.toFixed(1)}×
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -211,11 +264,16 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                     )}
 
                     {/* Bar rows */}
-                    <div className="overflow-x-auto" onScroll={handleBarsScroll}>
+                    <div
+                        ref={scrollRef}
+                        className={cn('overflow-x-auto', cursorStyle)}
+                        onScroll={handleBarsScroll}
+                        onDoubleClick={handleDoubleClick}
+                    >
                         <div
                             ref={innerRef}
                             className="relative"
-                            style={{ minWidth: MIN_BAR_WIDTH }}
+                            style={{ minWidth: barWidth }}
                             onMouseMove={handleMouseMove}
                             onMouseLeave={handleMouseLeave}
                         >
