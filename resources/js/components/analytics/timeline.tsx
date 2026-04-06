@@ -47,7 +47,7 @@ function computeTicks(totalMs: number, targetCount = 4): number[] {
     const normalised = roughStep / magnitude;
     const niceStep = normalised <= 1 ? magnitude : normalised <= 2 ? 2 * magnitude : normalised <= 5 ? 5 * magnitude : 10 * magnitude;
     const ticks: number[] = [];
-    for (let t = 0; t <= totalMs + niceStep * 0.01; t += niceStep) {
+    for (let t = 0; t <= totalMs + niceStep; t += niceStep) {
         ticks.push(Math.round(t * 100) / 100);
     }
     return ticks;
@@ -71,6 +71,9 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const [cursor, setCursor] = useState<{ x: number; ms: number } | null>(null);
     const innerRef = useRef<HTMLDivElement>(null);
 
+    const ticks = computeTicks(totalDurationMs);
+    const axisDurationMs = ticks[ticks.length - 1];
+
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
             const next = new Set(prev);
@@ -88,18 +91,17 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
             const rect = innerRef.current?.getBoundingClientRect();
             if (!rect) return;
             const x = e.clientX - rect.left;
-            const ms = (x / rect.width) * totalDurationMs;
+            const ms = (x / rect.width) * axisDurationMs;
             setCursor({ x, ms });
         },
-        [totalDurationMs],
+        [axisDurationMs],
     );
 
     const handleMouseLeave = useCallback(() => setCursor(null), []);
 
     const flatSpans = flattenSpans(spans, expandedIds);
-    const ticks = computeTicks(totalDurationMs);
 
-    const pct = (ms: number) => `${(ms / totalDurationMs) * 100}%`;
+    const pct = (ms: number) => `${(ms / axisDurationMs) * 100}%`;
 
     return (
         <div
