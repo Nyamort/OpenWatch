@@ -186,6 +186,18 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                         </div>
                     </div>
 
+                    {/* Cursor tooltip — outside overflow-x-auto so sticky works against page scroll */}
+                    {cursor !== null && (
+                        <div className="pointer-events-none sticky top-25 z-30 h-0 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-21">
+                            <div
+                                className="pointer-events-none absolute -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
+                                style={{ left: `${cursor.x}px` }}
+                            >
+                                {`${Math.round(cursor.ms)}ms`}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Bar rows */}
                     <div className="overflow-x-auto" onScroll={handleBarsScroll}>
                     <div
@@ -239,20 +251,12 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                             </div>
                         ))}
 
-                        {/* Cursor line + tooltip */}
+                        {/* Cursor line */}
                         {cursor !== null && (
-                            <>
-                                <div
-                                    className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/70"
-                                    style={{ left: `${cursor.x}px` }}
-                                />
-                                <div
-                                    className="pointer-events-none absolute top-0 z-30 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
-                                    style={{ left: `${cursor.x}px` }}
-                                >
-                                    {`${Math.round(cursor.ms)}ms`}
-                                </div>
-                            </>
+                            <div
+                                className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/70"
+                                style={{ left: `${cursor.x}px` }}
+                            />
                         )}
                     </div>
                     </div>
