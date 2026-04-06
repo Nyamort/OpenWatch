@@ -1,6 +1,7 @@
-import { ArrowUpRight, OctagonAlert, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
+import { Badge, type badgeVariants } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import type { VariantProps } from 'class-variance-authority';
 import type {
     JobAttemptRow,
     JobDetailSortKey,
@@ -25,29 +27,11 @@ interface JobDetailTableProps {
     direction: SortDir;
 }
 
-function statusColor(status: string): string {
-    if (status === 'failed') {
-        return 'text-red-500';
-    }
-
-    if (status === 'released') {
-        return 'text-amber-500';
-    }
-
-    return '';
-}
-
-function StatusIcon({ status }: { status: string }) {
-    if (status === 'failed') {
-        return <OctagonAlert className="size-3 shrink-0" />;
-    }
-
-    if (status === 'released') {
-        return <TriangleAlert className="size-3 shrink-0" />;
-    }
-
-    return null;
-}
+const statusVariant: Record<string, VariantProps<typeof badgeVariants>['variant']> = {
+    processed: 'success',
+    released: 'warning',
+    failed: 'destructive',
+};
 
 export function JobDetailTable({
     attempts,
@@ -101,7 +85,7 @@ export function JobDetailTable({
                             sort={sort}
                             direction={direction}
                             onSort={onSort}
-                            className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap"
+                            className="h-11 px-4 text-xs font-medium"
                         >
                             Status
                         </SortableHead>
@@ -150,13 +134,10 @@ export function JobDetailTable({
                                 <TableCell className="h-11 w-px px-4 text-right tabular-nums">
                                     {row.attempt}
                                 </TableCell>
-                                <TableCell
-                                    className={`h-11 w-px px-4 whitespace-nowrap ${statusColor(row.status)}`}
-                                >
-                                    <div className="flex items-center gap-1 capitalize">
-                                        <StatusIcon status={row.status} />
+                                <TableCell className="h-11 px-4">
+                                    <Badge variant={statusVariant[row.status] ?? 'secondary'}>
                                         {row.status}
-                                    </div>
+                                    </Badge>
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums">
                                     {formatDuration(row.duration)}
