@@ -60,7 +60,7 @@ export function JobDetailTable({
                             sort={sort}
                             direction={direction}
                             onSort={onSort}
-                            className="h-11 px-5 text-xs font-medium"
+                            className="h-11 w-px px-5 text-xs font-medium whitespace-nowrap"
                         >
                             Date
                         </SortableHead>
