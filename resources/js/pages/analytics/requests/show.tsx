@@ -146,7 +146,7 @@ function buildTimelineSpans(
         const offsetMs = Math.max(0, toOffset(q.recorded_at) - durationMs);
         addEvent(q.execution_stage, {
             id: `query-${i}`,
-            label: 'DB',
+            label: 'Query',
             sublabel: q.sql_normalized.replace(/\s+/g, ' ').slice(0, 80),
             durationMs,
             offsetMs,
