@@ -159,12 +159,12 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                             <span className="size-4 shrink-0" />
                         )}
 
-                        <span className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                        <span className="shrink-0 text-[11px] uppercase tracking-wider text-white">
                             {span.label}
                         </span>
 
                         {span.sublabel && (
-                            <span className="ml-1 truncate text-[10px] text-zinc-600">
+                            <span className="ml-1 truncate text-[10px] text-white/50">
                                 {span.sublabel}
                             </span>
                         )}
@@ -209,10 +209,10 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                             >
                                 <div
                                     className={cn(
-                                        'absolute top-1/2 flex h-5.5 -translate-y-1/2 items-center rounded-sm px-2',
+                                        'absolute top-1/2 flex h-8 -translate-y-1/2 items-center rounded-md border px-2 backdrop-blur-sm',
                                         span.color === 'teal'
-                                            ? 'bg-teal-900/80 text-teal-300'
-                                            : 'bg-zinc-700/60 text-zinc-400',
+                                            ? 'border-emerald-500 bg-emerald-500/20 text-white dark:border-emerald-700 dark:bg-emerald-700/20'
+                                            : 'border-neutral-700 bg-neutral-800 text-white',
                                     )}
                                     style={{
                                         left: pct(span.offsetMs),
@@ -220,7 +220,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                         minWidth: '2px',
                                     }}
                                 >
-                                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                    <span className="shrink-0 text-[10px] uppercase tracking-wider">
                                         {span.label}
                                     </span>
                                     <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
