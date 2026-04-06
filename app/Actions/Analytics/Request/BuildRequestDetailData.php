@@ -58,19 +58,48 @@ class BuildRequestDetailData
             ORDER BY recorded_at
         ")->toArray();
 
-        $mailCount = (int) ($this->clickhouse->selectOne("
-            SELECT count() AS count
+        $mails = $this->clickhouse->select("
+            SELECT *
             FROM extraction_mails
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
-        ")->count ?? 0);
+            ORDER BY recorded_at
+        ")->toArray();
+
+        $notifications = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_notifications
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
+
+        $cacheEvents = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_cache_events
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
+
+        $outgoingRequests = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_outgoing_requests
+            WHERE trace_id = {$traceId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
 
         return (new AnalyticsResponseBuilder)
-            ->withSummary(array_merge((array) $request, ['mail_count' => $mailCount]))
+            ->withSummary(array_merge((array) $request, ['mail_count' => count($mails)]))
             ->withRows([
                 'queries' => $queries,
                 'exceptions' => $exceptions,
                 'logs' => $logs,
+                'mails' => $mails,
+                'notifications' => $notifications,
+                'cache_events' => $cacheEvents,
+                'outgoing_requests' => $outgoingRequests,
             ])
             ->build();
     }

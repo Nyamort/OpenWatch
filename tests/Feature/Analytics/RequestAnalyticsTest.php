@@ -119,6 +119,106 @@ test('request index groups paths correctly', function () {
     );
 });
 
+test('request show returns all related rows grouped by execution_stage', function () {
+    $ctx = setupAnalyticsContext('req-show-'.uniqid());
+    $traceId = 'trace-'.uniqid();
+    $ch = app(ClickHouseService::class);
+
+    insertRequest($ctx, ['trace_id' => $traceId, 'id' => $traceId]);
+
+    $ch->insert('extraction_queries', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'trace_id' => $traceId,
+        'execution_stage' => 'action',
+        'sql_hash' => hash('sha256', 'SELECT 1'),
+        'sql_normalized' => 'SELECT 1',
+        'connection' => 'mysql',
+        'connection_type' => 'mysql',
+        'duration' => 1000,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $ch->insert('extraction_mails', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'trace_id' => $traceId,
+        'execution_stage' => 'action',
+        'mailer' => 'smtp',
+        'class' => 'App\\Mail\\WelcomeMail',
+        'subject' => 'Hello',
+        'to' => 1,
+        'duration' => 200,
+        'failed' => 0,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $ch->insert('extraction_notifications', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'trace_id' => $traceId,
+        'execution_stage' => 'action',
+        'channel' => 'mail',
+        'class' => 'App\\Notifications\\OrderShipped',
+        'duration' => 150,
+        'failed' => 0,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $ch->insert('extraction_cache_events', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'trace_id' => $traceId,
+        'execution_stage' => 'before_middleware',
+        'store' => 'redis',
+        'key' => 'some-key',
+        'type' => 'hit',
+        'duration' => 50,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $ch->insert('extraction_outgoing_requests', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'trace_id' => $traceId,
+        'execution_stage' => 'action',
+        'host' => 'api.example.com',
+        'method' => 'GET',
+        'url' => 'https://api.example.com/data',
+        'status_code' => 200,
+        'duration' => 300,
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests/{$traceId}";
+
+    $response = $this->actingAs($ctx['user'])->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/requests/show')
+        ->has('analytics.rows.queries', 1)
+        ->has('analytics.rows.mails', 1)
+        ->has('analytics.rows.notifications', 1)
+        ->has('analytics.rows.cache_events', 1)
+        ->has('analytics.rows.outgoing_requests', 1)
+        ->where('analytics.rows.queries.0.execution_stage', 'action')
+        ->where('analytics.rows.mails.0.execution_stage', 'action')
+        ->where('analytics.rows.notifications.0.execution_stage', 'action')
+        ->where('analytics.rows.cache_events.0.execution_stage', 'before_middleware')
+        ->where('analytics.rows.outgoing_requests.0.execution_stage', 'action')
+    );
+});
+
 test('request index returns correct total count in stats', function () {
     $ctx = setupAnalyticsContext('req-count-'.uniqid());
 
