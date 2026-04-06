@@ -142,6 +142,7 @@ class ProcessTelemetryBatch implements ShouldQueue
                 'files_read' => (int) ($record['files_read'] ?? 0),
                 'files_written' => (int) ($record['files_written'] ?? 0),
                 'exception_preview' => ($record['exception_preview'] ?? '') !== '' ? (string) $record['exception_preview'] : null,
+                'headers' => ($record['headers'] ?? '') !== '' ? (string) $record['headers'] : null,
             ],
             'exception' => [
                 'trace_id' => $record['trace_id'] ?? null,

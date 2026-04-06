@@ -1,9 +1,11 @@
 import { Head, usePage } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import { ChevronDownIcon } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AppLayout from '@/layouts/app-layout';
-import { formatDuration } from '@/lib/utils';
+import { cn, formatDuration } from '@/lib/utils';
 import { index as requestsIndex, route as requestsRoute } from '@/routes/analytics/requests';
 import type { BreadcrumbItem } from '@/types';
 
@@ -24,6 +26,7 @@ interface RequestSummary {
     request_size: number | null;
     response_size: number | null;
     peak_memory_usage: number | null;
+    headers: string | null;
     queries: number;
     mail_count: number;
     cache_events: number;
@@ -146,6 +149,44 @@ function Section({ title, children }: { title?: string; children: ReactNode }) {
     );
 }
 
+function HeadersCard({ headers }: { headers: string }) {
+    const [open, setOpen] = useState(false);
+
+    const parsed = (() => {
+        try {
+            return JSON.parse(headers) as Record<string, string[]>;
+        } catch {
+            return null;
+        }
+    })();
+
+    const entries = parsed ? Object.entries(parsed) : [];
+
+    return (
+        <Collapsible open={open} onOpenChange={setOpen}>
+            <Card className="gap-0 bg-surface py-0">
+                <CollapsibleTrigger asChild>
+                    <CardHeader className="flex cursor-pointer flex-row items-center justify-between border-b py-4 select-none data-[state=closed]:border-b-0">
+                        <span className="text-base font-semibold text-foreground">Headers</span>
+                        <ChevronDownIcon
+                            className={cn('size-4 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
+                        />
+                    </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <CardContent className="py-4">
+                        <div className="flex flex-col gap-1">
+                            {entries.map(([name, values]) => (
+                                <InfoRow key={name} label={name} value={values.join(', ')} />
+                            ))}
+                        </div>
+                    </CardContent>
+                </CollapsibleContent>
+            </Card>
+        </Collapsible>
+    );
+}
+
 export default function RequestShow({ analytics }: Props) {
     const { summary, rows } = analytics;
     const spans = executionsToTimelineSpans(rows.executions);
@@ -260,6 +301,7 @@ export default function RequestShow({ analytics }: Props) {
                         </Section>
                     </CardContent>
                 </Card>
+                {summary.headers && <HeadersCard headers={summary.headers} />}
                 {(summary.duration ?? 0) > 0 && (
                     <Timeline
                         totalDurationUs={summary.duration!}
