@@ -75,7 +75,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const rightScrollRef = useRef<HTMLDivElement>(null);
 
     const ticks = useMemo(() => computeTicks(totalDurationMs), [totalDurationMs]);
-    const axisDurationMs = ticks[ticks.length - 1];
+    const axisDurationMs = ticks[ticks.length - 1] + (ticks[ticks.length - 1] - ticks[ticks.length - 2]) / 2;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -210,7 +210,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
 
                             {/* Bar rows */}
                             {flatSpans.map(({ span }) => (
-                                <div key={span.id} className={cn('relative shrink-0', ROW_HEIGHT)}>
+                                <div key={span.id} className={cn('relative shrink-0 overflow-hidden', ROW_HEIGHT)}>
                                     {span.durationMs === null ? (
                                         <span
                                             className="absolute top-1/2 -translate-y-1/2 pl-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500"
