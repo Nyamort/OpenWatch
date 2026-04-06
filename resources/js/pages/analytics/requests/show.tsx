@@ -1,12 +1,13 @@
 import { Head, usePage } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
+import { InfoRow, Section } from '@/components/analytics/detail-card';
 import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AppLayout from '@/layouts/app-layout';
-import { cn, formatDuration } from '@/lib/utils';
+import { cn, formatBytes, formatDuration } from '@/lib/utils';
 import { index as requestsIndex, route as requestsRoute } from '@/routes/analytics/requests';
 import type { BreadcrumbItem } from '@/types';
 
@@ -104,41 +105,10 @@ function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
     }));
 }
 
-function formatBytes(bytes: number | null): string {
-    if (bytes === null) return '—';
-    if (bytes === 0) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
-}
-
 function StatusCodeBadge({ code }: { code: number }) {
     const variant = code < 400 ? 'success' : code < 500 ? 'warning' : 'destructive';
 
     return <Badge variant={variant}>{code}</Badge>;
-}
-
-function InfoRow({ label, value }: { label: string; value: ReactNode }) {
-    return (
-        <div className="flex items-baseline gap-2 py-1 text-sm first:pt-0 last:pb-0">
-            <span className="shrink-0 uppercase text-muted-foreground">{label}</span>
-            <span className="relative -bottom-px min-w-6 grow border-b-2 border-dotted border-neutral-300 dark:border-white/20" />
-            <span className="shrink-0 text-right font-medium">{value ?? '—'}</span>
-        </div>
-    );
-}
-
-function Section({ title, children }: { title?: string; children: ReactNode }) {
-    return (
-        <div className="flex flex-col gap-1">
-            {title && (
-                <h3 className="mb-1 text-base font-semibold text-foreground">
-                    {title}
-                </h3>
-            )}
-            {children}
-        </div>
-    );
 }
 
 function HeadersCard({ headers }: { headers: string }) {

@@ -1,9 +1,9 @@
 import { Head, usePage } from '@inertiajs/react';
-import { type ReactNode } from 'react';
+import { InfoRow, Section } from '@/components/analytics/detail-card';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { cn, formatDuration } from '@/lib/utils';
+import { formatBytes, formatDuration } from '@/lib/utils';
 import { index as jobsIndex, type as jobsType } from '@/routes/analytics/jobs';
 import type { BreadcrumbItem } from '@/types';
 
@@ -41,35 +41,6 @@ const statusVariant: Record<string, 'success' | 'warning' | 'destructive'> = {
     released: 'warning',
     failed: 'destructive',
 };
-
-function formatBytes(bytes: number | null): string {
-    if (bytes === null) return '—';
-    if (bytes === 0) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
-}
-
-function InfoRow({ label, value }: { label: string; value: ReactNode }) {
-    return (
-        <div className="flex items-baseline gap-2 py-1 text-sm first:pt-0 last:pb-0">
-            <span className="shrink-0 uppercase text-muted-foreground">{label}</span>
-            <span className="relative -bottom-px min-w-6 grow border-b-2 border-dotted border-neutral-300 dark:border-white/20" />
-            <span className="shrink-0 text-right font-medium">{value ?? '—'}</span>
-        </div>
-    );
-}
-
-function Section({ title, children, className }: { title?: string; children: ReactNode; className?: string }) {
-    return (
-        <div className={cn('flex flex-col gap-1', className)}>
-            {title && (
-                <h3 className="mb-1 text-base font-semibold text-foreground">{title}</h3>
-            )}
-            {children}
-        </div>
-    );
-}
 
 export default function JobShow({ analytics }: Props) {
     const { summary } = analytics;
