@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { cn } from '@/lib/utils';
+import { cn, formatDuration } from '@/lib/utils';
 
 export interface TimelineSpan {
     id: string;
@@ -189,7 +189,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                         transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
                                     }}
                                 >
-                                    {ms}ms
+                                    {formatDuration(ms * 1000)}
                                 </span>
                             ))}
                         </div>
@@ -202,7 +202,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                 className="pointer-events-none absolute -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
                                 style={{ left: `${cursor.x}px` }}
                             >
-                                {`${Math.round(cursor.ms)}ms`}
+                                {formatDuration(cursor.ms * 1000)}
                             </div>
                         </div>
                     )}
@@ -248,7 +248,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                                 {span.label}
                                             </span>
                                             <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
-                                                {span.durationMs.toFixed(2)}ms
+                                                {formatDuration(span.durationMs * 1000)}
                                             </span>
                                             {span.sublabel && (
                                                 <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
