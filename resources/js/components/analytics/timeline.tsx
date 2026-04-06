@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 
@@ -74,7 +74,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const leftScrollRef = useRef<HTMLDivElement>(null);
     const rightScrollRef = useRef<HTMLDivElement>(null);
 
-    const ticks = computeTicks(totalDurationMs);
+    const ticks = useMemo(() => computeTicks(totalDurationMs), [totalDurationMs]);
     const axisDurationMs = ticks[ticks.length - 1];
 
     const toggleExpand = useCallback((id: string) => {
@@ -114,9 +114,9 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
 
     const handleMouseLeave = useCallback(() => setCursor(null), []);
 
-    const flatSpans = flattenSpans(spans, expandedIds);
+    const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
-    const pct = (ms: number) => `${(ms / axisDurationMs) * 100}%`;
+    const pct = useCallback((ms: number) => `${(ms / axisDurationMs) * 100}%`, [axisDurationMs]);
 
     const ROW_HEIGHT = 'h-9';
 
