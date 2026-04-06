@@ -80,6 +80,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const [cursor, setCursor] = useState<{ x: number; us: number } | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
     const zoomRef = useRef(1);
+    const dragRef = useRef<{ startX: number; startZoom: number } | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const innerRef = useRef<HTMLDivElement>(null);
     const ticksInnerRef = useRef<HTMLDivElement>(null);
@@ -89,32 +90,39 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         setExpandedIds(new Set(allExpandableIds(spans)));
     }, [spans]);
 
-    // Non-passive wheel listener so we can preventDefault and zoom without scrolling the page
+    // Drag-to-zoom on the ticks header
     useEffect(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-
-        const onWheel = (e: WheelEvent) => {
-            e.preventDefault();
-
+        const onMouseMove = (e: MouseEvent) => {
+            if (!dragRef.current) return;
+            const delta = e.clientX - dragRef.current.startX;
+            const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, dragRef.current.startZoom * (1 + delta / 200)));
             const oldZoom = zoomRef.current;
-            const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
-            const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom * factor));
             if (newZoom === oldZoom) return;
 
+            const ratio = newZoom / oldZoom;
             zoomRef.current = newZoom;
             setZoomLevel(newZoom);
 
-            // Keep the point under the cursor visually stable after zoom
-            const cursorX = e.clientX - el.getBoundingClientRect().left;
-            const ratio = newZoom / oldZoom;
+            // Keep the left edge stable while dragging
             requestAnimationFrame(() => {
-                el.scrollLeft = (el.scrollLeft + cursorX) * ratio - cursorX;
+                if (scrollRef.current) {
+                    scrollRef.current.scrollLeft *= ratio;
+                }
             });
         };
 
-        el.addEventListener('wheel', onWheel, { passive: false });
-        return () => el.removeEventListener('wheel', onWheel);
+        const onMouseUp = () => {
+            dragRef.current = null;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
     }, []);
 
     const handleBarsScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -123,7 +131,13 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
         }
     }, []);
 
-    const handleDoubleClick = useCallback(() => {
+    const handleTicksMouseDown = useCallback((e: React.MouseEvent) => {
+        dragRef.current = { startX: e.clientX, startZoom: zoomRef.current };
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+    }, []);
+
+    const handleTicksDoubleClick = useCallback(() => {
         zoomRef.current = 1;
         setZoomLevel(1);
         if (scrollRef.current) {
@@ -166,8 +180,6 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
     const pct = useCallback((us: number) => `${(us / axisDurationUs) * 100}%`, [axisDurationUs]);
-
-    const cursorStyle = zoomLevel >= MAX_ZOOM ? 'cursor-zoom-out' : zoomLevel <= MIN_ZOOM ? 'cursor-zoom-in' : 'cursor-zoom-in';
 
     return (
         <div
@@ -223,8 +235,12 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
 
                 {/* ── Right timeline panel ──────────────────────────────── */}
                 <ResizablePanel className="overflow-visible!">
-                    {/* Ticks header */}
-                    <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
+                    {/* Ticks header — drag left/right to zoom, double-click to reset */}
+                    <div
+                        className={cn(STICKY, 'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-surface select-none', ROW_HEIGHT)}
+                        onMouseDown={handleTicksMouseDown}
+                        onDoubleClick={handleTicksDoubleClick}
+                    >
                         <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: barWidth }}>
                             {ticks.map((us, i) => (
                                 <span
@@ -266,9 +282,8 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                     {/* Bar rows */}
                     <div
                         ref={scrollRef}
-                        className={cn('overflow-x-auto', cursorStyle)}
+                        className="overflow-x-auto"
                         onScroll={handleBarsScroll}
-                        onDoubleClick={handleDoubleClick}
                     >
                         <div
                             ref={innerRef}
