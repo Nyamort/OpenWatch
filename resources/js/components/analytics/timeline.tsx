@@ -96,19 +96,10 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
             if (!dragRef.current) return;
             const delta = e.clientX - dragRef.current.startX;
             const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, dragRef.current.startZoom * (1 + delta / 200)));
-            const oldZoom = zoomRef.current;
-            if (newZoom === oldZoom) return;
+            if (newZoom === zoomRef.current) return;
 
-            const ratio = newZoom / oldZoom;
             zoomRef.current = newZoom;
             setZoomLevel(newZoom);
-
-            // Keep the left edge stable while dragging
-            requestAnimationFrame(() => {
-                if (scrollRef.current) {
-                    scrollRef.current.scrollLeft *= ratio;
-                }
-            });
         };
 
         const onMouseUp = () => {
@@ -150,7 +141,8 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     // Extend the axis by half a tick step so the last bar isn't clipped at the edge
     const axisDurationUs = ticks[ticks.length - 1] + tickStep / 2;
 
-    const barWidth = `${BASE_WIDTH * zoomLevel}px`;
+    const barWidth = `${BASE_WIDTH}px`;
+    const effectiveAxisUs = axisDurationUs / zoomLevel;
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds((prev) => {
@@ -169,17 +161,17 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
             const rect = innerRef.current?.getBoundingClientRect();
             if (!rect) return;
             const x = Math.max(0, e.clientX - rect.left);
-            const us = (x / rect.width) * axisDurationUs;
+            const us = (x / rect.width) * effectiveAxisUs;
             setCursor({ x, us });
         },
-        [axisDurationUs],
+        [effectiveAxisUs],
     );
 
     const handleMouseLeave = useCallback(() => setCursor(null), []);
 
     const flatSpans = useMemo(() => flattenSpans(spans, expandedIds), [spans, expandedIds]);
 
-    const pct = useCallback((us: number) => `${(us / axisDurationUs) * 100}%`, [axisDurationUs]);
+    const pct = useCallback((us: number) => `${(us / effectiveAxisUs) * 100}%`, [effectiveAxisUs]);
 
     return (
         <div
