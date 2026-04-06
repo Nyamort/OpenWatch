@@ -219,6 +219,53 @@ test('request show returns all related rows grouped by execution_stage', functio
     );
 });
 
+test('request show includes user name and email when user is linked', function () {
+    $ctx = setupAnalyticsContext('req-user-'.uniqid());
+    $traceId = 'trace-'.uniqid();
+    $userId = 'user-'.uniqid();
+    $ch = app(ClickHouseService::class);
+
+    insertRequest($ctx, ['trace_id' => $traceId, 'id' => $traceId, 'user' => $userId]);
+
+    $ch->insert('extraction_user_activities', [[
+        'telemetry_record_id' => nextTelemetryId(),
+        'organization_id' => $ctx['org']->id,
+        'project_id' => $ctx['project']->id,
+        'environment_id' => $ctx['env']->id,
+        'user_id' => $userId,
+        'name' => 'Jane Doe',
+        'username' => 'jane@example.com',
+        'recorded_at' => now()->utc()->format('Y-m-d H:i:s'),
+    ]]);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests/{$traceId}";
+
+    $response = $this->actingAs($ctx['user'])->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/requests/show')
+        ->where('analytics.summary.user_name', 'Jane Doe')
+        ->where('analytics.summary.user_email', 'jane@example.com')
+    );
+});
+
+test('request show has null user name and email when no user is linked', function () {
+    $ctx = setupAnalyticsContext('req-nouser-'.uniqid());
+    $traceId = 'trace-'.uniqid();
+
+    insertRequest($ctx, ['trace_id' => $traceId, 'id' => $traceId, 'user' => null]);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/requests/{$traceId}";
+
+    $response = $this->actingAs($ctx['user'])->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/requests/show')
+        ->where('analytics.summary.user_name', null)
+        ->where('analytics.summary.user_email', null)
+    );
+});
+
 test('request index returns correct total count in stats', function () {
     $ctx = setupAnalyticsContext('req-count-'.uniqid());
 

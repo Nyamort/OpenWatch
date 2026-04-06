@@ -18,6 +18,8 @@ interface RequestSummary {
     duration: number | null;
     server: string;
     user: string | null;
+    user_name: string | null;
+    user_email: string | null;
     ip: string | null;
     request_size: number | null;
     response_size: number | null;
@@ -224,6 +226,12 @@ export default function RequestShow({ analytics }: Props) {
                         {/* User */}
                         <Section title="User">
                             <InfoRow label="IP Address" value={summary.ip} />
+                            {summary.user !== null && (
+                                <>
+                                    <InfoRow label="Name" value={summary.user_name} />
+                                    <InfoRow label="Email" value={summary.user_email} />
+                                </>
+                            )}
                         </Section>
 
                         {/* Events */}
