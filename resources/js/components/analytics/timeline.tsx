@@ -129,7 +129,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
         >
             <ResizablePanelGroup orientation="horizontal" className="min-h-200">
                 {/* ── Left label panel ─────────────────────────────────── */}
-                <ResizablePanel defaultSize={25} minSize={10}>
+                <ResizablePanel defaultSize={160} minSize={160}>
                     <div
                         ref={leftScrollRef}
                         onScroll={syncScrollFromLeft}
