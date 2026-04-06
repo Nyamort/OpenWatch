@@ -233,6 +233,9 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
 
                 {/* ── Right timeline panel ──────────────────────────────── */}
                 <ResizablePanel className="overflow-visible!">
+                    {/* overflow-x:clip clips horizontal overflow without creating a scroll container,
+                        so position:sticky on the cursor tooltip still works relative to the page */}
+                    <div style={{ overflowX: 'clip' }}>
                     {/* Ticks header — drag left/right to zoom, double-click to reset */}
                     <div
                         className={cn(STICKY, 'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-surface select-none', ROW_HEIGHT)}
@@ -342,6 +345,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                                 />
                             )}
                         </div>
+                    </div>
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
