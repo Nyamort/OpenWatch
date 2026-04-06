@@ -227,14 +227,11 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                         >
                             <div className="relative h-full">
                                 <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: barWidth }}>
-                                    {ticks.map((us, i) => (
+                                    {ticks.map((us) => (
                                         <span
                                             key={us}
                                             className="absolute flex h-full flex-col items-center"
-                                            style={{
-                                                left: pct(us),
-                                                transform: i === 0 ? 'translateX(0)' : 'translateX(-50%)',
-                                            }}
+                                            style={{ left: pct(us), transform: 'translateX(-50%)' }}
                                         >
                                             <span className="px-1 py-0.5 text-[10px] text-zinc-600">{formatDuration(us)}</span>
                                             <span className="w-px flex-1 bg-white/10" />
