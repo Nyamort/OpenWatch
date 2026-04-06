@@ -15,7 +15,7 @@ export function formatDuration(us: number | null) {
         throw new Error(
             'Negative numbers are unsupported in formatDuration',
         );
-
+    if (us === 0 ) return `${us}ms`;
     if (us < 1e3) return `${us}μs`;
     if (us < 1e6) return `${(us / 1e3).toFixed(2)}ms`;
 
