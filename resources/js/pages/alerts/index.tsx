@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { create } from '@/actions/App/Http/Controllers/Alerts/AlertRuleController';
+import AppLayout from '@/layouts/app-layout';
 
 interface AlertRule {
     id: number;

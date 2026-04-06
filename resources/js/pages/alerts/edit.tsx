@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { update } from '@/actions/App/Http/Controllers/Alerts/AlertRuleController';
+import AppLayout from '@/layouts/app-layout';
 
 interface Member {
     id: number;
