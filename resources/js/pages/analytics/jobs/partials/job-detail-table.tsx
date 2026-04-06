@@ -1,3 +1,4 @@
+import type { VariantProps } from 'class-variance-authority';
 import { ArrowUpRight } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -12,7 +13,6 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import type { VariantProps } from 'class-variance-authority';
 import type {
     JobAttemptRow,
     JobDetailSortKey,
