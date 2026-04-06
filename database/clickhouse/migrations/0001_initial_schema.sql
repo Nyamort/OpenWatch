@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS extraction_requests
     files_read          UInt32 DEFAULT 0,
     files_written       UInt32 DEFAULT 0,
     exception_preview   Nullable(String),
+    headers             String DEFAULT '',
     recorded_at         DateTime64(6, 'UTC')
 )
 ENGINE = MergeTree()
