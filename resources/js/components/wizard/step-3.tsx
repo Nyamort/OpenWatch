@@ -94,7 +94,7 @@ function useClickOutside(
         }
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
-    }, [open]); // ref and onClose are stable refs
+    }, [open, ref, onClose, ignorePortal]);
 }
 
 function SamplingRatesDropdown({
