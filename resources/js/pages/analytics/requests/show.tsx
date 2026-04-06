@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AppLayout from '@/layouts/app-layout';
@@ -112,18 +113,9 @@ function formatBytes(bytes: number | null): string {
 }
 
 function StatusCodeBadge({ code }: { code: number }) {
-    const className =
-        code < 400
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-            : code < 500
-              ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-              : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
+    const variant = code < 400 ? 'success' : code < 500 ? 'warning' : 'destructive';
 
-    return (
-        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${className}`}>
-            {code}
-        </span>
-    );
+    return <Badge variant={variant}>{code}</Badge>;
 }
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
