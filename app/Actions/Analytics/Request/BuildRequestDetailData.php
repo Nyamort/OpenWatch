@@ -123,13 +123,12 @@ class BuildRequestDetailData
         array $outgoingRequests,
     ): array {
         $totalDurationUs = (int) ($request->duration ?? 0);
-        $requestEndUs = (int) Carbon::parse($request->recorded_at)->getPreciseTimestamp(6);
-        $requestStartUs = $requestEndUs - $totalDurationUs;
+        $requestStartUs = (int) Carbon::parse($request->recorded_at)->getPreciseTimestamp(6);
 
-        $toOffset = function (object $row, int $eventDurationUs = 0) use ($requestStartUs, $totalDurationUs): int {
+        $toOffset = function (object $row) use ($requestStartUs, $totalDurationUs): int {
             $ts = (int) Carbon::parse($row->recorded_at)->getPreciseTimestamp(6);
 
-            return max(0, min($totalDurationUs, $ts - $requestStartUs - $eventDurationUs));
+            return max(0, min($totalDurationUs, $ts - $requestStartUs));
         };
 
         $spansByStage = [];
@@ -141,7 +140,7 @@ class BuildRequestDetailData
                 'span_type' => 'query',
                 'timestamp' => $q->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($q, $duration),
+                'offset' => $toOffset($q),
                 'name' => 'query',
                 'description' => $q->sql_normalized,
                 'connection' => $q->connection,
@@ -179,7 +178,7 @@ class BuildRequestDetailData
                 'span_type' => 'mail',
                 'timestamp' => $m->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($m, $duration),
+                'offset' => $toOffset($m),
                 'name' => 'mail',
                 'description' => $m->subject ?: $m->class,
             ];
@@ -191,7 +190,7 @@ class BuildRequestDetailData
                 'span_type' => 'notification',
                 'timestamp' => $n->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($n, $duration),
+                'offset' => $toOffset($n),
                 'name' => 'notification',
                 'description' => $n->class,
                 'channel' => $n->channel,
@@ -204,7 +203,7 @@ class BuildRequestDetailData
                 'span_type' => 'cache',
                 'timestamp' => $c->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($c, $duration),
+                'offset' => $toOffset($c),
                 'name' => $c->type,
                 'description' => $c->key,
             ];
@@ -216,7 +215,7 @@ class BuildRequestDetailData
                 'span_type' => 'outgoing_request',
                 'timestamp' => $r->recorded_at,
                 'duration' => $duration,
-                'offset' => $toOffset($r, $duration),
+                'offset' => $toOffset($r),
                 'name' => $r->method,
                 'description' => $r->url,
                 'status' => $r->status_code,
