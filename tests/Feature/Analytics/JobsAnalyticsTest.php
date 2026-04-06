@@ -67,6 +67,31 @@ test('jobs index shows job list', function () {
     );
 });
 
+test('jobs show returns attempts with connection and queue', function () {
+    $ctx = setupJobsContext(uniqid());
+
+    insertJobAttempt($ctx, ['name' => 'App\\Jobs\\SendEmail', 'connection' => 'redis', 'queue' => 'emails']);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/jobs/0?name=App%5CJobs%5CSendEmail";
+
+    $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/jobs/show',
+            'X-Inertia-Partial-Data' => 'graph,stats,attempts,pagination',
+        ])
+        ->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/jobs/show')
+        ->has('attempts', 1)
+        ->has('attempts.0', fn ($attempt) => $attempt
+            ->where('connection', 'redis')
+            ->where('queue', 'emails')
+            ->etc()
+        )
+    );
+});
+
 test('jobs index is blocked for non-members', function () {
     $ctx = setupJobsContext(uniqid());
     $outsider = User::factory()->create();
