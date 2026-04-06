@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { cn } from '@/lib/utils';
 
 export interface TimelineSpan {
     id: string;
@@ -117,13 +117,13 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     return (
         <div
             className={cn(
-                'rounded-lg border border-white/10 bg-surface font-mono text-xs [overflow:clip]',
+                'rounded-lg border border-white/10 bg-surface font-mono text-xs overflow-clip',
                 className,
             )}
         >
-            <ResizablePanelGroup orientation="horizontal" className="!overflow-visible">
+            <ResizablePanelGroup orientation="horizontal" className="overflow-visible!">
                 {/* ── Left label panel ─────────────────────────────────── */}
-                <ResizablePanel defaultSize={160} minSize={160} className="!overflow-visible">
+                <ResizablePanel defaultSize={160} minSize={160} className="overflow-visible!">
                     {/* Header */}
                     <div className={cn(STICKY, 'flex shrink-0 items-center border-b border-white/10 bg-surface px-3', ROW_HEIGHT)}>
                         <span className="font-sans text-xs font-semibold tracking-wide text-zinc-200">
@@ -167,7 +167,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                 <ResizableHandle className="border-white/10 bg-white/10" />
 
                 {/* ── Right timeline panel ──────────────────────────────── */}
-                <ResizablePanel className="!overflow-visible">
+                <ResizablePanel className="overflow-visible!">
                     {/* Ticks header */}
                     <div className={cn(STICKY, 'shrink-0 overflow-hidden border-b border-white/10 bg-surface', ROW_HEIGHT)}>
                         <div ref={ticksInnerRef} className="relative h-full" style={{ minWidth: '600px' }}>
