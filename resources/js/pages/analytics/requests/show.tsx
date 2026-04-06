@@ -76,14 +76,14 @@ function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
         id: execution.id,
         label: execution.name,
         sublabel: execution.description || undefined,
-        durationUs: execution.duration,
+        durationUs: Math.max(0, execution.duration),
         offsetUs: execution.offset,
         color: 'teal' as const,
         children: execution.stages.map((stage) => ({
             id: `${execution.id}-${stage.id}`,
             label: stage.name,
             sublabel: stage.description || undefined,
-            durationUs: stage.duration,
+            durationUs: Math.max(0, stage.duration),
             offsetUs: stage.offset,
             children: stage.spans.length > 0
                 ? stage.spans.map((span, i) => ({
