@@ -160,7 +160,7 @@ function HeadersCard({ headers }: { headers: string }) {
         }
     })();
 
-    const entries = parsed ? Object.entries(parsed) : [];
+    const entries = parsed ? Object.entries(parsed).sort(([a], [b]) => a.localeCompare(b)) : [];
 
     return (
         <Collapsible open={open} onOpenChange={setOpen}>
