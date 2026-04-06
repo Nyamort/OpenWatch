@@ -16,13 +16,6 @@ interface RequestSummary {
     route_name: string | null;
     status_code: number;
     duration: number | null;
-    bootstrap: number | null;
-    before_middleware: number | null;
-    action: number | null;
-    render: number | null;
-    after_middleware: number | null;
-    sending: number | null;
-    terminating: number | null;
     server: string;
     user: string | null;
     ip: string | null;
@@ -39,235 +32,70 @@ interface RequestSummary {
     logs: number;
 }
 
-interface QueryRow {
-    id: number;
-    recorded_at: string;
-    duration: number;
-    sql_normalized: string;
-    connection: string;
-    execution_stage: string;
+interface ExecutionSpan {
+    span_type: string;
+    timestamp: string;
+    duration: number; // microseconds
+    offset: number; // microseconds from request start
+    name: string;
+    description: string;
+    [key: string]: unknown;
 }
 
-interface ExceptionRow {
-    id: number;
-    recorded_at: string;
-    class: string;
-    message: string;
-    handled: boolean;
-    execution_stage: string;
+interface ExecutionStage {
+    id: string;
+    name: string;
+    description: string;
+    duration: number; // microseconds
+    offset: number; // microseconds from request start
+    spans: ExecutionSpan[];
 }
 
-interface LogRow {
-    id: number;
-    recorded_at: string;
-    level: string;
-    message: string;
-    execution_stage: string;
-}
-
-interface MailRow {
-    id: number;
-    recorded_at: string;
-    subject: string;
-    class: string;
-    duration: number;
-    execution_stage: string;
-}
-
-interface NotificationRow {
-    id: number;
-    recorded_at: string;
-    class: string;
-    channel: string;
-    duration: number;
-    execution_stage: string;
-}
-
-interface CacheEventRow {
-    id: number;
-    recorded_at: string;
-    key: string;
-    type: string;
-    duration: number;
-    execution_stage: string;
-}
-
-interface OutgoingRequestRow {
-    id: number;
-    recorded_at: string;
-    method: string;
-    url: string;
-    status_code: number;
-    duration: number;
-    execution_stage: string;
+interface Execution {
+    id: string;
+    name: string;
+    description: string;
+    status: number;
+    duration: number; // microseconds
+    offset: number; // microseconds
+    variant: 'success' | 'warning' | 'error';
+    stages: ExecutionStage[];
 }
 
 interface Props {
     analytics: {
         summary: RequestSummary;
         rows: {
-            queries: QueryRow[];
-            exceptions: ExceptionRow[];
-            logs: LogRow[];
-            mails: MailRow[];
-            notifications: NotificationRow[];
-            cache_events: CacheEventRow[];
-            outgoing_requests: OutgoingRequestRow[];
+            executions: Execution[];
         };
     };
 }
 
-function buildTimelineSpans(
-    summary: RequestSummary,
-    queries: QueryRow[],
-    exceptions: ExceptionRow[],
-    logs: LogRow[],
-    mails: MailRow[],
-    notifications: NotificationRow[],
-    cacheEvents: CacheEventRow[],
-    outgoingRequests: OutgoingRequestRow[],
-): TimelineSpan[] {
-    const totalMs = (summary.duration ?? 0) / 1000;
-    const requestEndMs = new Date(summary.recorded_at).getTime();
-    const requestStartMs = requestEndMs - totalMs;
-
-    const toOffset = (recordedAt: string): number =>
-        Math.max(0, Math.min(totalMs, new Date(recordedAt).getTime() - requestStartMs));
-
-    // Build all event spans, grouped by execution_stage
-    const eventsByStage: Record<string, TimelineSpan[]> = {};
-
-    const addEvent = (stage: string, span: TimelineSpan) => {
-        (eventsByStage[stage] ??= []).push(span);
-    };
-
-    queries.forEach((q, i) => {
-        const durationMs = q.duration / 1000;
-        const offsetMs = Math.max(0, toOffset(q.recorded_at) - durationMs);
-        addEvent(q.execution_stage, {
-            id: `query-${i}`,
-            label: 'Query',
-            sublabel: q.sql_normalized.replace(/\s+/g, ' ').slice(0, 80),
-            durationMs,
-            offsetMs,
-        });
-    });
-
-    exceptions.forEach((e, i) => {
-        addEvent(e.execution_stage, {
-            id: `exception-${i}`,
-            label: 'Exception',
-            sublabel: e.class.split('\\').pop(),
-            durationMs: null,
-            offsetMs: toOffset(e.recorded_at),
-        });
-    });
-
-    logs.forEach((l, i) => {
-        addEvent(l.execution_stage, {
-            id: `log-${i}`,
-            label: l.level.toUpperCase(),
-            sublabel: l.message.slice(0, 60),
-            durationMs: null,
-            offsetMs: toOffset(l.recorded_at),
-        });
-    });
-
-    mails.forEach((m, i) => {
-        const durationMs = m.duration / 1000;
-        const offsetMs = Math.max(0, toOffset(m.recorded_at) - durationMs);
-        addEvent(m.execution_stage, {
-            id: `mail-${i}`,
-            label: 'Mail',
-            sublabel: m.subject || m.class.split('\\').pop(),
-            durationMs,
-            offsetMs,
-        });
-    });
-
-    notifications.forEach((n, i) => {
-        const durationMs = n.duration / 1000;
-        const offsetMs = Math.max(0, toOffset(n.recorded_at) - durationMs);
-        addEvent(n.execution_stage, {
-            id: `notification-${i}`,
-            label: 'Notif',
-            sublabel: n.class.split('\\').pop(),
-            durationMs,
-            offsetMs,
-        });
-    });
-
-    cacheEvents.forEach((c, i) => {
-        const durationMs = c.duration / 1000;
-        const offsetMs = Math.max(0, toOffset(c.recorded_at) - durationMs);
-        addEvent(c.execution_stage, {
-            id: `cache-${i}`,
-            label: c.type.toUpperCase(),
-            sublabel: c.key.slice(0, 60),
-            durationMs,
-            offsetMs,
-        });
-    });
-
-    outgoingRequests.forEach((r, i) => {
-        const durationMs = r.duration / 1000;
-        const offsetMs = Math.max(0, toOffset(r.recorded_at) - durationMs);
-        addEvent(r.execution_stage, {
-            id: `outgoing-${i}`,
-            label: r.method,
-            sublabel: r.url.slice(0, 80),
-            durationMs,
-            offsetMs,
-        });
-    });
-
-    // Sequential lifecycle phases, each with its events as children
-    const phases: { id: string; label: string; us: number | null }[] = [
-        { id: 'bootstrap', label: 'Bootstrap', us: summary.bootstrap },
-        { id: 'before_middleware', label: 'Middleware', us: summary.before_middleware },
-        { id: 'action', label: 'Controller', us: summary.action },
-        { id: 'render', label: 'Render', us: summary.render },
-        { id: 'after_middleware', label: 'Middleware', us: summary.after_middleware },
-        { id: 'sending', label: 'Sending', us: summary.sending },
-        { id: 'terminating', label: 'Terminating', us: summary.terminating },
-    ];
-
-    let cursorMs = 0;
-    const phaseSpans: TimelineSpan[] = phases
-        .filter((p) => p.us != null && p.us > 0)
-        .map((p): TimelineSpan => {
-            const durationMs = p.us! / 1000;
-            const children = (eventsByStage[p.id] ?? []).sort((a, b) => a.offsetMs - b.offsetMs);
-            const span: TimelineSpan = {
-                id: p.id,
-                label: p.label,
-                durationMs,
-                offsetMs: cursorMs,
-                children: children.length > 0 ? children : undefined,
-            };
-            cursorMs += durationMs;
-            return span;
-        });
-
-    // Events with no matching phase (empty or unknown stage) fall back to request level
-    const orphanEvents = Object.entries(eventsByStage)
-        .filter(([stage]) => !phases.some((p) => p.id === stage))
-        .flatMap(([, spans]) => spans)
-        .sort((a, b) => a.offsetMs - b.offsetMs);
-
-    const requestChildren = [...phaseSpans, ...orphanEvents];
-
-    return [
-        {
-            id: 'request',
-            label: 'Request',
-            sublabel: summary.route_path ?? summary.url,
-            durationMs: totalMs,
-            offsetMs: 0,
-            color: 'teal',
-            children: requestChildren.length > 0 ? requestChildren : undefined,
-        },
-    ];
+function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
+    return executions.map((execution) => ({
+        id: execution.id,
+        label: execution.name,
+        sublabel: execution.description || undefined,
+        durationMs: execution.duration / 1000,
+        offsetMs: execution.offset / 1000,
+        color: 'teal' as const,
+        children: execution.stages.map((stage) => ({
+            id: `${execution.id}-${stage.id}`,
+            label: stage.name,
+            sublabel: stage.description || undefined,
+            durationMs: stage.duration / 1000,
+            offsetMs: stage.offset / 1000,
+            children: stage.spans.length > 0
+                ? stage.spans.map((span, i) => ({
+                    id: `${stage.id}-span-${i}`,
+                    label: span.name.toUpperCase(),
+                    sublabel: span.description || undefined,
+                    durationMs: span.duration > 0 ? span.duration / 1000 : null,
+                    offsetMs: span.offset / 1000,
+                }))
+                : undefined,
+        })),
+    }));
 }
 
 function formatBytes(bytes: number | null): string {
@@ -318,16 +146,7 @@ function Section({ title, children }: { title?: string; children: ReactNode }) {
 
 export default function RequestShow({ analytics }: Props) {
     const { summary, rows } = analytics;
-    const spans = buildTimelineSpans(
-        summary,
-        rows.queries,
-        rows.exceptions,
-        rows.logs,
-        rows.mails,
-        rows.notifications,
-        rows.cache_events,
-        rows.outgoing_requests,
-    );
+    const spans = executionsToTimelineSpans(rows.executions);
     const { props } = usePage();
     const { activeOrganization, activeProject, activeEnvironment } = props as {
         activeOrganization?: { slug: string } | null;
