@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified', 'organization.member'])
 
         // Jobs analytics
         Route::get('jobs', [JobsController::class, 'index'])->name('jobs.index');
-        Route::get('jobs/{job}', [JobsController::class, 'show'])->name('jobs.show');
+        Route::get('jobs/{job}', [JobsController::class, 'type'])->name('jobs.type');
 
         // Outgoing request analytics
         Route::get('outgoing-requests', [OutgoingRequestController::class, 'index'])->name('outgoing-requests.index');

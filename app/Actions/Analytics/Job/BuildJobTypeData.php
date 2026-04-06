@@ -8,14 +8,14 @@ use App\Services\Analytics\PeriodResult;
 use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
 
-class BuildJobDetailData
+class BuildJobTypeData
 {
     use PaginatesAnalyticsQuery;
 
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
-     * Build graph buckets, stats and paginated attempts for a single job class.
+     * Build graph buckets, stats and paginated attempts for all jobs of a given class.
      *
      * @return array<string, mixed>
      */

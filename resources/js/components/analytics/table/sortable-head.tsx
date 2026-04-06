@@ -6,7 +6,7 @@ interface SortableHeadProps {
     sort: string;
     direction: 'asc' | 'desc';
     onSort: (column: string) => void;
-    align?: 'left' | 'right';
+    align?: 'left' | 'right' | 'center';
     children: React.ReactNode;
     className?: string;
 }
@@ -32,7 +32,7 @@ function SortIcon({
 export function colClass(
     column: string,
     sort: string,
-    align: 'left' | 'right' = 'left',
+    align: 'left' | 'right' | 'center' = 'left',
 ) {
     const active =
         sort === column ? 'text-foreground' : 'text-muted-foreground';

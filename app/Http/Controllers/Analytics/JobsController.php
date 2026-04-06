@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Analytics;
 
-use App\Actions\Analytics\Job\BuildJobDetailData;
 use App\Actions\Analytics\Job\BuildJobsIndexData;
+use App\Actions\Analytics\Job\BuildJobTypeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +12,7 @@ class JobsController extends AnalyticsController
 {
     public function __construct(
         private readonly BuildJobsIndexData $buildIndex,
-        private readonly BuildJobDetailData $buildDetail,
+        private readonly BuildJobTypeData $buildDetail,
     ) {}
 
     /**
@@ -46,9 +46,9 @@ class JobsController extends AnalyticsController
     }
 
     /**
-     * Display charts and attempts for a single job class.
+     * Display charts and attempts for all jobs of a given class.
      */
-    public function show(Request $request, string $environment, string $job): Response
+    public function type(Request $request, string $environment, string $job): Response
     {
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);

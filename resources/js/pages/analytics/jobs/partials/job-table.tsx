@@ -19,7 +19,7 @@ import {
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import { show as jobShow } from '@/routes/analytics/jobs';
+import { type as jobType } from '@/routes/analytics/jobs';
 import type { JobRow, JobSortKey, Pagination, SortDir } from '../types';
 
 interface JobTableProps {
@@ -60,7 +60,7 @@ export function JobTable({
         }
 
         return analyticsHref(
-            jobShow.url(
+            jobType.url(
                 {
                     environment: activeEnvironment.slug,
                     job: 0,
