@@ -247,7 +247,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                     style={{ left: `${cursor.x}px` }}
                                 />
                                 <div
-                                    className="pointer-events-none absolute top-1 z-30 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
+                                    className="pointer-events-none absolute top-0 z-30 -translate-x-1/2 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-black"
                                     style={{ left: `${cursor.x}px` }}
                                 >
                                     {`${Math.round(cursor.ms)}ms`}
