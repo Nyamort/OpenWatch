@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface TimelineSpan {
@@ -64,53 +64,6 @@ function allExpandableIds(spans: TimelineSpan[]): string[] {
     return ids;
 }
 
-function SpanBar({ span, pct }: { span: TimelineSpan & { durationMs: number }; pct: (ms: number) => string }) {
-    const barRef = useRef<HTMLDivElement>(null);
-    const [outside, setOutside] = useState(false);
-    const isTeal = span.color === 'teal';
-
-    useLayoutEffect(() => {
-        if (!barRef.current) return;
-        setOutside(barRef.current.scrollWidth > barRef.current.clientWidth);
-    }, []);
-
-    const label = (
-        <>
-            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">{span.label}</span>
-            <span className="ml-1.5 shrink-0 text-[10px] opacity-70">{span.durationMs.toFixed(2)}ms</span>
-            {span.sublabel && (
-                <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">{span.sublabel}</span>
-            )}
-        </>
-    );
-
-    return (
-        <div className="relative h-9 shrink-0 border-b border-white/5">
-            <div
-                ref={barRef}
-                className={cn(
-                    'absolute top-1/2 h-5.5 -translate-y-1/2 overflow-hidden rounded-sm',
-                    outside ? '' : 'flex items-center px-2',
-                    isTeal ? 'bg-teal-900/80 text-teal-300' : 'bg-zinc-700/60 text-zinc-400',
-                )}
-                style={{ left: pct(span.offsetMs), width: pct(span.durationMs), minWidth: '2px' }}
-            >
-                {!outside && label}
-            </div>
-            {outside && (
-                <div
-                    className={cn(
-                        'absolute top-1/2 -translate-y-1/2 flex items-center pl-1.5',
-                        isTeal ? 'text-teal-300' : 'text-zinc-400',
-                    )}
-                    style={{ left: pct(span.offsetMs + span.durationMs) }}
-                >
-                    {label}
-                </div>
-            )}
-        </div>
-    );
-}
 
 export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(
@@ -249,7 +202,37 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
                                 </span>
                             </div>
                         ) : (
-                            <SpanBar key={span.id} span={span as TimelineSpan & { durationMs: number }} pct={pct} />
+                            /* Bar */
+                            <div
+                                key={span.id}
+                                className="relative h-9 shrink-0 border-b border-white/5"
+                            >
+                                <div
+                                    className={cn(
+                                        'absolute top-1/2 flex h-5.5 -translate-y-1/2 items-center rounded-sm px-2',
+                                        span.color === 'teal'
+                                            ? 'bg-teal-900/80 text-teal-300'
+                                            : 'bg-zinc-700/60 text-zinc-400',
+                                    )}
+                                    style={{
+                                        left: pct(span.offsetMs),
+                                        width: pct(span.durationMs),
+                                        minWidth: '2px',
+                                    }}
+                                >
+                                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                        {span.label}
+                                    </span>
+                                    <span className="ml-1.5 shrink-0 text-[10px] opacity-70">
+                                        {span.durationMs.toFixed(2)}ms
+                                    </span>
+                                    {span.sublabel && (
+                                        <span className="ml-2 shrink-0 font-mono text-[10px] opacity-50">
+                                            {span.sublabel}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         ),
                     )}
 
