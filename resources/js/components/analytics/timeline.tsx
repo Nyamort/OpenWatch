@@ -183,13 +183,16 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                             {ticks.map((us, i) => (
                                 <span
                                     key={us}
-                                    className="absolute top-1/2 -translate-y-1/2 text-[10px] text-zinc-600"
+                                    className="absolute flex h-full flex-col items-center"
                                     style={{
                                         left: pct(us),
-                                        transform: i === 0 ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+                                        transform: i === 0 ? 'translateX(0)' : 'translateX(-50%)',
                                     }}
                                 >
-                                    {formatDuration(us)}
+                                    <span className="w-px flex-1 bg-white/10" />
+                                    <span className="px-1 py-0.5 text-[10px] text-zinc-600">
+                                        {formatDuration(us)}
+                                    </span>
                                 </span>
                             ))}
                         </div>
