@@ -112,7 +112,7 @@ export function Timeline({ totalDurationMs, spans, className }: TimelineProps) {
     const pct = useCallback((ms: number) => `${(ms / axisDurationMs) * 100}%`, [axisDurationMs]);
 
     const ROW_HEIGHT = 'h-9';
-    const STICKY = 'sticky top-16 z-10 group-has-data-[collapsible=icon]/sidebar-wrapper:top-12';
+    const STICKY = 'sticky top-16 z-10 transition-[top] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:top-12';
 
     return (
         <div
