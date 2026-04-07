@@ -41,7 +41,7 @@ export type JobSortKey =
     | 'p95';
 export type SortDir = 'asc' | 'desc';
 
-export interface JobDetailGraphBucket {
+export interface JobTypeGraphBucket {
     bucket: string;
     processed: number;
     failed: number;
@@ -50,7 +50,7 @@ export interface JobDetailGraphBucket {
     p95: number | null;
 }
 
-export interface JobDetailStats {
+export interface JobTypeStats {
     count: number;
     processed: number;
     failed: number;
@@ -72,6 +72,6 @@ export interface JobAttemptRow {
     duration: number | null;
 }
 
-export type JobDetailSortKey = 'date' | 'attempt' | 'status' | 'duration';
+export type JobTypeSortKey = 'date' | 'attempt' | 'status' | 'duration';
 
 export type { Pagination } from '@/types/analytics';

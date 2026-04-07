@@ -2,25 +2,25 @@ import { Deferred, Head, usePage } from '@inertiajs/react';
 import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as notificationsIndex } from '@/routes/analytics/notifications';
-import { NotificationTypeCharts } from './partials/notification-type-charts';
-import { NotificationTypeTable } from './partials/notification-type-table';
+import { NotificationDetailCharts } from './partials/notification-detail-charts';
+import { NotificationDetailTable } from './partials/notification-detail-table';
 import type {
-    NotificationTypeGraphBucket,
-    NotificationTypeSortKey,
-    NotificationTypeStats,
+    NotificationDetailGraphBucket,
+    NotificationDetailSortKey,
+    NotificationDetailStats,
     NotificationRunRow,
     Pagination,
     SortDir,
 } from './types';
 
 interface Props {
-    graph?: NotificationTypeGraphBucket[];
-    stats?: NotificationTypeStats;
+    graph?: NotificationDetailGraphBucket[];
+    stats?: NotificationDetailStats;
     runs?: NotificationRunRow[];
     pagination?: Pagination;
     notificationClass: string;
     period: string;
-    sort: NotificationTypeSortKey;
+    sort: NotificationDetailSortKey;
     direction: SortDir;
 }
 
@@ -57,10 +57,10 @@ export default function NotificationShow({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <NotificationTypeCharts graph={graph!} stats={stats!} />
+                <NotificationDetailCharts graph={graph!} stats={stats!} />
             </Deferred>
             <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
-                <NotificationTypeTable
+                <NotificationDetailTable
                     runs={runs!}
                     pagination={pagination!}
                     sort={sort}

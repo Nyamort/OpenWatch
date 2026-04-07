@@ -2,29 +2,29 @@ import { Deferred, Head, usePage } from '@inertiajs/react';
 import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as jobsIndex } from '@/routes/analytics/jobs';
-import { JobDetailCharts } from './partials/job-detail-charts';
-import { JobDetailTable } from './partials/job-detail-table';
+import { JobTypeCharts } from './partials/job-type-charts';
+import { JobTypeTable } from './partials/job-type-table';
 import type {
     JobAttemptRow,
-    JobDetailGraphBucket,
-    JobDetailSortKey,
-    JobDetailStats,
+    JobTypeGraphBucket,
+    JobTypeSortKey,
+    JobTypeStats,
     Pagination,
     SortDir,
 } from './types';
 
 interface Props {
-    graph?: JobDetailGraphBucket[];
-    stats?: JobDetailStats;
+    graph?: JobTypeGraphBucket[];
+    stats?: JobTypeStats;
     attempts?: JobAttemptRow[];
     pagination?: Pagination;
     name: string;
     period: string;
-    sort: JobDetailSortKey;
+    sort: JobTypeSortKey;
     direction: SortDir;
 }
 
-export default function JobShow({
+export default function JobType({
     graph,
     stats,
     attempts,
@@ -56,13 +56,13 @@ export default function JobShow({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <JobDetailCharts graph={graph!} stats={stats!} />
+                <JobTypeCharts graph={graph!} stats={stats!} />
             </Deferred>
             <Deferred
                 data={['attempts', 'pagination']}
                 fallback={<TableSkeleton />}
             >
-                <JobDetailTable
+                <JobTypeTable
                     attempts={attempts!}
                     pagination={pagination!}
                     sort={sort}

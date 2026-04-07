@@ -17,15 +17,15 @@ import { formatDuration } from '@/lib/utils';
 import { show as jobShow } from '@/routes/analytics/jobs';
 import type {
     JobAttemptRow,
-    JobDetailSortKey,
+    JobTypeSortKey,
     Pagination,
     SortDir,
 } from '../types';
 
-interface JobDetailTableProps {
+interface JobTypeTableProps {
     attempts: JobAttemptRow[];
     pagination: Pagination;
-    sort: JobDetailSortKey;
+    sort: JobTypeSortKey;
     direction: SortDir;
     environment: string;
 }
@@ -36,20 +36,20 @@ const statusVariant: Record<string, VariantProps<typeof badgeVariants>['variant'
     failed: 'destructive',
 };
 
-export function JobDetailTable({
+export function JobTypeTable({
     attempts,
     pagination,
     sort,
     direction,
     environment,
-}: JobDetailTableProps) {
-    const { handlePage, handleSort } = useAnalyticsTable<JobDetailSortKey>({
+}: JobTypeTableProps) {
+    const { handlePage, handleSort } = useAnalyticsTable<JobTypeSortKey>({
         search: '',
         only: ['attempts', 'pagination', 'sort', 'direction'],
     });
 
     const onSort = (col: string) =>
-        handleSort(col as JobDetailSortKey, sort, direction);
+        handleSort(col as JobTypeSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">

@@ -20,12 +20,15 @@ import {
     type ChartConfig,
 } from '@/components/ui/chart';
 import { formatDuration } from '@/lib/utils';
-import type { JobDetailGraphBucket, JobDetailStats } from '../types';
+import type {
+    ScheduledTaskTypeGraphBucket,
+    ScheduledTaskTypeStats,
+} from '../types';
 
-const attemptsChartConfig = {
+const runsChartConfig = {
     processed: { label: 'Processed', color: 'oklch(0.50 0 0)' },
+    skipped: { label: 'Skipped', color: 'hsl(30 90% 55%)' },
     failed: { label: 'Failed', color: 'hsl(0 72% 51%)' },
-    released: { label: 'Released', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
 
 const durationChartConfig = {
@@ -33,24 +36,27 @@ const durationChartConfig = {
     p95: { label: 'P95', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
 
-interface JobDetailChartsProps {
-    graph: JobDetailGraphBucket[];
-    stats: JobDetailStats;
+interface ScheduledTaskTypeChartsProps {
+    graph: ScheduledTaskTypeGraphBucket[];
+    stats: ScheduledTaskTypeStats;
 }
 
-export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
-    const attemptsStats = (
+export function ScheduledTaskTypeCharts({
+    graph,
+    stats,
+}: ScheduledTaskTypeChartsProps) {
+    const runsStats = (
         <div className="flex gap-4 text-sm">
-            {(['processed', 'failed', 'released'] as const).map((key) => (
+            {(['processed', 'skipped', 'failed'] as const).map((key) => (
                 <div key={key} className="flex flex-col items-end gap-0.5">
                     <span className="flex items-center gap-1 text-muted-foreground">
                         <span
                             className="inline-block h-3 w-1 rounded-sm"
                             style={{
-                                backgroundColor: attemptsChartConfig[key].color,
+                                backgroundColor: runsChartConfig[key].color,
                             }}
                         />
-                        {attemptsChartConfig[key].label}
+                        {runsChartConfig[key].label}
                     </span>
                     <span className="font-medium tabular-nums">
                         {stats[key].toLocaleString()}
@@ -84,16 +90,16 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
     return (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel
-                config={attemptsChartConfig}
-                title="Attempts"
+                config={runsChartConfig}
+                title="Runs"
                 heroValue={stats.count.toLocaleString()}
-                legendStats={attemptsStats}
+                legendStats={runsStats}
                 firstBucket={graph[0]?.bucket}
                 lastBucket={graph[graph.length - 1]?.bucket}
             >
                 {(legendContent) => (
                     <BarChart
-                        syncId="job-detail"
+                        syncId="scheduled-task-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
@@ -113,7 +119,7 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                                     label={label}
                                     rows={[
                                         {
-                                            color: attemptsChartConfig.processed
+                                            color: runsChartConfig.processed
                                                 .color,
                                             label: 'Processed',
                                             value:
@@ -124,24 +130,22 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                                                 )?.value ?? 0,
                                         },
                                         {
-                                            color: attemptsChartConfig.failed
+                                            color: runsChartConfig.skipped
                                                 .color,
+                                            label: 'Skipped',
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'skipped',
+                                                )?.value ?? 0,
+                                        },
+                                        {
+                                            color: runsChartConfig.failed.color,
                                             label: 'Failed',
                                             value:
                                                 payload?.find(
                                                     (p) =>
                                                         p.dataKey === 'failed',
-                                                )?.value ?? 0,
-                                        },
-                                        {
-                                            color: attemptsChartConfig.released
-                                                .color,
-                                            label: 'Released',
-                                            value:
-                                                payload?.find(
-                                                    (p) =>
-                                                        p.dataKey ===
-                                                        'released',
                                                 )?.value ?? 0,
                                         },
                                     ]}
@@ -169,19 +173,19 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                         <Bar
                             dataKey="processed"
                             stackId="a"
-                            fill={attemptsChartConfig.processed.color}
+                            fill={runsChartConfig.processed.color}
                             radius={0}
                         />
                         <Bar
-                            dataKey="released"
+                            dataKey="skipped"
                             stackId="a"
-                            fill={attemptsChartConfig.released.color}
+                            fill={runsChartConfig.skipped.color}
                             radius={0}
                         />
                         <Bar
                             dataKey="failed"
                             stackId="a"
-                            fill={attemptsChartConfig.failed.color}
+                            fill={runsChartConfig.failed.color}
                             radius={[3, 3, 0, 0]}
                         />
                     </BarChart>
@@ -202,13 +206,13 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
             >
                 {(legendContent) => (
                     <AreaChart
-                        syncId="job-detail"
+                        syncId="scheduled-task-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
                         <defs>
                             <linearGradient
-                                id="fillJobDetAvg"
+                                id="fillStTypAvg"
                                 x1="0"
                                 y1="0"
                                 x2="0"
@@ -226,7 +230,7 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                                 />
                             </linearGradient>
                             <linearGradient
-                                id="fillJobDetP95"
+                                id="fillStTypP95"
                                 x1="0"
                                 y1="0"
                                 x2="0"
@@ -291,7 +295,7 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                             dataKey="p95"
                             stroke={durationChartConfig.p95.color}
                             strokeWidth={2}
-                            fill="url(#fillJobDetP95)"
+                            fill="url(#fillStTypP95)"
                             dot={isolatedDot(
                                 graph,
                                 'p95',
@@ -303,7 +307,7 @@ export function JobDetailCharts({ graph, stats }: JobDetailChartsProps) {
                             dataKey="avg"
                             stroke={durationChartConfig.avg.color}
                             strokeWidth={2}
-                            fill="url(#fillJobDetAvg)"
+                            fill="url(#fillStTypAvg)"
                             dot={isolatedDot(
                                 graph,
                                 'avg',

@@ -15,15 +15,15 @@ import { formatDuration } from '@/lib/utils';
 import { show as scheduledTaskShow } from '@/routes/analytics/scheduled-tasks';
 import type {
     Pagination,
-    ScheduledTaskDetailSortKey,
+    ScheduledTaskTypeSortKey,
     ScheduledTaskRunRow,
     SortDir,
 } from '../types';
 
-interface ScheduledTaskDetailTableProps {
+interface ScheduledTaskTypeTableProps {
     runs: ScheduledTaskRunRow[];
     pagination: Pagination;
-    sort: ScheduledTaskDetailSortKey;
+    sort: ScheduledTaskTypeSortKey;
     direction: SortDir;
     environment: string;
 }
@@ -52,21 +52,21 @@ function StatusIcon({ status }: { status: string }) {
     return null;
 }
 
-export function ScheduledTaskDetailTable({
+export function ScheduledTaskTypeTable({
     runs,
     pagination,
     sort,
     direction,
     environment,
-}: ScheduledTaskDetailTableProps) {
+}: ScheduledTaskTypeTableProps) {
     const { handlePage, handleSort } =
-        useAnalyticsTable<ScheduledTaskDetailSortKey>({
+        useAnalyticsTable<ScheduledTaskTypeSortKey>({
             search: '',
             only: ['runs', 'pagination', 'sort', 'direction'],
         });
 
     const onSort = (col: string) =>
-        handleSort(col as ScheduledTaskDetailSortKey, sort, direction);
+        handleSort(col as ScheduledTaskTypeSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">

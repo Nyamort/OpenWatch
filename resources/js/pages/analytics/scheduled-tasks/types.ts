@@ -38,7 +38,7 @@ export type ScheduledTaskSortKey =
     | 'p95';
 export type SortDir = 'asc' | 'desc';
 
-export interface ScheduledTaskDetailGraphBucket {
+export interface ScheduledTaskTypeGraphBucket {
     bucket: string;
     processed: number;
     skipped: number;
@@ -47,7 +47,7 @@ export interface ScheduledTaskDetailGraphBucket {
     p95: number | null;
 }
 
-export interface ScheduledTaskDetailStats {
+export interface ScheduledTaskTypeStats {
     count: number;
     processed: number;
     skipped: number;
@@ -65,6 +65,6 @@ export interface ScheduledTaskRunRow {
     duration: number | null;
 }
 
-export type ScheduledTaskDetailSortKey = 'date' | 'status' | 'duration';
+export type ScheduledTaskTypeSortKey = 'date' | 'status' | 'duration';
 
 export type { Pagination } from '@/types/analytics';

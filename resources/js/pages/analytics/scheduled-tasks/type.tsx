@@ -2,25 +2,25 @@ import { Deferred, Head, usePage } from '@inertiajs/react';
 import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as scheduledTasksIndex } from '@/routes/analytics/scheduled-tasks';
-import { ScheduledTaskDetailCharts } from './partials/scheduled-task-detail-charts';
-import { ScheduledTaskDetailTable } from './partials/scheduled-task-detail-table';
+import { ScheduledTaskTypeCharts } from './partials/scheduled-task-type-charts';
+import { ScheduledTaskTypeTable } from './partials/scheduled-task-type-table';
 import type {
     Pagination,
-    ScheduledTaskDetailGraphBucket,
-    ScheduledTaskDetailSortKey,
-    ScheduledTaskDetailStats,
+    ScheduledTaskTypeGraphBucket,
+    ScheduledTaskTypeSortKey,
+    ScheduledTaskTypeStats,
     ScheduledTaskRunRow,
     SortDir,
 } from './types';
 
 interface Props {
-    graph?: ScheduledTaskDetailGraphBucket[];
-    stats?: ScheduledTaskDetailStats;
+    graph?: ScheduledTaskTypeGraphBucket[];
+    stats?: ScheduledTaskTypeStats;
     runs?: ScheduledTaskRunRow[];
     pagination?: Pagination;
     name: string;
     period: string;
-    sort: ScheduledTaskDetailSortKey;
+    sort: ScheduledTaskTypeSortKey;
     direction: SortDir;
 }
 
@@ -56,13 +56,13 @@ export default function ScheduledTaskType({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <ScheduledTaskDetailCharts graph={graph!} stats={stats!} />
+                <ScheduledTaskTypeCharts graph={graph!} stats={stats!} />
             </Deferred>
             <Deferred
                 data={['runs', 'pagination']}
                 fallback={<TableSkeleton />}
             >
-                <ScheduledTaskDetailTable
+                <ScheduledTaskTypeTable
                     runs={runs!}
                     pagination={pagination!}
                     sort={sort}

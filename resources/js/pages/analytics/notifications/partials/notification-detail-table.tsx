@@ -11,24 +11,24 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import type { NotificationRunRow, NotificationTypeSortKey, Pagination, SortDir } from '../types';
+import type { NotificationRunRow, NotificationDetailSortKey, Pagination, SortDir } from '../types';
 
-interface NotificationTypeTableProps {
+interface NotificationDetailTableProps {
     runs: NotificationRunRow[];
     pagination: Pagination;
-    sort: NotificationTypeSortKey;
+    sort: NotificationDetailSortKey;
     direction: SortDir;
     count: number;
 }
 
-export function NotificationTypeTable({ runs, pagination, sort, direction, count }: NotificationTypeTableProps) {
-    const { handlePage, handleSort } = useAnalyticsTable<NotificationTypeSortKey>({
+export function NotificationDetailTable({ runs, pagination, sort, direction, count }: NotificationDetailTableProps) {
+    const { handlePage, handleSort } = useAnalyticsTable<NotificationDetailSortKey>({
         search: '',
         only: ['runs', 'pagination', 'sort', 'direction'],
     });
 
     const onSort = (col: string) =>
-        handleSort(col as NotificationTypeSortKey, sort, direction);
+        handleSort(col as NotificationDetailSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
