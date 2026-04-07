@@ -37,12 +37,19 @@ class BuildRequestDetailData
         }
 
         $traceId = ClickHouseService::escape($request->trace_id ?? '');
+        $start = ClickHouseService::escape($request->recorded_at);
+        $end = ClickHouseService::escape(
+            \Carbon\Carbon::parse($request->recorded_at)
+                ->addMicroseconds((int) $request->duration)
+                ->format('Y-m-d H:i:s.u')
+        );
 
         $queries = $this->clickhouse->select("
             SELECT *
             FROM extraction_queries
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -51,6 +58,7 @@ class BuildRequestDetailData
             FROM extraction_exceptions
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -59,6 +67,7 @@ class BuildRequestDetailData
             FROM extraction_logs
             WHERE execution_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -67,6 +76,7 @@ class BuildRequestDetailData
             FROM extraction_mails
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -75,6 +85,7 @@ class BuildRequestDetailData
             FROM extraction_notifications
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -83,6 +94,7 @@ class BuildRequestDetailData
             FROM extraction_cache_events
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -91,6 +103,7 @@ class BuildRequestDetailData
             FROM extraction_outgoing_requests
             WHERE trace_id = {$traceId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
