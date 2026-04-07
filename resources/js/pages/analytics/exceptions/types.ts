@@ -13,6 +13,7 @@ export interface ExceptionStats {
 export interface ExceptionRow {
     group_key: string;
     class: string;
+    message: string;
     count: number;
     users: number;
     last_seen: string;

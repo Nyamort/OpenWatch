@@ -140,10 +140,17 @@ export function ExceptionTable({
                                         },
                                     )}
                                 </TableCell>
-                                <TableCell className="h-11 overflow-hidden px-4">
-                                    <span className="truncate font-mono text-sm">
-                                        {row.class}
-                                    </span>
+                                <TableCell className="overflow-hidden px-4 py-2">
+                                    <div className="flex min-w-0 flex-col">
+                                        <span className="truncate font-mono text-sm">
+                                            {row.class}
+                                        </span>
+                                        {row.message && (
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {row.message}
+                                            </span>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
                                     {row.count.toLocaleString()}

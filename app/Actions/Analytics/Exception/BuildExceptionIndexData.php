@@ -116,6 +116,7 @@ class BuildExceptionIndexData
             SELECT
                 group_key,
                 any(class) AS class,
+                anyLast(message) AS message,
                 count() AS count,
                 uniqExact(user) AS users,
                 max(recorded_at) AS last_seen,
@@ -130,6 +131,7 @@ class BuildExceptionIndexData
         $data = $rows->map(fn ($row) => [
             'group_key' => $row->group_key,
             'class' => $row->class,
+            'message' => $row->message,
             'count' => (int) $row->count,
             'users' => (int) $row->users,
             'last_seen' => $row->last_seen,
