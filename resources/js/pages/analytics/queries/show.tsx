@@ -69,7 +69,7 @@ export default function QueryShow({ graph, stats, sql_normalized, period }: Prop
                     <CardHeader className="border-b py-4">
                         <span className="text-sm font-medium">Query</span>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-[auto_1fr]">
+                    <CardContent className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-2">
                         <Section title="Info">
                             <InfoRow
                                 label="Calls"
