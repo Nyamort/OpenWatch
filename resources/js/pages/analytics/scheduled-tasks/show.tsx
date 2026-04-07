@@ -82,7 +82,7 @@ export default function ScheduledTaskShow({ analytics }: Props) {
                   )
                 : '#',
         },
-        { title: summary.recorded_at, href: '#' },
+        { title: summary.name, href: '#' },
     ];
 
     return (
