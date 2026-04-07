@@ -1,6 +1,9 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { formatDuration } from '@/lib/utils';
@@ -37,6 +40,36 @@ function ChartsSkeleton() {
 
 function CardSkeleton() {
     return <div className="h-48 animate-pulse rounded-xl border bg-muted/40" />;
+}
+
+function SqlBlock({ sql }: { sql: string }) {
+    const [copied, setCopied] = useState(false);
+
+    function handleCopy() {
+        navigator.clipboard.writeText(sql);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    return (
+        <div className="group/sql relative overflow-hidden rounded-lg border border-border bg-muted/30">
+            <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 size-7 opacity-0 transition-opacity group-hover/sql:opacity-100"
+                onClick={handleCopy}
+            >
+                {copied ? (
+                    <Check className="size-3.5 text-emerald-500" />
+                ) : (
+                    <Copy className="size-3.5" />
+                )}
+            </Button>
+            <SqlSyntaxHighlighter className="p-4 text-xs" wrapLongLines>
+                {formatSql(sql, { language: 'sql' })}
+            </SqlSyntaxHighlighter>
+        </div>
+    );
 }
 
 export default function QueryShow({ graph, stats, sql_normalized, period }: Props) {
@@ -89,16 +122,7 @@ export default function QueryShow({ graph, stats, sql_normalized, period }: Prop
                                 value={formatDuration(stats?.p95 ?? null)}
                             />
                         </Section>
-                        <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
-                            <SqlSyntaxHighlighter
-                                className="p-4 text-xs"
-                                wrapLongLines
-                            >
-                                {formatSql(stats?.sql_normalized ?? '', {
-                                    language: 'sql',
-                                })}
-                            </SqlSyntaxHighlighter>
-                        </div>
+                        <SqlBlock sql={stats?.sql_normalized ?? ''} />
                     </CardContent>
                 </Card>
             </Deferred>
