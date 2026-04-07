@@ -90,56 +90,28 @@ export default function CommandShow({ analytics }: Props) {
                     </CardHeader>
 
                     <CardContent className="flex flex-col gap-8 py-6">
-                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                            <Section title="Info">
-                                <InfoRow
-                                    label="Exit Code"
-                                    value={exitCodeBadge(summary.exit_code)}
-                                />
-                                <InfoRow
-                                    label="Date"
-                                    value={summary.recorded_at}
-                                />
-                                <InfoRow
-                                    label="Duration"
-                                    value={formatDuration(summary.duration)}
-                                />
-                                <InfoRow
-                                    label="Peak Memory"
-                                    value={formatBytes(
-                                        summary.peak_memory_usage,
-                                    )}
-                                />
-                                <InfoRow
-                                    label="Server"
-                                    value={summary.server}
-                                />
-                            </Section>
+                        <Section>
+                            <InfoRow label="Exit Code" value={exitCodeBadge(summary.exit_code)} />
+                            <InfoRow label="Date" value={summary.recorded_at} />
+                            <InfoRow label="Duration" value={formatDuration(summary.duration)} />
+                            <InfoRow label="Peak Memory" value={formatBytes(summary.peak_memory_usage)} />
+                            <InfoRow label="Server" value={summary.server} />
+                        </Section>
 
-                            <Section title="Events">
-                                <InfoRow
-                                    label="Queries"
-                                    value={summary.queries}
-                                />
-                                <InfoRow label="Mail" value={summary.mail_count} />
-                                <InfoRow
-                                    label="Cache"
-                                    value={summary.cache_events}
-                                />
-                                <InfoRow
-                                    label="Outgoing Requests"
-                                    value={summary.outgoing_requests}
-                                />
-                                <InfoRow
-                                    label="Notifications"
-                                    value={summary.notifications}
-                                />
-                                <InfoRow
-                                    label="Queued Jobs"
-                                    value={summary.jobs_queued}
-                                />
-                            </Section>
-                        </div>
+                        <Section title="Events">
+                            <div className="grid grid-cols-2 gap-x-8">
+                                <div>
+                                    <InfoRow label="Queries" value={summary.queries} />
+                                    <InfoRow label="Cache" value={summary.cache_events} />
+                                    <InfoRow label="Notifications" value={summary.notifications} />
+                                </div>
+                                <div>
+                                    <InfoRow label="Mail" value={summary.mail_count} />
+                                    <InfoRow label="Outgoing Requests" value={summary.outgoing_requests} />
+                                    <InfoRow label="Queued Jobs" value={summary.jobs_queued} />
+                                </div>
+                            </div>
+                        </Section>
                     </CardContent>
                 </Card>
 
