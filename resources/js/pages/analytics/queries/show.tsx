@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { formatDuration } from '@/lib/utils';
 import { index as queriesIndex } from '@/routes/analytics/queries';
+import { format as formatSql } from 'sql-formatter';
 import {
     QueryDetailCharts,
     type QueryDetailGraphBucket,
@@ -93,7 +94,9 @@ export default function QueryShow({ graph, stats, sql_normalized, period }: Prop
                                 className="p-4 text-xs"
                                 wrapLongLines
                             >
-                                {stats?.sql_normalized ?? ''}
+                                {formatSql(stats?.sql_normalized ?? '', {
+                                    language: 'sql',
+                                })}
                             </SqlSyntaxHighlighter>
                         </div>
                     </CardContent>
