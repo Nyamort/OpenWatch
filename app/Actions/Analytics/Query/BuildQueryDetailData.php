@@ -79,7 +79,7 @@ class BuildQueryDetailData
         $offset = $this->pageOffset($page);
 
         $rows = $this->clickhouse->select("
-            SELECT id, recorded_at, duration, connection
+            SELECT id, recorded_at, execution_source, execution_preview, file, line, connection, duration
             FROM extraction_queries
             {$baseWhere}
             ORDER BY {$orderCol} {$orderDir}
@@ -89,8 +89,12 @@ class BuildQueryDetailData
         $runs = $rows->map(fn ($row) => [
             'id' => $row->id,
             'recorded_at' => Carbon::parse($row->recorded_at)->format('Y-m-d H:i:s'),
-            'duration' => (int) $row->duration,
+            'source' => $row->execution_source ?: null,
+            'source_preview' => $row->execution_preview ?: null,
+            'file' => $row->file ?: null,
+            'line' => $row->line ? (int) $row->line : null,
             'connection' => $row->connection,
+            'duration' => (int) $row->duration,
         ])->all();
 
         return [

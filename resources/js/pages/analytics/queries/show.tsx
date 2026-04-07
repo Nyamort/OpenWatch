@@ -15,11 +15,14 @@ import {
     type QueryDetailGraphBucket,
     type QueryDetailStats,
 } from './partials/query-detail-charts';
-import type { SortDir } from './types';
+import { QueryRunTable, type QueryRunRow } from './partials/query-run-table';
+import type { Pagination, SortDir } from './types';
 
 interface Props {
     graph?: QueryDetailGraphBucket[];
     stats?: QueryDetailStats;
+    runs?: QueryRunRow[];
+    pagination?: Pagination;
     sql_normalized?: string | null;
     period: string;
     sort: string;
@@ -56,7 +59,7 @@ function SqlBlock({ sql }: { sql: string }) {
     );
 }
 
-export default function QueryShow({ graph, stats, sql_normalized, period }: Props) {
+export default function QueryShow({ graph, stats, runs, pagination, sql_normalized, period, sort, direction }: Props) {
     const { props } = usePage();
     const { activeEnvironment } = props as {
         activeEnvironment?: { slug: string } | null;
@@ -82,7 +85,7 @@ export default function QueryShow({ graph, stats, sql_normalized, period }: Prop
                 <QueryDetailCharts graph={graph!} stats={stats!} />
             </Deferred>
 
-            <Deferred data={['stats']} fallback={<CardSkeleton />}>
+            <Deferred data={['stats', 'runs', 'pagination']} fallback={<CardSkeleton />}>
                 <Card className="gap-0 bg-surface py-0">
                     <CardHeader className="border-b py-4">
                         <span className="text-sm font-medium">Query</span>
@@ -109,6 +112,16 @@ export default function QueryShow({ graph, stats, sql_normalized, period }: Prop
                         <SqlBlock sql={stats?.sql_normalized ?? ''} />
                     </CardContent>
                 </Card>
+
+                {runs && pagination && (
+                    <QueryRunTable
+                        runs={runs}
+                        pagination={pagination}
+                        sort={sort}
+                        direction={direction}
+                        count={stats?.count ?? 0}
+                    />
+                )}
             </Deferred>
         </AnalyticsLayout>
     );
