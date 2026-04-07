@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { useDebounceCallback } from 'usehooks-ts';
+import { useDebounceCallback } from '@/hooks/use-debounce-callback';
 
 interface UseAnalyticsTableOptions {
     search: string;
@@ -29,13 +29,14 @@ export function useAnalyticsTable<TSortKey extends string>({
         });
     }
 
-    const handleSearch = useDebounceCallback((value: string) => {
-        navigate({ search: value, page: undefined });
-    }, 300);
+    const debouncedNavigate = useDebounceCallback(
+        (value: string) => navigate({ search: value, page: undefined }),
+        300,
+    );
 
     function handleSearchChange(value: string) {
         setSearchValue(value);
-        handleSearch(value);
+        debouncedNavigate(value);
     }
 
     function handlePage(page: number) {
