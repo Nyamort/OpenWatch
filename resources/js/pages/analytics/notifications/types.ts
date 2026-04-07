@@ -24,14 +24,14 @@ export interface NotificationRow {
 export type NotificationSortKey = 'notification' | 'count' | 'avg' | 'p95';
 export type SortDir = 'asc' | 'desc';
 
-export interface NotificationDetailGraphBucket {
+export interface NotificationTypeGraphBucket {
     bucket: string;
     count: number;
     avg: number | null;
     p95: number | null;
 }
 
-export interface NotificationDetailStats {
+export interface NotificationTypeStats {
     count: number;
     min: number | null;
     max: number | null;
@@ -48,6 +48,6 @@ export interface NotificationRunRow {
     duration: number | null;
 }
 
-export type NotificationDetailSortKey = 'date' | 'duration';
+export type NotificationTypeSortKey = 'date' | 'duration';
 
 export type { Pagination } from '@/types/analytics';

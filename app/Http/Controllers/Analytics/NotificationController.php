@@ -63,7 +63,7 @@ class NotificationController extends AnalyticsController
             return $data ??= $this->buildDetail->handle($ctx, $period, $notificationClass, $sort, $direction, $page);
         };
 
-        return Inertia::render('analytics/notifications/show', [
+        return Inertia::render('analytics/notifications/type', [
             'graph' => Inertia::defer(fn () => $resolve()['graph']),
             'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'runs' => Inertia::defer(fn () => $resolve()['runs']),

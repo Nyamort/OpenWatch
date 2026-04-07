@@ -20,7 +20,7 @@ import {
     type ChartConfig,
 } from '@/components/ui/chart';
 import { formatDuration } from '@/lib/utils';
-import type { NotificationDetailGraphBucket, NotificationDetailStats } from '../types';
+import type { NotificationTypeGraphBucket, NotificationTypeStats } from '../types';
 
 const notificationsChartConfig = {
     count: { label: 'Notifications', color: 'oklch(0.50 0 0)' },
@@ -31,12 +31,12 @@ const durationChartConfig = {
     p95: { label: 'P95', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
 
-interface NotificationDetailChartsProps {
-    graph: NotificationDetailGraphBucket[];
-    stats: NotificationDetailStats;
+interface NotificationTypeChartsProps {
+    graph: NotificationTypeGraphBucket[];
+    stats: NotificationTypeStats;
 }
 
-export function NotificationDetailCharts({ graph, stats }: NotificationDetailChartsProps) {
+export function NotificationTypeCharts({ graph, stats }: NotificationTypeChartsProps) {
     const notificationsStats = (
         <div className="flex gap-4 text-sm">
             <div className="flex flex-col items-end gap-0.5">
@@ -85,7 +85,7 @@ export function NotificationDetailCharts({ graph, stats }: NotificationDetailCha
             >
                 {(legendContent) => (
                     <BarChart
-                        syncId="notification-detail"
+                        syncId="notification-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
@@ -137,7 +137,7 @@ export function NotificationDetailCharts({ graph, stats }: NotificationDetailCha
             >
                 {(legendContent) => (
                     <AreaChart
-                        syncId="notification-detail"
+                        syncId="notification-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
