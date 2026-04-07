@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Check, Copy, Database } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { format as formatSql } from 'sql-formatter';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
@@ -36,7 +37,7 @@ interface QueryTableProps {
 
 function QueryCell({ query }: { query: string }) {
     const [open, setOpen] = useState(false);
-    const [copied, setCopied] = useState(false);
+    const [copiedText, copy] = useClipboard();
     const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -54,11 +55,6 @@ function QueryCell({ query }: { query: string }) {
         if (closeTimer.current) clearTimeout(closeTimer.current);
     }
 
-    function handleCopy() {
-        navigator.clipboard.writeText(query);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -87,9 +83,9 @@ function QueryCell({ query }: { query: string }) {
                         variant="ghost"
                         size="icon"
                         className="size-7"
-                        onClick={handleCopy}
+                        onClick={() => copy(query)}
                     >
-                        {copied ? (
+                        {copiedText !== null ? (
                             <Check className="size-3.5 text-emerald-500" />
                         ) : (
                             <Copy className="size-3.5" />

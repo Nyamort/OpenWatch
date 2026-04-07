@@ -1,5 +1,5 @@
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -21,13 +21,7 @@ export function TokenDialog({
     token: string;
     environmentName: string;
 }) {
-    const [copied, setCopied] = useState(false);
-
-    function copyToken() {
-        navigator.clipboard.writeText(token);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
+    const [copiedText, copy] = useClipboard();
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,9 +42,9 @@ export function TokenDialog({
                         size="icon"
                         variant="ghost"
                         className="size-7 shrink-0"
-                        onClick={copyToken}
+                        onClick={() => copy(token)}
                     >
-                        {copied ? (
+                        {copiedText !== null ? (
                             <Check className="size-3.5 text-green-500" />
                         ) : (
                             <Copy className="size-3.5" />

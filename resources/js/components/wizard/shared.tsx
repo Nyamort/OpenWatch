@@ -1,5 +1,5 @@
 import { Check, CheckCircle2, ClipboardCopy } from 'lucide-react';
-import { useState } from 'react';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { cn } from '@/lib/utils';
 
 export function CodeBlock({
@@ -9,13 +9,7 @@ export function CodeBlock({
     children: React.ReactNode;
     onCopy: string;
 }) {
-    const [copied, setCopied] = useState(false);
-
-    function handleCopy() {
-        navigator.clipboard.writeText(onCopy);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
+    const [copiedText, copy] = useClipboard();
 
     return (
         <div className="relative flex min-w-0 items-start rounded-md bg-zinc-900 px-4 py-3 font-mono text-sm">
@@ -23,11 +17,11 @@ export function CodeBlock({
                 {children}
             </span>
             <button
-                onClick={handleCopy}
+                onClick={() => copy(onCopy)}
                 className="ml-1 shrink-0 text-zinc-400 transition-colors hover:text-zinc-100"
                 title="Copy"
             >
-                {copied ? (
+                {copiedText !== null ? (
                     <Check className="size-4 text-emerald-400" />
                 ) : (
                     <ClipboardCopy className="size-4" />

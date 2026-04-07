@@ -1,6 +1,6 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { CardSkeleton, ChartsSkeleton } from '@/components/analytics/skeletons';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
@@ -30,13 +30,7 @@ interface Props {
 }
 
 function SqlBlock({ sql }: { sql: string }) {
-    const [copied, setCopied] = useState(false);
-
-    function handleCopy() {
-        navigator.clipboard.writeText(sql);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
+    const [copiedText, copy] = useClipboard();
 
     return (
         <div className="group/sql relative overflow-hidden rounded-lg border border-border bg-muted/30">
@@ -44,9 +38,9 @@ function SqlBlock({ sql }: { sql: string }) {
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 size-7 opacity-0 transition-opacity group-hover/sql:opacity-100"
-                onClick={handleCopy}
+                onClick={() => copy(sql)}
             >
-                {copied ? (
+                {copiedText !== null ? (
                     <Check className="size-3.5 text-emerald-500" />
                 ) : (
                     <Copy className="size-3.5" />

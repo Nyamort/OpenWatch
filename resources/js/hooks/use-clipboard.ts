@@ -5,28 +5,35 @@ export type CopiedValue = string | null;
 export type CopyFn = (text: string) => Promise<boolean>;
 export type UseClipboardReturn = [CopiedValue, CopyFn];
 
-export function useClipboard(): UseClipboardReturn {
+export function useClipboard(successDuration = 2000): UseClipboardReturn {
     const [copiedText, setCopiedText] = useState<CopiedValue>(null);
 
-    const copy: CopyFn = useCallback(async (text) => {
-        if (!navigator?.clipboard) {
-            console.warn('Clipboard not supported');
+    const copy: CopyFn = useCallback(
+        async (text) => {
+            if (!navigator?.clipboard) {
+                console.warn('Clipboard not supported');
 
-            return false;
-        }
+                return false;
+            }
 
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopiedText(text);
+            try {
+                await navigator.clipboard.writeText(text);
+                setCopiedText(text);
 
-            return true;
-        } catch (error) {
-            console.warn('Copy failed', error);
-            setCopiedText(null);
+                if (successDuration > 0) {
+                    setTimeout(() => setCopiedText(null), successDuration);
+                }
 
-            return false;
-        }
-    }, []);
+                return true;
+            } catch (error) {
+                console.warn('Copy failed', error);
+                setCopiedText(null);
+
+                return false;
+            }
+        },
+        [successDuration],
+    );
 
     return [copiedText, copy];
 }
