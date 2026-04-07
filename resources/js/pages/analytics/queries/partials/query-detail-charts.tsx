@@ -30,10 +30,13 @@ export interface QueryDetailGraphBucket {
 
 export interface QueryDetailStats {
     count: number;
+    total: number | null;
     min: number | null;
     max: number | null;
     avg: number | null;
     p95: number | null;
+    sql_normalized: string | null;
+    connection: string | null;
 }
 
 const callsChartConfig = {

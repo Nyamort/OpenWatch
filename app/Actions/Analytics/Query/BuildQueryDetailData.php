@@ -35,6 +35,7 @@ class BuildQueryDetailData
                 any(sql_normalized) AS sql_normalized,
                 any(connection) AS connection,
                 count() AS count,
+                toUInt64(if(isFinite(sum(duration)), sum(duration), 0)) AS total,
                 toUInt32(if(isFinite(min(duration)), min(duration), 0)) AS min,
                 toUInt32(if(isFinite(max(duration)), max(duration), 0)) AS max,
                 toUInt32(if(isFinite(avg(duration)), round(avg(duration)), 0)) AS avg,
@@ -96,6 +97,7 @@ class BuildQueryDetailData
             'graph' => $graph,
             'stats' => [
                 'count' => $totalCount,
+                'total' => $stats ? (int) $stats->total : null,
                 'min' => $stats ? (int) $stats->min : null,
                 'max' => $stats ? (int) $stats->max : null,
                 'avg' => $stats ? (int) $stats->avg : null,

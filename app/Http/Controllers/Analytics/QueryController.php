@@ -74,6 +74,7 @@ class QueryController extends AnalyticsController
             'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'runs' => Inertia::defer(fn () => $resolve()['runs']),
             'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'sql_normalized' => Inertia::defer(fn () => $resolve()['stats']['sql_normalized']),
             'period' => $request->query('period', '24h'),
             'sort' => $sort,
             'direction' => $direction,
