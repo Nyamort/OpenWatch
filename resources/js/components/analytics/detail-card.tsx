@@ -5,7 +5,7 @@ export function InfoRow({ label, value }: { label: string; value: ReactNode }) {
     return (
         <div className="flex items-baseline gap-2 py-1 text-sm first:pt-0 last:pb-0">
             <span className="shrink-0 uppercase text-muted-foreground">{label}</span>
-            <span className="relative -bottom-px min-w-6 grow border-b-2 border-dotted border-neutral-300 dark:border-white/20" />
+            <span className="relative -bottom-px grow border-b-2 border-dotted border-neutral-300 dark:border-white/20" />
             <span className="shrink-0 text-right font-medium">{value ?? '—'}</span>
         </div>
     );
