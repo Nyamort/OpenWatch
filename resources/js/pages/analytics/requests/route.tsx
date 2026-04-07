@@ -1,4 +1,5 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
+import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as requestsIndex } from '@/routes/analytics/requests';
 import { RouteCharts } from './partials/route-charts';
@@ -22,33 +23,6 @@ interface Props {
     period: string;
     sort: RouteSortKey;
     direction: SortDir;
-}
-
-function ChartsSkeleton() {
-    return (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {[0, 1].map((i) => (
-                <div
-                    key={i}
-                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
-                />
-            ))}
-        </div>
-    );
-}
-
-function TableSkeleton() {
-    return (
-        <div className="flex flex-col gap-1.5">
-            <div className="h-11 animate-pulse rounded-lg bg-muted/40" />
-            {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="h-11 animate-pulse rounded-lg bg-muted/20"
-                />
-            ))}
-        </div>
-    );
 }
 
 export default function RequestsRoute({

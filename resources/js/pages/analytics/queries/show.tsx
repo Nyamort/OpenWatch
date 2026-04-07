@@ -1,6 +1,7 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { CardSkeleton, ChartsSkeleton } from '@/components/analytics/skeletons';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { Button } from '@/components/ui/button';
@@ -23,23 +24,6 @@ interface Props {
     period: string;
     sort: string;
     direction: SortDir;
-}
-
-function ChartsSkeleton() {
-    return (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {[0, 1].map((i) => (
-                <div
-                    key={i}
-                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
-                />
-            ))}
-        </div>
-    );
-}
-
-function CardSkeleton() {
-    return <div className="h-48 animate-pulse rounded-xl border bg-muted/40" />;
 }
 
 function SqlBlock({ sql }: { sql: string }) {
