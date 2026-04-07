@@ -60,11 +60,11 @@ export function CommandDetailTable({
                             sort={sort}
                             direction={direction}
                             onSort={onSort}
-                            className="h-11 px-5 text-xs font-medium"
+                            className="h-11 w-px px-5 text-xs font-medium whitespace-nowrap"
                         >
                             Date
                         </SortableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
+                        <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Command
                         </TableHead>
                         <SortableHead
@@ -106,10 +106,10 @@ export function CommandDetailTable({
                                 key={row.id}
                                 className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
-                                <TableCell className="h-11 px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+                                <TableCell className="h-11 w-px px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}
                                 </TableCell>
-                                <TableCell className="h-11 w-px px-4 whitespace-nowrap">
+                                <TableCell className="h-11 px-4">
                                     <span className="font-mono text-xs">
                                         {row.command ?? '—'}
                                     </span>
