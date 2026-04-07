@@ -1,69 +1,56 @@
-import { Head } from '@inertiajs/react';
-import { DataTable } from '@/components/analytics/data-table';
+import { Deferred, Head, usePage } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: {
-        sql_hash: string;
-        sql_preview: string;
-        total: number;
-        avg_duration_ms: number;
-        p95_duration_ms: number;
-        max_duration_ms: number;
-        period_label: string;
-    };
-    rows: Array<Record<string, unknown>>;
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    } | null;
-}
+import { index as queriesIndex } from '@/routes/analytics/queries';
+import {
+    QueryDetailCharts,
+    type QueryDetailGraphBucket,
+    type QueryDetailStats,
+} from './partials/query-detail-charts';
+import type { SortDir } from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: QueryDetailGraphBucket[];
+    stats?: QueryDetailStats;
     period: string;
+    sort: string;
+    direction: SortDir;
 }
 
-const columns = [
-    { key: 'connection', label: 'Connection' },
-    { key: 'duration', label: 'Duration (µs)' },
-    { key: 'recorded_at', label: 'Recorded At' },
-];
-
-export default function QueryShow({ analytics, period }: Props) {
+function ChartsSkeleton() {
     return (
-        <AnalyticsLayout period={period}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[0, 1].map((i) => (
+                <div
+                    key={i}
+                    className="h-[206px] animate-pulse rounded-xl border bg-muted/40"
+                />
+            ))}
+        </div>
+    );
+}
+
+export default function QueryShow({ graph, stats, period }: Props) {
+    const { props } = usePage();
+    const { activeEnvironment } = props as {
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const breadcrumbs = [
+        {
+            title: 'Queries',
+            href: activeEnvironment
+                ? queriesIndex.url({ environment: activeEnvironment.slug })
+                : '#',
+        },
+        { title: 'Query detail', href: '#' },
+    ];
+
+    return (
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <div className="rounded-lg border bg-card p-4">
-                <pre className="overflow-x-auto text-xs">
-                    {analytics.summary.sql_preview}
-                </pre>
-                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                        <p className="text-muted-foreground">Total</p>
-                        <p className="font-medium">{analytics.summary.total}</p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">Avg (ms)</p>
-                        <p className="font-medium">
-                            {analytics.summary.avg_duration_ms}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">P95 (ms)</p>
-                        <p className="font-medium">
-                            {analytics.summary.p95_duration_ms}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <DataTable
-                columns={columns}
-                rows={analytics.rows}
-                pagination={analytics.pagination}
-            />
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <QueryDetailCharts graph={graph!} stats={stats!} />
+            </Deferred>
         </AnalyticsLayout>
     );
 }

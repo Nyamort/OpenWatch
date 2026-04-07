@@ -60,11 +60,23 @@ class QueryController extends AnalyticsController
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildDetail->handle($ctx, $period, $query);
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $query, $sort, $direction, $page): array {
+            return $data ??= $this->buildDetail->handle($ctx, $period, $query, $sort, $direction, $page);
+        };
 
         return Inertia::render('analytics/queries/show', [
-            'analytics' => $data,
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'runs' => Inertia::defer(fn () => $resolve()['runs']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
             'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }
