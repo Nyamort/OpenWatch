@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Paperclip, Users } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -28,11 +29,16 @@ interface RecipientsProps {
 
 function Recipients({ to, cc, bcc, attachments }: RecipientsProps) {
     const total = to + cc + bcc;
+    const [open, setOpen] = useState(false);
 
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <button className="inline-flex cursor-pointer items-stretch overflow-hidden rounded-md border border-border text-xs tabular-nums transition-colors hover:bg-muted/50">
+                <button
+                    className="inline-flex cursor-default items-stretch overflow-hidden rounded-md border border-border text-xs tabular-nums transition-colors hover:bg-muted/50"
+                    onMouseEnter={() => setOpen(true)}
+                    onMouseLeave={() => setOpen(false)}
+                >
                     <span className="flex items-center gap-1 px-2 py-0.5 text-muted-foreground">
                         <Users className="size-3 shrink-0" />
                         {total}
@@ -44,7 +50,12 @@ function Recipients({ to, cc, bcc, attachments }: RecipientsProps) {
                     </span>
                 </button>
             </PopoverTrigger>
-            <PopoverContent side="top" className="w-44 p-3">
+            <PopoverContent
+                side="top"
+                className="w-44 p-3"
+                onMouseEnter={() => setOpen(true)}
+                onMouseLeave={() => setOpen(false)}
+            >
                 <div className="flex flex-col gap-1.5 text-sm">
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">To</span>
