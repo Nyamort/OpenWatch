@@ -3,6 +3,7 @@ import { Paperclip, Users } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
+import { InfoRow } from '@/components/analytics/detail-card';
 import {
     Popover,
     PopoverContent,
@@ -56,25 +57,11 @@ function Recipients({ to, cc, bcc, attachments }: RecipientsProps) {
                 onMouseEnter={() => setOpen(true)}
                 onMouseLeave={() => setOpen(false)}
             >
-                <div className="flex flex-col gap-1.5 text-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">To</span>
-                        <span className="font-medium tabular-nums">{to}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">CC</span>
-                        <span className="font-medium tabular-nums">{cc}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">BCC</span>
-                        <span className="font-medium tabular-nums">{bcc}</span>
-                    </div>
-                    <div className="my-0.5 border-t border-border" />
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Attachments</span>
-                        <span className="font-medium tabular-nums">{attachments}</span>
-                    </div>
-                </div>
+                <InfoRow label="To" value={to} />
+                <InfoRow label="CC" value={cc} />
+                <InfoRow label="BCC" value={bcc} />
+                <div className="my-1 border-t border-border" />
+                <InfoRow label="Attachments" value={attachments} />
             </PopoverContent>
         </Popover>
     );
