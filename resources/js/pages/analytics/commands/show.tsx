@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
+import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -11,7 +11,7 @@ import type { BreadcrumbItem } from '@/types';
 interface CommandSummary {
     id: string;
     name: string;
-    command: string | null;
+    command: string;
     class: string | null;
     exit_code: number | null;
     recorded_at: string;
@@ -28,36 +28,6 @@ interface CommandSummary {
     mail_count: number;
 }
 
-interface ExecutionSpan {
-    span_type: string;
-    timestamp: string;
-    duration: number;
-    offset: number;
-    name: string;
-    description: string;
-    [key: string]: unknown;
-}
-
-interface ExecutionStage {
-    id: string;
-    name: string;
-    description: string;
-    duration: number;
-    offset: number;
-    spans: ExecutionSpan[];
-}
-
-interface Execution {
-    id: string;
-    name: string;
-    description: string;
-    status: number;
-    duration: number;
-    offset: number;
-    variant: 'success' | 'warning' | 'error';
-    stages: ExecutionStage[];
-}
-
 interface Props {
     analytics: {
         summary: CommandSummary;
@@ -65,35 +35,6 @@ interface Props {
             executions: Execution[];
         };
     };
-}
-
-function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
-    return executions.map((execution) => ({
-        id: execution.id,
-        label: execution.name,
-        sublabel: execution.description || undefined,
-        durationUs: Math.max(0, execution.duration),
-        offsetUs: execution.offset,
-        color: 'teal' as const,
-        children: execution.stages.map((stage) => ({
-            id: `${execution.id}-${stage.id}`,
-            label: stage.name,
-            sublabel: stage.description || undefined,
-            durationUs: Math.max(0, stage.duration),
-            offsetUs: stage.offset,
-            children:
-                stage.spans.length > 0
-                    ? stage.spans.map((span, i) => ({
-                          id: `${stage.id}-span-${i}`,
-                          label: span.name.toUpperCase(),
-                          sublabel: span.description || undefined,
-                          durationUs:
-                              span.duration > 0 ? span.duration : null,
-                          offsetUs: span.offset,
-                      }))
-                    : undefined,
-        })),
-    }));
 }
 
 function exitCodeBadge(exitCode: number | null) {
@@ -134,7 +75,7 @@ export default function CommandShow({ analytics }: Props) {
                   )
                 : '#',
         },
-        { title: summary.recorded_at, href: '#' },
+        { title: summary.command, href: '#' },
     ];
 
     return (

@@ -4,6 +4,64 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useTimelineZoom } from '@/hooks/use-timeline-zoom';
 import { cn, formatDuration } from '@/lib/utils';
 
+export interface ExecutionSpan {
+    span_type: string;
+    timestamp: string;
+    duration: number;
+    offset: number;
+    name: string;
+    description: string;
+    [key: string]: unknown;
+}
+
+export interface ExecutionStage {
+    id: string;
+    name: string;
+    description: string;
+    duration: number;
+    offset: number;
+    spans: ExecutionSpan[];
+}
+
+export interface Execution {
+    id: string;
+    name: string;
+    description: string;
+    status: number;
+    duration: number;
+    offset: number;
+    variant: 'success' | 'warning' | 'error';
+    stages: ExecutionStage[];
+}
+
+export function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
+    return executions.map((execution) => ({
+        id: execution.id,
+        label: execution.name,
+        sublabel: execution.description || undefined,
+        durationUs: Math.max(0, execution.duration),
+        offsetUs: execution.offset,
+        color: 'teal' as const,
+        children: execution.stages.map((stage) => ({
+            id: `${execution.id}-${stage.id}`,
+            label: stage.name,
+            sublabel: stage.description || undefined,
+            durationUs: Math.max(0, stage.duration),
+            offsetUs: stage.offset,
+            children:
+                stage.spans.length > 0
+                    ? stage.spans.map((span, i) => ({
+                          id: `${stage.id}-span-${i}`,
+                          label: span.name.toUpperCase(),
+                          sublabel: span.description || undefined,
+                          durationUs: span.duration > 0 ? span.duration : null,
+                          offsetUs: span.offset,
+                      }))
+                    : undefined,
+        })),
+    }));
+}
+
 export interface TimelineSpan {
     id: string;
     /** Short uppercase label, e.g. "COMMAND", "BOOTSTRAP" */

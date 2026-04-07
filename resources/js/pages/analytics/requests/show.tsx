@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
+import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -39,36 +39,6 @@ interface RequestSummary {
     logs: number;
 }
 
-interface ExecutionSpan {
-    span_type: string;
-    timestamp: string;
-    duration: number; // microseconds
-    offset: number; // microseconds from request start
-    name: string;
-    description: string;
-    [key: string]: unknown;
-}
-
-interface ExecutionStage {
-    id: string;
-    name: string;
-    description: string;
-    duration: number; // microseconds
-    offset: number; // microseconds from request start
-    spans: ExecutionSpan[];
-}
-
-interface Execution {
-    id: string;
-    name: string;
-    description: string;
-    status: number;
-    duration: number; // microseconds
-    offset: number; // microseconds
-    variant: 'success' | 'warning' | 'error';
-    stages: ExecutionStage[];
-}
-
 interface Props {
     analytics: {
         summary: RequestSummary;
@@ -76,33 +46,6 @@ interface Props {
             executions: Execution[];
         };
     };
-}
-
-function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
-    return executions.map((execution) => ({
-        id: execution.id,
-        label: execution.name,
-        sublabel: execution.description || undefined,
-        durationUs: Math.max(0, execution.duration),
-        offsetUs: execution.offset,
-        color: 'teal' as const,
-        children: execution.stages.map((stage) => ({
-            id: `${execution.id}-${stage.id}`,
-            label: stage.name,
-            sublabel: stage.description || undefined,
-            durationUs: Math.max(0, stage.duration),
-            offsetUs: stage.offset,
-            children: stage.spans.length > 0
-                ? stage.spans.map((span, i) => ({
-                    id: `${stage.id}-span-${i}`,
-                    label: span.name.toUpperCase(),
-                    sublabel: span.description || undefined,
-                    durationUs: span.duration > 0 ? span.duration : null,
-                    offsetUs: span.offset,
-                }))
-                : undefined,
-        })),
-    }));
 }
 
 function StatusCodeBadge({ code }: { code: number }) {
