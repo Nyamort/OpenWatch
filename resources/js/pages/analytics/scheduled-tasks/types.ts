@@ -59,7 +59,7 @@ export interface ScheduledTaskDetailStats {
 }
 
 export interface ScheduledTaskRunRow {
-    id: number;
+    id: string;
     recorded_at: string;
     status: string;
     duration: number | null;

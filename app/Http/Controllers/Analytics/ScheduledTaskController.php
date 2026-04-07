@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Analytics;
 
 use App\Actions\Analytics\ScheduledTask\BuildScheduledTaskIndexData;
 use App\Actions\Analytics\ScheduledTask\BuildScheduledTaskRunData;
+use App\Actions\Analytics\ScheduledTask\BuildScheduledTaskShowData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,6 +14,7 @@ class ScheduledTaskController extends AnalyticsController
     public function __construct(
         private readonly BuildScheduledTaskIndexData $buildIndex,
         private readonly BuildScheduledTaskRunData $buildRuns,
+        private readonly BuildScheduledTaskShowData $buildShow,
     ) {}
 
     /**
@@ -46,9 +48,9 @@ class ScheduledTaskController extends AnalyticsController
     }
 
     /**
-     * Display detail analytics for a scheduled task (name + cron).
+     * Display detail analytics for a scheduled task type (name + cron).
      */
-    public function show(Request $request, string $environment, string $scheduledTask): Response
+    public function type(Request $request, string $environment, string $scheduledTask): Response
     {
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
@@ -64,7 +66,7 @@ class ScheduledTaskController extends AnalyticsController
             return $data ??= $this->buildRuns->handle(ctx: $ctx, period: $period, name: $name, cron: $cron, sort: $sort, direction: $direction, page: $page);
         };
 
-        return Inertia::render('analytics/scheduled-tasks/show', [
+        return Inertia::render('analytics/scheduled-tasks/type', [
             'graph' => Inertia::defer(fn () => $resolve()['graph']),
             'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'runs' => Inertia::defer(fn () => $resolve()['runs']),
@@ -74,5 +76,16 @@ class ScheduledTaskController extends AnalyticsController
             'sort' => $sort,
             'direction' => $direction,
         ]);
+    }
+
+    /**
+     * Display detail for a single scheduled task run.
+     */
+    public function show(Request $request, string $environment, string $scheduledTask, string $run): Response
+    {
+        $ctx = $this->resolveContext($request, $environment);
+        $data = $this->buildShow->handle($ctx, $run);
+
+        return Inertia::render('analytics/scheduled-tasks/show', ['analytics' => $data]);
     }
 }

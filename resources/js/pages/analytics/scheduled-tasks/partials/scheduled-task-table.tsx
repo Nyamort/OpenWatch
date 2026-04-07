@@ -15,7 +15,7 @@ import {
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import { show as scheduledTaskShow } from '@/routes/analytics/scheduled-tasks';
+import { type as scheduledTaskType } from '@/routes/analytics/scheduled-tasks';
 import type {
     Pagination,
     ScheduledTaskRow,
@@ -61,7 +61,7 @@ export function ScheduledTaskTable({
         }
 
         return analyticsHref(
-            scheduledTaskShow.url(
+            scheduledTaskType.url(
                 {
                     environment: activeEnvironment.slug,
                     scheduledTask: 0,

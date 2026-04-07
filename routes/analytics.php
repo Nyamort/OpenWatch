@@ -58,7 +58,8 @@ Route::middleware(['auth', 'verified', 'organization.member'])
 
         // Scheduled task analytics
         Route::get('scheduled-tasks', [ScheduledTaskController::class, 'index'])->name('scheduled-tasks.index');
-        Route::get('scheduled-tasks/{scheduledTask}', [ScheduledTaskController::class, 'show'])->name('scheduled-tasks.show');
+        Route::get('scheduled-tasks/{scheduledTask}', [ScheduledTaskController::class, 'type'])->name('scheduled-tasks.type');
+        Route::get('scheduled-tasks/{scheduledTask}/runs/{run}', [ScheduledTaskController::class, 'show'])->name('scheduled-tasks.show');
 
         // Exception analytics
         Route::get('exceptions', [ExceptionController::class, 'index'])->name('exceptions.index');
