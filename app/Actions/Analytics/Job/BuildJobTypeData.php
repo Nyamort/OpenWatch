@@ -27,16 +27,12 @@ class BuildJobTypeData
         string $direction = 'desc',
         int $page = 1,
     ): array {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
         $escapedName = ClickHouseService::escape($name);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND name = {$escapedName}
             AND recorded_at BETWEEN {$start} AND {$end}";
 

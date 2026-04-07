@@ -21,14 +21,14 @@ class BuildRequestDetailData
      */
     public function handle(AnalyticsContext $ctx, string $requestId): array
     {
-        $orgId = $ctx->organization->id;
+        $envId = $ctx->environment->id;
         $escapedId = ClickHouseService::escape($requestId);
 
         $request = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_requests
             WHERE id = {$escapedId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
             LIMIT 1
         ");
 
@@ -48,7 +48,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_queries
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -57,7 +57,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_exceptions
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -66,7 +66,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_logs
             WHERE execution_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -75,7 +75,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_mails
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -84,7 +84,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_notifications
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -93,7 +93,7 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_cache_events
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -102,12 +102,12 @@ class BuildRequestDetailData
             SELECT *
             FROM extraction_outgoing_requests
             WHERE trace_id = {$traceId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
-        $userDetails = $this->fetchUserDetails($orgId, $request->user ?? null);
+        $userDetails = $this->fetchUserDetails($envId, $request->user ?? null);
         $summaryArray = array_merge((array) $request, [
             'mail_count' => count($mails),
             'user_name' => $userDetails?->name,

@@ -6,7 +6,7 @@ use App\Services\ClickHouse\ClickHouseService;
 
 trait FetchesUserDetails
 {
-    private function fetchUserDetails(int $orgId, ?string $userId): ?object
+    private function fetchUserDetails(int $envId, ?string $userId): ?object
     {
         if ($userId === null || $userId === '') {
             return null;
@@ -17,7 +17,7 @@ trait FetchesUserDetails
         return $this->clickhouse->selectOne("
             SELECT any(name) AS name, username
             FROM extraction_user_activities
-            WHERE organization_id = {$orgId}
+            WHERE environment_id = {$envId}
               AND user_id = {$escapedUserId}
               AND username != ''
             GROUP BY username

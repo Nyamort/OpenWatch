@@ -25,7 +25,7 @@ class BuildDashboardData
             default => 300,                        // 7d/14d/30d
         };
 
-        $cacheKey = "dashboard:{$ctx->organization->id}:{$ctx->project->id}:{$ctx->environment->id}:{$period->label}";
+        $cacheKey = "dashboard:{$ctx->environment->id}:{$period->label}";
 
         return Cache::remember($cacheKey, $ttl, function () use ($ctx, $period): array {
             return [
@@ -126,15 +126,11 @@ class BuildDashboardData
 
     private function baseWhere(AnalyticsContext $ctx, PeriodResult $period): string
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
 
-        return "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        return "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
     }
 }

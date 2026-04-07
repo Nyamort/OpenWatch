@@ -25,9 +25,6 @@ function insertJobAttempt(array $ctx, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_job_attempts', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'job_id' => 'job-'.uniqid(),
             'attempt_id' => 'attempt-'.uniqid(),
@@ -76,13 +73,13 @@ test('jobs show returns attempts with connection and queue', function () {
 
     $response = $this->actingAs($ctx['user'])
         ->withHeaders([
-            'X-Inertia-Partial-Component' => 'analytics/jobs/show',
+            'X-Inertia-Partial-Component' => 'analytics/jobs/type',
             'X-Inertia-Partial-Data' => 'graph,stats,attempts,pagination',
         ])
         ->get($url);
 
     $response->assertInertia(fn ($page) => $page
-        ->component('analytics/jobs/show')
+        ->component('analytics/jobs/type')
         ->has('attempts', 1)
         ->has('attempts.0', fn ($attempt) => $attempt
             ->where('connection', 'redis')

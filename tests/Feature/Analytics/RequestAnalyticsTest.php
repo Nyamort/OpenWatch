@@ -25,9 +25,6 @@ function insertRequest(array $ctx, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_requests', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'trace_id' => 'trace-'.uniqid(),
             'user' => null,
@@ -124,12 +121,14 @@ test('request show returns all related rows grouped by execution_stage', functio
     $traceId = 'trace-'.uniqid();
     $ch = app(ClickHouseService::class);
 
-    insertRequest($ctx, ['trace_id' => $traceId, 'id' => $traceId]);
+    insertRequest($ctx, [
+        'trace_id' => $traceId,
+        'id' => $traceId,
+        'before_middleware' => 100,
+        'action' => 1000,
+    ]);
 
     $ch->insert('extraction_queries', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => $traceId,
         'execution_stage' => 'action',
@@ -142,9 +141,6 @@ test('request show returns all related rows grouped by execution_stage', functio
     ]]);
 
     $ch->insert('extraction_mails', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => $traceId,
         'execution_stage' => 'action',
@@ -158,9 +154,6 @@ test('request show returns all related rows grouped by execution_stage', functio
     ]]);
 
     $ch->insert('extraction_notifications', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => $traceId,
         'execution_stage' => 'action',
@@ -172,9 +165,6 @@ test('request show returns all related rows grouped by execution_stage', functio
     ]]);
 
     $ch->insert('extraction_cache_events', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => $traceId,
         'execution_stage' => 'before_middleware',
@@ -186,9 +176,6 @@ test('request show returns all related rows grouped by execution_stage', functio
     ]]);
 
     $ch->insert('extraction_outgoing_requests', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => $traceId,
         'execution_stage' => 'action',
@@ -206,16 +193,13 @@ test('request show returns all related rows grouped by execution_stage', functio
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/requests/show')
-        ->has('analytics.rows.queries', 1)
-        ->has('analytics.rows.mails', 1)
-        ->has('analytics.rows.notifications', 1)
-        ->has('analytics.rows.cache_events', 1)
-        ->has('analytics.rows.outgoing_requests', 1)
-        ->where('analytics.rows.queries.0.execution_stage', 'action')
-        ->where('analytics.rows.mails.0.execution_stage', 'action')
-        ->where('analytics.rows.notifications.0.execution_stage', 'action')
-        ->where('analytics.rows.cache_events.0.execution_stage', 'before_middleware')
-        ->where('analytics.rows.outgoing_requests.0.execution_stage', 'action')
+        ->has('analytics.rows.executions', 1)
+        ->has('analytics.rows.executions.0.stages', 2)
+        ->where('analytics.rows.executions.0.stages.0.id', 'before_middleware')
+        ->has('analytics.rows.executions.0.stages.0.spans', 1)
+        ->where('analytics.rows.executions.0.stages.0.spans.0.span_type', 'cache')
+        ->where('analytics.rows.executions.0.stages.1.id', 'action')
+        ->has('analytics.rows.executions.0.stages.1.spans', 4)
     );
 });
 
@@ -228,9 +212,6 @@ test('request show includes user name and email when user is linked', function (
     insertRequest($ctx, ['trace_id' => $traceId, 'id' => $traceId, 'user' => $userId]);
 
     $ch->insert('extraction_user_activities', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'user_id' => $userId,
         'name' => 'Jane Doe',

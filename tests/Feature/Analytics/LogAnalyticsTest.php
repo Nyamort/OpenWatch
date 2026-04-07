@@ -25,9 +25,6 @@ function insertLog(array $ctx, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_logs', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'level' => 'info',
             'message' => 'Test log message',

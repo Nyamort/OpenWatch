@@ -17,14 +17,14 @@ class BuildMailDetailData
      */
     public function handle(AnalyticsContext $ctx, string $mailId): array
     {
-        $orgId = $ctx->organization->id;
+        $envId = $ctx->environment->id;
         $escapedId = ClickHouseService::escape($mailId);
 
         $mail = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_mails
             WHERE id = {$escapedId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
             LIMIT 1
         ");
 

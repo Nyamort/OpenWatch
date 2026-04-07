@@ -24,9 +24,6 @@ function setupMailContext(string $suffix = ''): array
 function insertMail(array $ctx, array $overrides = []): void
 {
     $data = array_merge([
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'mailer' => 'smtp',
         'class' => 'App\\Mail\\WelcomeMail',

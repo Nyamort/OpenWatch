@@ -22,15 +22,11 @@ class BuildScheduledTaskIndexData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'task', string $direction = 'asc', string $search = '', int $page = 1): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
@@ -80,7 +76,7 @@ class BuildScheduledTaskIndexData
             ];
         }
 
-        $tasks = $this->fetchTasks($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
+        $tasks = $this->fetchTasks($envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -100,11 +96,9 @@ class BuildScheduledTaskIndexData
     /**
      * @return array<string, mixed>
      */
-    private function fetchTasks(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
+    private function fetchTasks(int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         if ($search !== '') {

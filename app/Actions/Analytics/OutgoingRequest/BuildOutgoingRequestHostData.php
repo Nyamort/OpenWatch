@@ -21,8 +21,6 @@ class BuildOutgoingRequestHostData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $host): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
@@ -31,9 +29,7 @@ class BuildOutgoingRequestHostData
         $total = (int) ($this->clickhouse->selectValue("
             SELECT count()
             FROM extraction_outgoing_requests
-            WHERE organization_id = {$orgId}
-              AND project_id = {$projId}
-              AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND host = {$escapedHost}
               AND recorded_at BETWEEN {$start} AND {$end}
         ") ?? 0);
@@ -41,9 +37,7 @@ class BuildOutgoingRequestHostData
         $rows = $this->clickhouse->select("
             SELECT *
             FROM extraction_outgoing_requests
-            WHERE organization_id = {$orgId}
-              AND project_id = {$projId}
-              AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND host = {$escapedHost}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at DESC

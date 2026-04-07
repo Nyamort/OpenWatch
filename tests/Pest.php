@@ -45,12 +45,3 @@ function something()
 {
     // ..
 }
-
-/**
- * Generate a UUID string for use as a telemetry_record_id in ClickHouse extraction tables.
- * ClickHouse has no FK constraints, so no DB insert is needed.
- */
-function nextTelemetryId(array $ctx = []): string
-{
-    return \Illuminate\Support\Str::uuid()->toString();
-}

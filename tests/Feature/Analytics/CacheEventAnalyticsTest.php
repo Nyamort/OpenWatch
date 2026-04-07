@@ -25,9 +25,6 @@ function insertCacheEvent(array $ctx, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_cache_events', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'store' => 'redis',
             'key' => 'user:1',

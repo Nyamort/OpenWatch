@@ -18,8 +18,6 @@ class BuildExceptionDetailData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $groupKey): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
@@ -28,9 +26,7 @@ class BuildExceptionDetailData
         $representative = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_exceptions
-            WHERE organization_id = {$orgId}
-              AND project_id = {$projId}
-              AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND group_key = {$escapedKey}
             ORDER BY recorded_at DESC
             LIMIT 1
@@ -43,9 +39,7 @@ class BuildExceptionDetailData
         $total = (int) ($this->clickhouse->selectValue("
             SELECT count()
             FROM extraction_exceptions
-            WHERE organization_id = {$orgId}
-              AND project_id = {$projId}
-              AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND group_key = {$escapedKey}
               AND recorded_at BETWEEN {$start} AND {$end}
         ") ?? 0);
@@ -53,9 +47,7 @@ class BuildExceptionDetailData
         $occurrences = $this->clickhouse->select("
             SELECT *
             FROM extraction_exceptions
-            WHERE organization_id = {$orgId}
-              AND project_id = {$projId}
-              AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND group_key = {$escapedKey}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at DESC
@@ -67,7 +59,7 @@ class BuildExceptionDetailData
         $relatedRequests = $this->clickhouse->select("
             SELECT id, route_path, method, status_code, recorded_at
             FROM extraction_requests
-            WHERE organization_id = {$orgId}
+            WHERE environment_id = {$envId}
               AND trace_id = {$traceId}
         ")->toArray();
 

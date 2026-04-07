@@ -21,14 +21,14 @@ class BuildAttemptDetailData
      */
     public function handle(AnalyticsContext $ctx, string $attemptId): array
     {
-        $orgId = $ctx->organization->id;
+        $envId = $ctx->environment->id;
         $escapedId = ClickHouseService::escape($attemptId);
 
         $attempt = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_job_attempts
             WHERE attempt_id = {$escapedId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
             LIMIT 1
         ");
 
@@ -48,7 +48,7 @@ class BuildAttemptDetailData
             SELECT *
             FROM extraction_queries
             WHERE execution_id = {$executionId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -57,7 +57,7 @@ class BuildAttemptDetailData
             SELECT *
             FROM extraction_exceptions
             WHERE execution_id = {$executionId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
@@ -66,12 +66,12 @@ class BuildAttemptDetailData
             SELECT *
             FROM extraction_logs
             WHERE execution_id = {$executionId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
-        $userDetails = $this->fetchUserDetails($orgId, $attempt->user ?? null);
+        $userDetails = $this->fetchUserDetails($envId, $attempt->user ?? null);
         $summary = array_merge((array) $attempt, [
             'user_name' => $userDetails?->name,
             'user_email' => $userDetails?->username,

@@ -21,15 +21,11 @@ class BuildJobsIndexData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'name', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
@@ -83,7 +79,7 @@ class BuildJobsIndexData
             ];
         }
 
-        $jobs = $this->fetchJobs($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
+        $jobs = $this->fetchJobs($envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -105,16 +101,12 @@ class BuildJobsIndexData
     /**
      * @return array<string, mixed>
      */
-    private function fetchJobs(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
+    private function fetchJobs(int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
-        $attemptsWhere = "WHERE a.organization_id = {$orgId}
-            AND a.project_id = {$projId}
-            AND a.environment_id = {$envId}
+        $attemptsWhere = "WHERE a.environment_id = {$envId}
             AND a.recorded_at BETWEEN {$start} AND {$end}";
 
-        $queuedWhere = "organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $queuedWhere = "environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         if ($search !== '') {
@@ -129,7 +121,7 @@ class BuildJobsIndexData
 
         $totalJobs = (int) ($this->clickhouse->selectValue("
             SELECT uniqExact(name) FROM extraction_job_attempts
-            WHERE organization_id = {$orgId} AND project_id = {$projId} AND environment_id = {$envId}
+            WHERE environment_id = {$envId}
               AND recorded_at BETWEEN {$start} AND {$end}
         ") ?? 0);
 

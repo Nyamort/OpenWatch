@@ -28,16 +28,12 @@ class BuildRequestRouteData
         string $direction = 'desc',
         int $page = 1,
     ): array {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
         $escapedPath = ClickHouseService::escape($routePath);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}
             AND route_path = {$escapedPath}";
 

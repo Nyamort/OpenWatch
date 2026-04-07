@@ -32,14 +32,11 @@ class ProcessTelemetryBatch implements ShouldQueue
      */
     public function handle(RecordValidatorRegistry $registry, ClickHouseService $clickhouse): void
     {
-        $environment = Environment::with('project.organization')->find($this->environmentId);
+        $environment = Environment::find($this->environmentId);
 
         if ($environment === null) {
             return;
         }
-
-        $organizationId = $environment->project->organization->id;
-        $projectId = $environment->project->id;
 
         $extractionRows = [];
 
@@ -53,13 +50,9 @@ class ProcessTelemetryBatch implements ShouldQueue
 
                 $type = $record['t'];
                 $recordedAt = Carbon::createFromTimestamp((float) $record['timestamp'])->utc()->format('Y-m-d H:i:s.u');
-                $telemetryRecordId = Str::uuid()->toString();
 
                 $extractionRow = $this->buildExtractionRow(
                     $type,
-                    $telemetryRecordId,
-                    $organizationId,
-                    $projectId,
                     $record,
                     $recordedAt,
                 );
@@ -87,17 +80,11 @@ class ProcessTelemetryBatch implements ShouldQueue
      */
     private function buildExtractionRow(
         string $type,
-        string $telemetryRecordId,
-        int $organizationId,
-        int $projectId,
         array $record,
         string $recordedAt,
     ): ?array {
         $base = [
             'id' => Str::uuid()->toString(),
-            'telemetry_record_id' => $telemetryRecordId,
-            'organization_id' => $organizationId,
-            'project_id' => $projectId,
             'environment_id' => $this->environmentId,
             'deploy' => (string) ($record['deploy'] ?? ''),
             'server' => (string) ($record['server'] ?? ''),

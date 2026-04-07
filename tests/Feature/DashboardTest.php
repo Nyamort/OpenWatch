@@ -79,9 +79,6 @@ test('dashboard data is scoped to org', function () {
     ])->environment;
 
     app(ClickHouseService::class)->insert('extraction_requests', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $org->id,
-        'project_id' => $project->id,
         'environment_id' => $env->id,
         'method' => 'GET',
         'url' => 'http://example.com',

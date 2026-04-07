@@ -24,15 +24,11 @@ class BuildUserIndexData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'request_count', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats: authenticated users from user_activities, requests split from extraction_requests
@@ -87,7 +83,7 @@ class BuildUserIndexData
             ];
         }
 
-        $users = $this->fetchUsers($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
+        $users = $this->fetchUsers($envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -104,11 +100,9 @@ class BuildUserIndexData
     /**
      * @return array<string, mixed>
      */
-    private function fetchUsers(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
+    private function fetchUsers(int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
-        $baseConditions = "organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseConditions = "environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         $emailFilter = "username != ''";

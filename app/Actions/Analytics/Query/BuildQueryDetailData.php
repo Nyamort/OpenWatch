@@ -21,16 +21,12 @@ class BuildQueryDetailData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sqlHash): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
         $escapedHash = ClickHouseService::escape($sqlHash);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND sql_hash = {$escapedHash}
             AND recorded_at BETWEEN {$start} AND {$end}";
 

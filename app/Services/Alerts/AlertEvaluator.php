@@ -107,15 +107,11 @@ class AlertEvaluator
 
     private function baseWhere(AlertRule $rule, DateTimeInterface $start, DateTimeInterface $end): string
     {
-        $orgId = $rule->organization_id;
-        $projId = $rule->project_id;
         $envId = $rule->environment_id;
         $startEscaped = ClickHouseService::escape($start);
         $endEscaped = ClickHouseService::escape($end);
 
-        return "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        return "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$startEscaped} AND {$endEscaped}";
     }
 }

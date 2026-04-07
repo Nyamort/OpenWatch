@@ -25,9 +25,6 @@ function insertOutgoingRequest(array $ctx, array $overrides = []): void
 {
     app(ClickHouseService::class)->insert('extraction_outgoing_requests', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'host' => 'api.example.com',
             'method' => 'GET',

@@ -24,9 +24,6 @@ function setupExceptionContext(string $suffix = ''): array
 function insertException(array $ctx, array $overrides = []): void
 {
     $data = array_merge([
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'trace_id' => 'trace-'.uniqid(),
         'execution_id' => 'exec-'.uniqid(),

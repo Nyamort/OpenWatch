@@ -21,15 +21,11 @@ class BuildRequestIndexData
      */
     public function handle(AnalyticsContext $ctx, PeriodResult $period, string $sort = 'total', string $direction = 'desc', string $search = '', int $page = 1): array
     {
-        $orgId = $ctx->organization->id;
-        $projId = $ctx->project->id;
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
         $end = ClickHouseService::escape($period->end);
 
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         // Global stats
@@ -87,7 +83,7 @@ class BuildRequestIndexData
             ];
         }
 
-        $paths = $this->fetchPaths($orgId, $projId, $envId, $start, $end, $sort, $direction, $search, $page);
+        $paths = $this->fetchPaths($envId, $start, $end, $sort, $direction, $search, $page);
 
         return [
             'graph' => $graph,
@@ -109,11 +105,9 @@ class BuildRequestIndexData
     /**
      * @return array<string, mixed>
      */
-    private function fetchPaths(int $orgId, int $projId, int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
+    private function fetchPaths(int $envId, string $start, string $end, string $sort, string $direction, string $search, int $page): array
     {
-        $baseWhere = "WHERE organization_id = {$orgId}
-            AND project_id = {$projId}
-            AND environment_id = {$envId}
+        $baseWhere = "WHERE environment_id = {$envId}
             AND recorded_at BETWEEN {$start} AND {$end}";
 
         if ($search !== '') {

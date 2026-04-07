@@ -17,14 +17,14 @@ class BuildLogDetailData
      */
     public function handle(AnalyticsContext $ctx, string $logId): array
     {
-        $orgId = $ctx->organization->id;
+        $envId = $ctx->environment->id;
         $escapedId = ClickHouseService::escape($logId);
 
         $log = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_logs
             WHERE id = {$escapedId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
             LIMIT 1
         ");
 

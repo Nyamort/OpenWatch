@@ -17,14 +17,14 @@ class BuildNotificationDetailData
      */
     public function handle(AnalyticsContext $ctx, string $notificationId): array
     {
-        $orgId = $ctx->organization->id;
+        $envId = $ctx->environment->id;
         $escapedId = ClickHouseService::escape($notificationId);
 
         $notification = $this->clickhouse->selectOne("
             SELECT *
             FROM extraction_notifications
             WHERE id = {$escapedId}
-              AND organization_id = {$orgId}
+              AND environment_id = {$envId}
             LIMIT 1
         ");
 

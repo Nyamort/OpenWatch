@@ -31,9 +31,6 @@ test('evaluator returns triggered when metric exceeds threshold', function () {
     $rows = [];
     for ($i = 0; $i < 10; $i++) {
         $rows[] = [
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'method' => 'GET',
             'url' => 'http://example.com',
@@ -67,9 +64,6 @@ test('evaluator returns not triggered when metric is below threshold', function 
     $rows = [];
     for ($i = 0; $i < 10; $i++) {
         $rows[] = [
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'method' => 'GET',
             'url' => 'http://example.com',
@@ -110,9 +104,6 @@ test('ok to triggered transition dispatches notification', function () {
     ]);
 
     app(ClickHouseService::class)->insert('extraction_exceptions', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'class' => 'RuntimeException',
         'message' => 'Test',
@@ -144,9 +135,6 @@ test('no re-notification when already triggered', function () {
     AlertState::create(['alert_rule_id' => $rule->id, 'status' => 'triggered']);
 
     app(ClickHouseService::class)->insert('extraction_exceptions', [[
-        'telemetry_record_id' => nextTelemetryId(),
-        'organization_id' => $ctx['org']->id,
-        'project_id' => $ctx['project']->id,
         'environment_id' => $ctx['env']->id,
         'class' => 'RuntimeException',
         'message' => 'Test',

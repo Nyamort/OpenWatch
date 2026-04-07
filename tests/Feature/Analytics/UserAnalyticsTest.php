@@ -25,9 +25,6 @@ function insertUserActivity(array $ctx, string $username, array $overrides = [])
 {
     app(ClickHouseService::class)->insert('extraction_user_activities', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'user_id' => $username,
             'name' => 'Test User',
@@ -41,9 +38,6 @@ function insertUserRequest(array $ctx, string $userValue, array $overrides = [])
 {
     app(ClickHouseService::class)->insert('extraction_requests', [
         array_merge([
-            'telemetry_record_id' => nextTelemetryId(),
-            'organization_id' => $ctx['org']->id,
-            'project_id' => $ctx['project']->id,
             'environment_id' => $ctx['env']->id,
             'trace_id' => 'trace-'.uniqid(),
             'user' => $userValue,
