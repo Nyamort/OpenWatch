@@ -1,33 +1,73 @@
-import { Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-
-interface Analytics {
-    summary: Record<string, unknown>;
-}
+import { Deferred, Head, usePage } from '@inertiajs/react';
+import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import AnalyticsLayout from '@/layouts/analytics-layout';
+import { index as notificationsIndex } from '@/routes/analytics/notifications';
+import { NotificationTypeCharts } from './partials/notification-type-charts';
+import { NotificationTypeTable } from './partials/notification-type-table';
+import type {
+    NotificationTypeGraphBucket,
+    NotificationTypeSortKey,
+    NotificationTypeStats,
+    NotificationRunRow,
+    Pagination,
+    SortDir,
+} from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: NotificationTypeGraphBucket[];
+    stats?: NotificationTypeStats;
+    runs?: NotificationRunRow[];
+    pagination?: Pagination;
+    notificationClass: string;
+    period: string;
+    sort: NotificationTypeSortKey;
+    direction: SortDir;
 }
 
-export default function NotificationShow({ analytics }: Props) {
+export default function NotificationShow({
+    graph,
+    stats,
+    runs,
+    pagination,
+    notificationClass,
+    period,
+    sort,
+    direction,
+}: Props) {
+    const { props } = usePage();
+    const { activeEnvironment } = props as {
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const shortName = notificationClass
+        ? notificationClass.split('\\').pop() ?? notificationClass
+        : '…';
+
+    const breadcrumbs = [
+        {
+            title: 'Notifications',
+            href: activeEnvironment
+                ? notificationsIndex.url({ environment: activeEnvironment.slug })
+                : '#',
+        },
+        { title: shortName, href: '#' },
+    ];
+
     return (
-        <AppLayout>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <div className="flex flex-col gap-6 p-6">
-                <h1 className="text-xl font-semibold">Notification Detail</h1>
-                <div className="rounded-lg border bg-card p-4">
-                    <dl className="space-y-2 text-sm">
-                        {Object.entries(analytics.summary).map(([k, v]) => (
-                            <div key={k} className="grid grid-cols-4 gap-2">
-                                <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="col-span-3 font-medium">
-                                    {String(v ?? '')}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </div>
-        </AppLayout>
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <NotificationTypeCharts graph={graph!} stats={stats!} />
+            </Deferred>
+            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+                <NotificationTypeTable
+                    runs={runs!}
+                    pagination={pagination!}
+                    sort={sort}
+                    direction={direction}
+                    count={stats?.count ?? 0}
+                />
+            </Deferred>
+        </AnalyticsLayout>
     );
 }

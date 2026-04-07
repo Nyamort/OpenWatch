@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import { show } from '@/routes/analytics/notifications';
@@ -42,6 +43,8 @@ export function NotificationTable({
             activeEnvironment: { slug: string };
         };
 
+    const analyticsHref = useAnalyticsHref();
+
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<NotificationSortKey>({
             search,
@@ -50,6 +53,19 @@ export function NotificationTable({
 
     const onSort = (col: string) =>
         handleSort(col as NotificationSortKey, sort, direction);
+
+    const showHref = (row: NotificationRow) => {
+        if (!activeEnvironment) {
+            return '#';
+        }
+
+        return analyticsHref(
+            show.url(
+                { environment: activeEnvironment.slug, notification: 0 },
+                { query: { class: row.class } },
+            ),
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
@@ -123,14 +139,7 @@ export function NotificationTable({
                         notifications.map((row) => (
                             <TableRow
                                 key={row.class}
-                                onClick={() =>
-                                    router.visit(
-                                        show.url({
-                                            environment: activeEnvironment.slug,
-                                            notification: row.sample_id,
-                                        }),
-                                    )
-                                }
+                                onClick={() => router.visit(showHref(row))}
                                 className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                             >
                                 <TableCell className="h-11 overflow-hidden px-5">
