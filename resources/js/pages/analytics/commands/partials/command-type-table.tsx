@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { ArrowUpRight, OctagonAlert } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
+import { show as commandShow } from '@/routes/analytics/commands';
 import type {
     CommandTypeSortKey,
     CommandRunRow,
@@ -23,6 +25,7 @@ interface CommandTypeTableProps {
     pagination: Pagination;
     sort: CommandTypeSortKey;
     direction: SortDir;
+    environment: string;
 }
 
 function exitCodeColor(exitCode: number | null): string {
@@ -38,6 +41,7 @@ export function CommandTypeTable({
     pagination,
     sort,
     direction,
+    environment,
 }: CommandTypeTableProps) {
     const { handlePage, handleSort } = useAnalyticsTable<CommandTypeSortKey>({
         search: '',
@@ -104,7 +108,8 @@ export function CommandTypeTable({
                         runs.map((row) => (
                             <TableRow
                                 key={row.id}
-                                className="group/row border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
+                                className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
+                                onClick={() => router.visit(commandShow.url({ environment, command: 0, run: row.id }))}
                             >
                                 <TableCell className="h-11 w-px px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                     {row.recorded_at}

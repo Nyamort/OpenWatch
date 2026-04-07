@@ -40,7 +40,8 @@ Route::middleware(['auth', 'verified', 'organization.member'])
 
         // Command analytics
         Route::get('commands', [CommandController::class, 'index'])->name('commands.index');
-        Route::get('commands/{command}', [CommandController::class, 'show'])->name('commands.show');
+        Route::get('commands/{command}', [CommandController::class, 'type'])->name('commands.type');
+        Route::get('commands/{command}/runs/{run}', [CommandController::class, 'show'])->name('commands.show');
 
         // Jobs analytics
         Route::get('jobs', [JobsController::class, 'index'])->name('jobs.index');

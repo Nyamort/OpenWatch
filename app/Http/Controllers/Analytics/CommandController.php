@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Analytics;
 
 use App\Actions\Analytics\Command\BuildCommandIndexData;
+use App\Actions\Analytics\Command\BuildCommandShowData;
 use App\Actions\Analytics\Command\BuildCommandTypeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,6 +14,7 @@ class CommandController extends AnalyticsController
     public function __construct(
         private readonly BuildCommandIndexData $buildIndex,
         private readonly BuildCommandTypeData $buildDetail,
+        private readonly BuildCommandShowData $buildShow,
     ) {}
 
     /**
@@ -46,9 +48,9 @@ class CommandController extends AnalyticsController
     }
 
     /**
-     * Display detail analytics for a command name.
+     * Display runs for a specific command name.
      */
-    public function show(Request $request, string $environment, string $command): Response
+    public function type(Request $request, string $environment, string $command): Response
     {
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
@@ -72,6 +74,19 @@ class CommandController extends AnalyticsController
             'period' => $request->query('period', '24h'),
             'sort' => $sort,
             'direction' => $direction,
+        ]);
+    }
+
+    /**
+     * Display detail for a single command run.
+     */
+    public function show(Request $request, string $environment, string $command, string $run): Response
+    {
+        $ctx = $this->resolveContext($request, $environment);
+        $data = $this->buildShow->handle($ctx, $run);
+
+        return Inertia::render('analytics/commands/show', [
+            'analytics' => $data,
         ]);
     }
 }

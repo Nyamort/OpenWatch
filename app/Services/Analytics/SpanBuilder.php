@@ -108,6 +108,19 @@ class SpanBuilder
     }
 
     /** @return array<string, mixed> */
+    public function queuedJobSpan(object $j): array
+    {
+        return [
+            'span_type' => 'queued_job',
+            'timestamp' => $j->recorded_at,
+            'duration' => (int) ($j->duration ?? 0),
+            'offset' => $this->offset($j),
+            'name' => 'job',
+            'description' => $j->name,
+        ];
+    }
+
+    /** @return array<string, mixed> */
     public function outgoingRequestSpan(object $r): array
     {
         return [

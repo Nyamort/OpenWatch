@@ -93,6 +93,7 @@ export default function CommandType({
                     pagination={pagination!}
                     sort={sort}
                     direction={direction}
+                    environment={activeEnvironment?.slug ?? ''}
                 />
             </Deferred>
         </AnalyticsLayout>

@@ -54,7 +54,7 @@ export interface CommandTypeStats {
 }
 
 export interface CommandRunRow {
-    id: number;
+    id: string;
     recorded_at: string;
     command: string | null;
     exit_code: number | null;
