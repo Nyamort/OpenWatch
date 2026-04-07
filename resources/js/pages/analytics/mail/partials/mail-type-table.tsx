@@ -3,6 +3,11 @@ import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
     Table,
     TableBody,
     TableCell,
@@ -10,11 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import type { MailRunRow, MailTypeSortKey, Pagination, SortDir } from '../types';
@@ -30,9 +30,9 @@ function Recipients({ to, cc, bcc, attachments }: RecipientsProps) {
     const total = to + cc + bcc;
 
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <div className="inline-flex cursor-default items-stretch overflow-hidden rounded-md border border-border text-xs tabular-nums">
+        <Popover>
+            <PopoverTrigger asChild>
+                <button className="inline-flex cursor-pointer items-stretch overflow-hidden rounded-md border border-border text-xs tabular-nums transition-colors hover:bg-muted/50">
                     <span className="flex items-center gap-1 px-2 py-0.5 text-muted-foreground">
                         <Users className="size-3 shrink-0" />
                         {total}
@@ -42,34 +42,30 @@ function Recipients({ to, cc, bcc, attachments }: RecipientsProps) {
                         <Paperclip className="size-3 shrink-0" />
                         {attachments}
                     </span>
+                </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" className="w-44 p-3">
+                <div className="flex flex-col gap-1.5 text-sm">
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">To</span>
+                        <span className="font-medium tabular-nums">{to}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">CC</span>
+                        <span className="font-medium tabular-nums">{cc}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">BCC</span>
+                        <span className="font-medium tabular-nums">{bcc}</span>
+                    </div>
+                    <div className="my-0.5 border-t border-border" />
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Attachments</span>
+                        <span className="font-medium tabular-nums">{attachments}</span>
+                    </div>
                 </div>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-                <div className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between gap-4">
-                        <span className="text-primary-foreground/70">To</span>
-                        <span className="font-medium">{to}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                        <span className="text-primary-foreground/70">CC</span>
-                        <span className="font-medium">{cc}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                        <span className="text-primary-foreground/70">BCC</span>
-                        <span className="font-medium">{bcc}</span>
-                    </div>
-                    {attachments > 0 && (
-                        <>
-                            <div className="my-0.5 border-t border-primary-foreground/20" />
-                            <div className="flex items-center justify-between gap-4">
-                                <span className="text-primary-foreground/70">Attachments</span>
-                                <span className="font-medium">{attachments}</span>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </TooltipContent>
-        </Tooltip>
+            </PopoverContent>
+        </Popover>
     );
 }
 
