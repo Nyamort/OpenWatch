@@ -20,7 +20,7 @@ import {
     type ChartConfig,
 } from '@/components/ui/chart';
 import { formatDuration } from '@/lib/utils';
-import type { CommandDetailGraphBucket, CommandDetailStats } from '../types';
+import type { CommandTypeGraphBucket, CommandTypeStats } from '../types';
 
 const callsChartConfig = {
     successful: { label: 'Successful', color: 'oklch(0.50 0 0)' },
@@ -32,15 +32,15 @@ const durationChartConfig = {
     p95: { label: 'P95', color: 'hsl(30 90% 55%)' },
 } satisfies ChartConfig;
 
-interface CommandDetailChartsProps {
-    graph: CommandDetailGraphBucket[];
-    stats: CommandDetailStats;
+interface CommandTypeChartsProps {
+    graph: CommandTypeGraphBucket[];
+    stats: CommandTypeStats;
 }
 
-export function CommandDetailCharts({
+export function CommandTypeCharts({
     graph,
     stats,
-}: CommandDetailChartsProps) {
+}: CommandTypeChartsProps) {
     const callsStats = (
         <div className="flex gap-4 text-sm">
             {(['successful', 'failed'] as const).map((key) => (
@@ -95,7 +95,7 @@ export function CommandDetailCharts({
             >
                 {(legendContent) => (
                     <BarChart
-                        syncId="command-detail"
+                        syncId="command-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
@@ -187,7 +187,7 @@ export function CommandDetailCharts({
             >
                 {(legendContent) => (
                     <AreaChart
-                        syncId="command-detail"
+                        syncId="command-type"
                         data={graph}
                         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >

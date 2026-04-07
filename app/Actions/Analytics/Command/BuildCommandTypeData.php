@@ -8,7 +8,7 @@ use App\Services\Analytics\PeriodResult;
 use App\Services\ClickHouse\ClickHouseService;
 use Carbon\Carbon;
 
-class BuildCommandDetailData
+class BuildCommandTypeData
 {
     use PaginatesAnalyticsQuery;
 

@@ -1,25 +1,25 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as commandsIndex } from '@/routes/analytics/commands';
-import { CommandDetailCharts } from './partials/command-detail-charts';
-import { CommandDetailTable } from './partials/command-detail-table';
+import { CommandTypeCharts } from './partials/command-type-charts';
+import { CommandTypeTable } from './partials/command-type-table';
 import type {
-    CommandDetailGraphBucket,
-    CommandDetailSortKey,
-    CommandDetailStats,
+    CommandTypeGraphBucket,
+    CommandTypeSortKey,
+    CommandTypeStats,
     CommandRunRow,
     Pagination,
     SortDir,
 } from './types';
 
 interface Props {
-    graph?: CommandDetailGraphBucket[];
-    stats?: CommandDetailStats;
+    graph?: CommandTypeGraphBucket[];
+    stats?: CommandTypeStats;
     runs?: CommandRunRow[];
     pagination?: Pagination;
     name: string;
     period: string;
-    sort: CommandDetailSortKey;
+    sort: CommandTypeSortKey;
     direction: SortDir;
 }
 
@@ -50,7 +50,7 @@ function TableSkeleton() {
     );
 }
 
-export default function CommandShow({
+export default function CommandType({
     graph,
     stats,
     runs,
@@ -82,13 +82,13 @@ export default function CommandShow({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <CommandDetailCharts graph={graph!} stats={stats!} />
+                <CommandTypeCharts graph={graph!} stats={stats!} />
             </Deferred>
             <Deferred
                 data={['runs', 'pagination']}
                 fallback={<TableSkeleton />}
             >
-                <CommandDetailTable
+                <CommandTypeTable
                     runs={runs!}
                     pagination={pagination!}
                     sort={sort}

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Analytics;
 
-use App\Actions\Analytics\Command\BuildCommandDetailData;
 use App\Actions\Analytics\Command\BuildCommandIndexData;
+use App\Actions\Analytics\Command\BuildCommandTypeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +12,7 @@ class CommandController extends AnalyticsController
 {
     public function __construct(
         private readonly BuildCommandIndexData $buildIndex,
-        private readonly BuildCommandDetailData $buildDetail,
+        private readonly BuildCommandTypeData $buildDetail,
     ) {}
 
     /**
@@ -63,7 +63,7 @@ class CommandController extends AnalyticsController
             return $data ??= $this->buildDetail->handle(ctx: $ctx, period: $period, name: $name, sort: $sort, direction: $direction, page: $page);
         };
 
-        return Inertia::render('analytics/commands/show', [
+        return Inertia::render('analytics/commands/type', [
             'graph' => Inertia::defer(fn () => $resolve()['graph']),
             'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'runs' => Inertia::defer(fn () => $resolve()['runs']),

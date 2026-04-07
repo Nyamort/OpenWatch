@@ -35,7 +35,7 @@ export type CommandSortKey =
     | 'p95';
 export type SortDir = 'asc' | 'desc';
 
-export interface CommandDetailGraphBucket {
+export interface CommandTypeGraphBucket {
     bucket: string;
     successful: number;
     failed: number;
@@ -43,7 +43,7 @@ export interface CommandDetailGraphBucket {
     p95: number | null;
 }
 
-export interface CommandDetailStats {
+export interface CommandTypeStats {
     count: number;
     successful: number;
     failed: number;
@@ -61,6 +61,6 @@ export interface CommandRunRow {
     duration: number | null;
 }
 
-export type CommandDetailSortKey = 'date' | 'exit_code' | 'duration';
+export type CommandTypeSortKey = 'date' | 'exit_code' | 'duration';
 
 export type { Pagination } from '@/types/analytics';

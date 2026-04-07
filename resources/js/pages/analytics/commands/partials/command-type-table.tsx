@@ -12,16 +12,16 @@ import {
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
 import type {
-    CommandDetailSortKey,
+    CommandTypeSortKey,
     CommandRunRow,
     Pagination,
     SortDir,
 } from '../types';
 
-interface CommandDetailTableProps {
+interface CommandTypeTableProps {
     runs: CommandRunRow[];
     pagination: Pagination;
-    sort: CommandDetailSortKey;
+    sort: CommandTypeSortKey;
     direction: SortDir;
 }
 
@@ -33,19 +33,19 @@ function exitCodeColor(exitCode: number | null): string {
     return exitCode === 0 ? '' : 'text-red-500';
 }
 
-export function CommandDetailTable({
+export function CommandTypeTable({
     runs,
     pagination,
     sort,
     direction,
-}: CommandDetailTableProps) {
-    const { handlePage, handleSort } = useAnalyticsTable<CommandDetailSortKey>({
+}: CommandTypeTableProps) {
+    const { handlePage, handleSort } = useAnalyticsTable<CommandTypeSortKey>({
         search: '',
         only: ['runs', 'pagination', 'sort', 'direction'],
     });
 
     const onSort = (col: string) =>
-        handleSort(col as CommandDetailSortKey, sort, direction);
+        handleSort(col as CommandTypeSortKey, sort, direction);
 
     return (
         <div className="flex flex-col gap-3">
