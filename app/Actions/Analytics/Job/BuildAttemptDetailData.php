@@ -37,12 +37,19 @@ class BuildAttemptDetailData
         }
 
         $executionId = ClickHouseService::escape($attempt->attempt_id ?? '');
+        $start = ClickHouseService::escape($attempt->recorded_at);
+        $end = ClickHouseService::escape(
+            \Carbon\Carbon::parse($attempt->recorded_at)
+                ->addMicroseconds((int) $attempt->duration)
+                ->format('Y-m-d H:i:s.u')
+        );
 
         $queries = $this->clickhouse->select("
             SELECT *
             FROM extraction_queries
             WHERE execution_id = {$executionId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -51,6 +58,7 @@ class BuildAttemptDetailData
             FROM extraction_exceptions
             WHERE execution_id = {$executionId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
@@ -59,6 +67,7 @@ class BuildAttemptDetailData
             FROM extraction_logs
             WHERE execution_id = {$executionId}
               AND organization_id = {$orgId}
+              AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at
         ")->toArray();
 
