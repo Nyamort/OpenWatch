@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { AlertCircle, ArrowUpRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
@@ -141,15 +142,23 @@ export function ExceptionTable({
                                     )}
                                 </TableCell>
                                 <TableCell className="overflow-hidden px-4 py-2">
-                                    <div className="flex min-w-0 flex-col">
-                                        <span className="truncate font-mono text-sm">
-                                            {row.class}
-                                        </span>
-                                        {row.message && (
-                                            <span className="truncate text-xs text-muted-foreground">
-                                                {row.message}
+                                    <div className="flex min-w-0 items-start gap-2">
+                                        <Badge
+                                            variant={row.handled ? 'secondary' : 'destructive'}
+                                            className="mt-0.5 shrink-0"
+                                        >
+                                            {row.handled ? 'Handled' : 'Unhandled'}
+                                        </Badge>
+                                        <div className="flex min-w-0 flex-col">
+                                            <span className="truncate font-mono text-sm">
+                                                {row.class}
                                             </span>
-                                        )}
+                                            {row.message && (
+                                                <span className="truncate text-xs text-muted-foreground">
+                                                    {row.message}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">

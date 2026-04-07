@@ -14,6 +14,7 @@ export interface ExceptionRow {
     group_key: string;
     class: string;
     message: string;
+    handled: boolean;
     count: number;
     users: number;
     last_seen: string;
