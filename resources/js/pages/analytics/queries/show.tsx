@@ -73,7 +73,7 @@ export default function QueryShow({ graph, stats, runs, pagination, sql_normaliz
                 : '#',
         },
         {
-            title: sql_normalized ?? '…',
+            title: sql_normalized ? sql_normalized.slice(0, 20).trimEnd() + (sql_normalized.length > 20 ? '…' : '') : '…',
             href: '#',
         },
     ];
