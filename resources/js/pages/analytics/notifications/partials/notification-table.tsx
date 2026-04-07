@@ -14,7 +14,7 @@ import {
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import { show } from '@/routes/analytics/notifications';
+import { type as notificationType } from '@/routes/analytics/notifications';
 import type {
     NotificationRow,
     NotificationSortKey,
@@ -60,7 +60,7 @@ export function NotificationTable({
         }
 
         return analyticsHref(
-            show.url(
+            notificationType.url(
                 { environment: activeEnvironment.slug, notification: 0 },
                 { query: { class: row.class } },
             ),

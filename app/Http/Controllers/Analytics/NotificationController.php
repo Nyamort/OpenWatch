@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Analytics;
 
-use App\Actions\Analytics\Notification\BuildNotificationDetailData;
 use App\Actions\Analytics\Notification\BuildNotificationIndexData;
+use App\Actions\Analytics\Notification\BuildNotificationTypeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +12,7 @@ class NotificationController extends AnalyticsController
 {
     public function __construct(
         private readonly BuildNotificationIndexData $buildIndex,
-        private readonly BuildNotificationDetailData $buildDetail,
+        private readonly BuildNotificationTypeData $buildType,
     ) {}
 
     /**
@@ -46,9 +46,9 @@ class NotificationController extends AnalyticsController
     }
 
     /**
-     * Display detail for a specific notification class.
+     * Display aggregated analytics for a specific notification class.
      */
-    public function show(Request $request, string $environment, string $notification): Response
+    public function type(Request $request, string $environment, string $notification): Response
     {
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
@@ -60,7 +60,7 @@ class NotificationController extends AnalyticsController
 
         $data = null;
         $resolve = function () use (&$data, $ctx, $period, $notificationClass, $sort, $direction, $page): array {
-            return $data ??= $this->buildDetail->handle($ctx, $period, $notificationClass, $sort, $direction, $page);
+            return $data ??= $this->buildType->handle($ctx, $period, $notificationClass, $sort, $direction, $page);
         };
 
         return Inertia::render('analytics/notifications/type', [

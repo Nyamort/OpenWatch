@@ -54,7 +54,7 @@ Route::middleware(['auth', 'verified', 'organization.member'])
 
         // Notification analytics
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+        Route::get('notifications/{notification}', [NotificationController::class, 'type'])->name('notifications.type');
 
         // Scheduled task analytics
         Route::get('scheduled-tasks', [ScheduledTaskController::class, 'index'])->name('scheduled-tasks.index');
