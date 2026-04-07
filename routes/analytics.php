@@ -33,7 +33,7 @@ Route::middleware(['auth', 'verified', 'organization.member'])
 
         // Mail analytics
         Route::get('mail', [MailController::class, 'index'])->name('mail.index');
-        Route::get('mail/{mail}', [MailController::class, 'show'])->name('mail.show');
+        Route::get('mail/{mail}', [MailController::class, 'type'])->name('mail.type');
 
         // Cache event analytics
         Route::get('cache-events', [CacheEventController::class, 'index'])->name('cache-events.index');

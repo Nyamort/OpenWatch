@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Analytics;
 
-use App\Actions\Analytics\Mail\BuildMailDetailData;
 use App\Actions\Analytics\Mail\BuildMailIndexData;
+use App\Actions\Analytics\Mail\BuildMailTypeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +12,7 @@ class MailController extends AnalyticsController
 {
     public function __construct(
         private readonly BuildMailIndexData $buildIndex,
-        private readonly BuildMailDetailData $buildDetail,
+        private readonly BuildMailTypeData $buildType,
     ) {}
 
     /**
@@ -46,16 +46,32 @@ class MailController extends AnalyticsController
     }
 
     /**
-     * Display a single mail record.
+     * Display aggregated analytics for a specific mail class.
      */
-    public function show(Request $request, string $environment, string $mail): Response
+    public function type(Request $request, string $environment, string $mail): Response
     {
         $ctx = $this->resolveContext($request, $environment);
+        $period = $this->buildPeriod($request);
 
-        $data = $this->buildDetail->handle($ctx, $mail);
+        $mailClass = (string) $request->query('class', '');
+        $sort = (string) $request->query('sort', 'date');
+        $direction = (string) $request->query('direction', 'desc');
+        $page = max(1, (int) $request->query('page', 1));
 
-        return Inertia::render('analytics/mail/show', [
-            'analytics' => $data,
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $mailClass, $sort, $direction, $page): array {
+            return $data ??= $this->buildType->handle($ctx, $period, $mailClass, $sort, $direction, $page);
+        };
+
+        return Inertia::render('analytics/mail/type', [
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'runs' => Inertia::defer(fn () => $resolve()['runs']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'mailClass' => $mailClass,
+            'period' => $request->query('period', '24h'),
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }
