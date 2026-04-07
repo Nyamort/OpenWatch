@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
+import { Timeline, type TimelineSpan } from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -30,10 +31,70 @@ interface AttemptSummary {
     exceptions: number;
 }
 
+interface ExecutionSpan {
+    span_type: string;
+    timestamp: string;
+    duration: number;
+    offset: number;
+    name: string;
+    description: string;
+    [key: string]: unknown;
+}
+
+interface ExecutionStage {
+    id: string;
+    name: string;
+    description: string;
+    duration: number;
+    offset: number;
+    spans: ExecutionSpan[];
+}
+
+interface Execution {
+    id: string;
+    name: string;
+    description: string;
+    status: number;
+    duration: number;
+    offset: number;
+    variant: 'success' | 'warning' | 'error';
+    stages: ExecutionStage[];
+}
+
 interface Props {
     analytics: {
         summary: AttemptSummary;
+        rows: {
+            executions: Execution[];
+        };
     };
+}
+
+function executionsToTimelineSpans(executions: Execution[]): TimelineSpan[] {
+    return executions.map((execution) => ({
+        id: execution.id,
+        label: execution.name,
+        sublabel: execution.description || undefined,
+        durationUs: Math.max(0, execution.duration),
+        offsetUs: execution.offset,
+        color: 'teal' as const,
+        children: execution.stages.map((stage) => ({
+            id: `${execution.id}-${stage.id}`,
+            label: stage.name,
+            sublabel: stage.description || undefined,
+            durationUs: Math.max(0, stage.duration),
+            offsetUs: stage.offset,
+            children: stage.spans.length > 0
+                ? stage.spans.map((span, i) => ({
+                    id: `${stage.id}-span-${i}`,
+                    label: span.name.toUpperCase(),
+                    sublabel: span.description || undefined,
+                    durationUs: span.duration > 0 ? span.duration : null,
+                    offsetUs: span.offset,
+                }))
+                : undefined,
+        })),
+    }));
 }
 
 const statusVariant: Record<string, 'success' | 'warning' | 'destructive'> = {
@@ -43,7 +104,8 @@ const statusVariant: Record<string, 'success' | 'warning' | 'destructive'> = {
 };
 
 export default function JobShow({ analytics }: Props) {
-    const { summary } = analytics;
+    const { summary, rows } = analytics;
+    const spans = executionsToTimelineSpans(rows.executions);
     const { props } = usePage();
     const { activeEnvironment } = props as {
         activeEnvironment?: { slug: string } | null;
@@ -117,6 +179,12 @@ export default function JobShow({ analytics }: Props) {
                         </Section>
                     </CardContent>
                 </Card>
+                {(summary.duration ?? 0) > 0 && (
+                    <Timeline
+                        totalDurationUs={summary.duration!}
+                        spans={spans}
+                    />
+                )}
             </div>
         </AppLayout>
     );

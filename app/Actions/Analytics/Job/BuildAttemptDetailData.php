@@ -2,12 +2,16 @@
 
 namespace App\Actions\Analytics\Job;
 
+use App\Concerns\FetchesUserDetails;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
+use App\Services\Analytics\SpanBuilder;
 use App\Services\ClickHouse\ClickHouseService;
 
 class BuildAttemptDetailData
 {
+    use FetchesUserDetails;
+
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
@@ -34,14 +38,6 @@ class BuildAttemptDetailData
 
         $executionId = ClickHouseService::escape($attempt->attempt_id ?? '');
 
-        $logs = $this->clickhouse->select("
-            SELECT *
-            FROM extraction_logs
-            WHERE execution_id = {$executionId}
-              AND organization_id = {$orgId}
-            ORDER BY recorded_at
-        ")->toArray();
-
         $queries = $this->clickhouse->select("
             SELECT *
             FROM extraction_queries
@@ -58,6 +54,14 @@ class BuildAttemptDetailData
             ORDER BY recorded_at
         ")->toArray();
 
+        $logs = $this->clickhouse->select("
+            SELECT *
+            FROM extraction_logs
+            WHERE execution_id = {$executionId}
+              AND organization_id = {$orgId}
+            ORDER BY recorded_at
+        ")->toArray();
+
         $userDetails = $this->fetchUserDetails($orgId, $attempt->user ?? null);
         $summary = array_merge((array) $attempt, [
             'user_name' => $userDetails?->name,
@@ -66,30 +70,40 @@ class BuildAttemptDetailData
 
         return (new AnalyticsResponseBuilder)
             ->withSummary($summary)
-            ->withRows([
-                'logs' => $logs,
-                'queries' => $queries,
-                'exceptions' => $exceptions,
-            ])
+            ->withRows(['executions' => $this->buildExecutions($attempt, $queries, $exceptions, $logs)])
             ->build();
     }
 
-    private function fetchUserDetails(int $orgId, ?string $userId): ?object
+    /**
+     * @param  array<int, object>  $queries
+     * @param  array<int, object>  $exceptions
+     * @param  array<int, object>  $logs
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildExecutions(object $attempt, array $queries, array $exceptions, array $logs): array
     {
-        if ($userId === null || $userId === '') {
-            return null;
-        }
+        $totalDurationUs = (int) ($attempt->duration ?? 0);
+        $builder = new SpanBuilder($attempt->recorded_at, $totalDurationUs);
 
-        $escapedUserId = ClickHouseService::escape($userId);
+        $spans = SpanBuilder::sortByOffset(array_merge(
+            array_map($builder->querySpan(...), $queries),
+            array_map($builder->exceptionSpan(...), $exceptions),
+            array_map($builder->logSpan(...), $logs),
+        ));
 
-        return $this->clickhouse->selectOne("
-            SELECT any(name) AS name, username
-            FROM extraction_user_activities
-            WHERE organization_id = {$orgId}
-              AND user_id = {$escapedUserId}
-              AND username != ''
-            GROUP BY username
-            LIMIT 1
-        ");
+        $variant = match ($attempt->status) {
+            'processed' => 'success',
+            'released' => 'warning',
+            default => 'error',
+        };
+
+        return [$builder->buildExecution(
+            $attempt->attempt_id,
+            'job',
+            $attempt->name,
+            0,
+            $variant,
+            [SpanBuilder::buildStage('execution', 'execution', '', $totalDurationUs, 0, $spans)],
+        )];
     }
 }

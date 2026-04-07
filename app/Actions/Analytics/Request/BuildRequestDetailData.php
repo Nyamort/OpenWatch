@@ -2,13 +2,16 @@
 
 namespace App\Actions\Analytics\Request;
 
+use App\Concerns\FetchesUserDetails;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
+use App\Services\Analytics\SpanBuilder;
 use App\Services\ClickHouse\ClickHouseService;
-use Carbon\Carbon;
 
 class BuildRequestDetailData
 {
+    use FetchesUserDetails;
+
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
@@ -105,28 +108,7 @@ class BuildRequestDetailData
             ->build();
     }
 
-    private function fetchUserDetails(int $orgId, ?string $userId): ?object
-    {
-        if ($userId === null || $userId === '') {
-            return null;
-        }
-
-        $escapedUserId = ClickHouseService::escape($userId);
-
-        return $this->clickhouse->selectOne("
-            SELECT any(name) AS name, username
-            FROM extraction_user_activities
-            WHERE organization_id = {$orgId}
-              AND user_id = {$escapedUserId}
-              AND username != ''
-            GROUP BY username
-            LIMIT 1
-        ");
-    }
-
     /**
-     * Build the structured executions payload with pre-computed offsets (in microseconds).
-     *
      * @param  array<int, object>  $queries
      * @param  array<int, object>  $exceptions
      * @param  array<int, object>  $logs
@@ -147,106 +129,19 @@ class BuildRequestDetailData
         array $outgoingRequests,
     ): array {
         $totalDurationUs = (int) ($request->duration ?? 0);
-        $requestStartUs = (int) Carbon::parse($request->recorded_at)->getPreciseTimestamp(6);
+        $builder = new SpanBuilder($request->recorded_at, $totalDurationUs);
 
-        $toOffset = function (object $row) use ($requestStartUs, $totalDurationUs): int {
-            $ts = (int) Carbon::parse($row->recorded_at)->getPreciseTimestamp(6);
+        $spansByStage = SpanBuilder::groupByStage(
+            [$queries, $builder->querySpan(...)],
+            [$exceptions, $builder->exceptionSpan(...)],
+            [$logs, $builder->logSpan(...)],
+            [$mails, $builder->mailSpan(...)],
+            [$notifications, $builder->notificationSpan(...)],
+            [$cacheEvents, $builder->cacheSpan(...)],
+            [$outgoingRequests, $builder->outgoingRequestSpan(...)],
+        );
 
-            return max(0, min($totalDurationUs, $ts - $requestStartUs));
-        };
-
-        $spansByStage = [];
-
-        foreach ($queries as $q) {
-            $duration = (int) $q->duration;
-            $spansByStage[$q->execution_stage][] = [
-                'group' => $q->sql_hash ?? '',
-                'span_type' => 'query',
-                'timestamp' => $q->recorded_at,
-                'duration' => $duration,
-                'offset' => $toOffset($q),
-                'name' => 'query',
-                'description' => $q->sql_normalized,
-                'connection' => $q->connection,
-                'connection_type' => $q->connection_type,
-            ];
-        }
-
-        foreach ($exceptions as $e) {
-            $spansByStage[$e->execution_stage][] = [
-                'span_type' => 'exception',
-                'timestamp' => $e->recorded_at,
-                'duration' => 0,
-                'offset' => $toOffset($e),
-                'name' => 'exception',
-                'description' => $e->class,
-                'message' => $e->message,
-                'handled' => $e->handled,
-            ];
-        }
-
-        foreach ($logs as $l) {
-            $spansByStage[$l->execution_stage][] = [
-                'span_type' => 'log',
-                'timestamp' => $l->recorded_at,
-                'duration' => 0,
-                'offset' => $toOffset($l),
-                'name' => $l->level,
-                'description' => $l->message,
-            ];
-        }
-
-        foreach ($mails as $m) {
-            $duration = (int) $m->duration;
-            $spansByStage[$m->execution_stage][] = [
-                'span_type' => 'mail',
-                'timestamp' => $m->recorded_at,
-                'duration' => $duration,
-                'offset' => $toOffset($m),
-                'name' => 'mail',
-                'description' => $m->subject ?: $m->class,
-            ];
-        }
-
-        foreach ($notifications as $n) {
-            $duration = (int) $n->duration;
-            $spansByStage[$n->execution_stage][] = [
-                'span_type' => 'notification',
-                'timestamp' => $n->recorded_at,
-                'duration' => $duration,
-                'offset' => $toOffset($n),
-                'name' => 'notification',
-                'description' => $n->class,
-                'channel' => $n->channel,
-            ];
-        }
-
-        foreach ($cacheEvents as $c) {
-            $duration = (int) $c->duration;
-            $spansByStage[$c->execution_stage][] = [
-                'span_type' => 'cache',
-                'timestamp' => $c->recorded_at,
-                'duration' => $duration,
-                'offset' => $toOffset($c),
-                'name' => $c->type,
-                'description' => $c->key,
-            ];
-        }
-
-        foreach ($outgoingRequests as $r) {
-            $duration = (int) $r->duration;
-            $spansByStage[$r->execution_stage][] = [
-                'span_type' => 'outgoing_request',
-                'timestamp' => $r->recorded_at,
-                'duration' => $duration,
-                'offset' => $toOffset($r),
-                'name' => $r->method,
-                'description' => $r->url,
-                'status' => $r->status_code,
-            ];
-        }
-
-        $phases = [
+        $stages = SpanBuilder::buildStagesFromPhases($spansByStage, [
             ['id' => 'bootstrap', 'name' => 'bootstrap', 'duration' => (int) ($request->bootstrap ?? 0)],
             ['id' => 'before_middleware', 'name' => 'middleware', 'duration' => (int) ($request->before_middleware ?? 0)],
             ['id' => 'action', 'name' => 'controller', 'duration' => (int) ($request->action ?? 0), 'description' => $request->route_action ?? ''],
@@ -254,42 +149,17 @@ class BuildRequestDetailData
             ['id' => 'after_middleware', 'name' => 'middleware', 'duration' => (int) ($request->after_middleware ?? 0)],
             ['id' => 'sending', 'name' => 'sending', 'duration' => (int) ($request->sending ?? 0)],
             ['id' => 'terminating', 'name' => 'terminating', 'duration' => (int) ($request->terminating ?? 0)],
-        ];
-
-        $cursor = 0;
-        $stages = [];
-        foreach ($phases as $phase) {
-            if ($phase['duration'] <= 0) {
-                continue;
-            }
-            $stageSpans = $spansByStage[$phase['id']] ?? [];
-            usort($stageSpans, fn ($a, $b) => $a['offset'] <=> $b['offset']);
-
-            $stages[] = [
-                'id' => $phase['id'],
-                'name' => $phase['name'],
-                'description' => $phase['description'] ?? '',
-                'duration' => $phase['duration'],
-                'offset' => $cursor,
-                'spans' => $stageSpans,
-            ];
-
-            $cursor += $phase['duration'];
-        }
+        ]);
 
         $statusCode = (int) ($request->status_code ?? 200);
 
-        return [
-            [
-                'id' => $request->id,
-                'name' => 'request',
-                'description' => $request->route_path ?? $request->url,
-                'status' => $statusCode,
-                'duration' => $totalDurationUs,
-                'offset' => 0,
-                'variant' => $statusCode < 400 ? 'success' : ($statusCode < 500 ? 'warning' : 'error'),
-                'stages' => $stages,
-            ],
-        ];
+        return [$builder->buildExecution(
+            $request->id,
+            'request',
+            $request->route_path ?? $request->url,
+            $statusCode,
+            $statusCode < 400 ? 'success' : ($statusCode < 500 ? 'warning' : 'error'),
+            $stages,
+        )];
     }
 }
