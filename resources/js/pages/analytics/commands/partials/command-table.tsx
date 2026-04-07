@@ -14,7 +14,7 @@ import {
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import { show as commandShow } from '@/routes/analytics/commands';
+import { type as commandType } from '@/routes/analytics/commands';
 import type { CommandRow, CommandSortKey, Pagination, SortDir } from '../types';
 
 interface CommandTableProps {
@@ -55,7 +55,7 @@ export function CommandTable({
         }
 
         return analyticsHref(
-            commandShow.url(
+            commandType.url(
                 {
                     environment: activeEnvironment.slug,
                     command: 0,
