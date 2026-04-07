@@ -82,7 +82,7 @@ class BuildCommandDetailData
         $offset = $this->pageOffset($page);
 
         $rows = $this->clickhouse->select("
-            SELECT id, recorded_at, name, exit_code, duration
+            SELECT id, recorded_at, command, exit_code, duration
             FROM extraction_commands
             {$baseWhere}
             ORDER BY {$orderCol} {$orderDir}
@@ -92,7 +92,7 @@ class BuildCommandDetailData
         $data = $rows->map(fn ($row) => [
             'id' => $row->id,
             'recorded_at' => Carbon::parse($row->recorded_at)->format('Y-m-d H:i:s'),
-            'name' => $row->name,
+            'command' => $row->command,
             'exit_code' => $row->exit_code,
             'duration' => $row->duration,
         ])->all();

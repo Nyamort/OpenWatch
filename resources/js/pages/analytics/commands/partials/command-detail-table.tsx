@@ -111,7 +111,7 @@ export function CommandDetailTable({
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                     <span className="font-mono text-xs">
-                                        {row.name}
+                                        {row.command ?? '—'}
                                     </span>
                                 </TableCell>
                                 <TableCell
