@@ -29,17 +29,6 @@ OpenWatch collects real-time telemetry from your PHP applications and provides a
 - **Ingestion API** — lightweight gzip-compressed batch endpoint; tokens stored as SHA-256 hashes
 - **Data retention** — configurable per-environment TTL with automatic purge
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Backend | Laravel 12, PHP 8.5 |
-| Frontend | React 19, TypeScript, Inertia.js v2, Tailwind CSS v4 |
-| Database | MySQL 8 (SQLite for testing), ClickHouse 24 |
-| Cache / Queue | Redis 7 |
-| Auth | Laravel Fortify (2FA, email verification) |
-| Tests | Pest 4 |
-
 ---
 
 ## Deployment
