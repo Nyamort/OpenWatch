@@ -68,8 +68,8 @@ export default function AuthBrandedLayout({
                 <div className="relative flex h-full flex-col p-12">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="flex size-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
-                            <AppLogoIcon className="size-5 fill-current text-white" />
+                        <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-600">
+                            <AppLogoIcon className="size-5" />
                         </div>
                         <span className="text-base font-semibold tracking-tight text-white">
                             {name}
