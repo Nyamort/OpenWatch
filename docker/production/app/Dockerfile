@@ -72,9 +72,9 @@ COPY --from=node-build /app/public/build ./public/build
 COPY . .
 
 # Copy configs
-COPY docker/production/nginx.conf /etc/nginx/sites-available/default
-COPY docker/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/production/app/nginx.conf        /etc/nginx/sites-available/default
+COPY docker/production/app/supervisord.conf  /etc/supervisor/conf.d/supervisord.conf
+COPY docker/production/app/entrypoint.sh     /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \

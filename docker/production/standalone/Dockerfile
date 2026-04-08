@@ -88,10 +88,10 @@ COPY --from=node-build /app/public/build ./public/build
 COPY . .
 
 # ── Copy configs ─────────────────────────────────────────────
-COPY docker/production/nginx.conf                  /etc/nginx/sites-available/default
-COPY docker/production/supervisord.standalone.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/production/entrypoint.standalone.sh    /usr/local/bin/entrypoint.sh
-COPY docker/production/clickhouse-paths.xml        /etc/clickhouse-server/config.d/paths.xml
+COPY docker/production/app/nginx.conf                    /etc/nginx/sites-available/default
+COPY docker/production/standalone/supervisord.conf       /etc/supervisor/conf.d/supervisord.conf
+COPY docker/production/standalone/entrypoint.sh          /usr/local/bin/entrypoint.sh
+COPY docker/production/standalone/clickhouse-paths.xml   /etc/clickhouse-server/config.d/paths.xml
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     # PHP-FPM socket
