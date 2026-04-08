@@ -9,10 +9,16 @@ use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationSwitcherController;
 use App\Http\Controllers\Project\EnvironmentSwitcherController;
 use App\Http\Controllers\Project\ProjectSwitcherController;
+use App\Http\Controllers\SetupController;
 use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+
+Route::middleware('not.installed')->group(function () {
+    Route::get('setup', [SetupController::class, 'show'])->name('setup.show');
+    Route::post('setup', [SetupController::class, 'store'])->name('setup.store');
+});
 
 Route::get('/', function () {
     return Inertia::render('welcome', [

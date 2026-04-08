@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'organization.member' => EnsureOrganizationMember::class,
+            'not.installed' => \App\Http\Middleware\EnsureNotInstalled::class,
         ]);
 
         $middleware->web(
