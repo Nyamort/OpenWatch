@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-COMPOSE_FILE="$(dirname "$0")/docker-compose.yml"
-ENV_EXAMPLE="$(dirname "$0")/.env.example"
+BASE_URL="https://raw.githubusercontent.com/Nyamort/OpenWatch/refs/heads/main/docker/production"
 ENV_FILE=".env"
 
 echo ""
@@ -11,20 +10,28 @@ echo "  ================="
 echo ""
 
 # ── Check dependencies ───────────────────────────────────────────
-for cmd in docker openssl; do
+for cmd in docker openssl curl; do
     if ! command -v "$cmd" &>/dev/null; then
         echo "  [ERROR] '$cmd' is required but not installed."
         exit 1
     fi
 done
 
-# ── Copy .env.example → .env ─────────────────────────────────────
+# ── Download docker-compose.yml ──────────────────────────────────
+if [ ! -f "docker-compose.yml" ]; then
+    curl -fsSL "${BASE_URL}/docker-compose.yml" -o docker-compose.yml
+    echo "  [✓] Downloaded docker-compose.yml"
+else
+    echo "  [✓] docker-compose.yml already exists — skipping"
+fi
+
+# ── Download .env.example and create .env ────────────────────────
 if [ -f "$ENV_FILE" ]; then
-    echo "  [!] .env already exists — skipping copy."
+    echo "  [!] .env already exists — skipping."
     echo "      Delete it and re-run setup.sh to start fresh."
     echo ""
 else
-    cp "$ENV_EXAMPLE" "$ENV_FILE"
+    curl -fsSL "${BASE_URL}/.env.example" -o "$ENV_FILE"
     echo "  [✓] Created .env from template"
 fi
 
@@ -129,12 +136,6 @@ echo ""
 # ── Secure the .env file ─────────────────────────────────────────
 chmod 600 "$ENV_FILE"
 echo "  [✓] Set .env permissions to 600"
-
-# ── Copy docker-compose.yml to current directory ─────────────────
-if [ ! -f "docker-compose.yml" ]; then
-    cp "$COMPOSE_FILE" "docker-compose.yml"
-    echo "  [✓] Copied docker-compose.yml"
-fi
 
 # ── Summary ──────────────────────────────────────────────────────
 echo ""
