@@ -11,6 +11,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        file_put_contents(storage_path('app/.installed'), now()->toIso8601String());
+
         try {
             $clickhouse = app(ClickHouseService::class);
             $tables = [
