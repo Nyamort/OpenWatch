@@ -14,7 +14,7 @@ RUN composer install \
     --ignore-platform-reqs
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev
+RUN mkdir -p bootstrap/cache && composer dump-autoload --optimize --no-dev
 
 # ============================================================
 # Stage 2 — Node / Vite build
