@@ -95,6 +95,7 @@ jobs:
           DB_PASSWORD: password
           CLICKHOUSE_HOST: 127.0.0.1
           CLICKHOUSE_HTTP_PORT: 8123
+          CLICKHOUSE_DATABASE: openwatch_test
 
       - name: Tests
         run: ./vendor/bin/pest
