@@ -47,7 +47,7 @@ Separate containers for the app, queue worker, scheduler, MySQL, Redis, and Clic
 ```bash
 # 1. Download the compose file
 curl -o docker-compose.prod.yml \
-  https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker/production/docker-compose.yml
+  https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker-compose.prod.yml
 
 # 2. Create your environment file
 cp .env.example .env   # or create from scratch — see required variables below

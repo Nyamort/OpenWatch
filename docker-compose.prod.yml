@@ -1,5 +1,5 @@
 # Docker Compose — Production
-# Usage: docker compose -f docker/production/docker-compose.yml up -d
+# Usage: docker compose -f docker-compose.prod.yml up -d
 
 services:
     app:
