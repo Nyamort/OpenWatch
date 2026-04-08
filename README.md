@@ -75,16 +75,14 @@ Everything bundled in one container — MySQL, Redis, ClickHouse, PHP-FPM, Nginx
 docker run -d \
   --name openwatch \
   -p 80:80 \
-  -e APP_KEY="base64:your-key-here" \
   -e APP_URL="http://your-server-ip" \
-  -e DB_PASSWORD="secret" \
   -v openwatch-mysql:/var/lib/mysql \
   -v openwatch-clickhouse:/var/lib/clickhouse \
   -v openwatch-storage:/var/www/html/storage \
   ghcr.io/nyamort/openwatch:standalone
 ```
 
-Databases are initialized automatically on first run. All data is persisted in the named volumes.
+`APP_URL` is the only required variable. `APP_KEY`, database passwords, and all other secrets are generated automatically on first run and persisted in the storage volume.
 
 ---
 
