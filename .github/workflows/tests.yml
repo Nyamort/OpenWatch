@@ -82,6 +82,18 @@ jobs:
           curl -s "http://localhost:8123/" \
             --data "CREATE DATABASE IF NOT EXISTS openwatch_test"
 
+      - name: Run migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: password
+          CLICKHOUSE_HOST: 127.0.0.1
+          CLICKHOUSE_HTTP_PORT: 8123
+
       - name: Tests
         run: ./vendor/bin/pest
         env:
