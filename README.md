@@ -38,28 +38,32 @@ OpenWatch collects real-time telemetry from your PHP applications and provides a
 Separate containers for the app, queue worker, scheduler, MySQL, Redis, and ClickHouse.
 
 ```bash
-# 1. Download the compose file
-curl -o docker/production/docker-compose.yml \
-  https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker/production/docker-compose.yml
+# 1. Download and run the setup script
+curl -fsSL https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker/production/setup.sh -o setup.sh
+bash setup.sh
 
-# 2. Create your environment file
-cp .env.example .env   # or create from scratch — see required variables below
-
-# 3. Start
-docker compose -f docker/production/docker-compose.yml up -d
+# 2. Start
+docker compose up -d
 ```
 
-On first boot, the `app` container runs database migrations automatically. The worker and scheduler start once the app is healthy.
+The setup script handles downloading `docker-compose.yml`, generating your `.env` from the template, and setting a secure `APP_KEY` and file permissions automatically.
 
-**Required environment variables:**
+On first boot, the `app` container caches config, runs MySQL and ClickHouse migrations, then starts. The worker and scheduler wait for the app to be healthy before starting.
 
-| Variable | Description |
-|----------|-------------|
-| `APP_KEY` | Laravel app key (`php artisan key:generate --show`) |
-| `APP_URL` | Public URL, e.g. `https://watch.example.com` |
-| `DB_PASSWORD` | MySQL password |
-| `DB_ROOT_PASSWORD` | MySQL root password |
----
+The setup script asks two questions — your public URL and a MySQL password (or generates one for you). Everything else is handled automatically.
+
+**Updating to a newer version:**
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+**Viewing logs:**
+
+```bash
+docker compose logs -f app      # app + migrations
+docker compose logs -f worker   # queue worker
+```
 
 ---
 
