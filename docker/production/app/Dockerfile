@@ -34,6 +34,7 @@ COPY . .
 COPY --from=composer-deps /app/vendor ./vendor
 COPY --from=composer-deps /app/resources/js/actions ./resources/js/actions
 COPY --from=composer-deps /app/resources/js/routes ./resources/js/routes
+COPY --from=composer-deps /app/resources/js/wayfinder ./resources/js/wayfinder
 RUN WAYFINDER_COMMAND=true npm run build
 
 # ============================================================
