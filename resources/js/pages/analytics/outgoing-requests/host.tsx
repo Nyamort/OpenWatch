@@ -1,40 +1,69 @@
-import { Head } from '@inertiajs/react';
-import { DataTable } from '@/components/analytics/data-table';
+import { Deferred, Head, usePage } from '@inertiajs/react';
+import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-
-interface Analytics {
-    summary: { host: string; period_label: string };
-    rows: Array<Record<string, unknown>>;
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    } | null;
-}
+import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requests';
+import { OutgoingRequestHostCharts } from './partials/outgoing-request-host-charts';
+import { OutgoingRequestHostTable } from './partials/outgoing-request-host-table';
+import type {
+    OutgoingRequestGraphBucket,
+    OutgoingRequestHostSortKey,
+    OutgoingRequestRunRow,
+    OutgoingRequestStats,
+    Pagination,
+    SortDir,
+} from './types';
 
 interface Props {
-    analytics: Analytics;
+    graph?: OutgoingRequestGraphBucket[];
+    stats?: OutgoingRequestStats;
+    runs?: OutgoingRequestRunRow[];
+    pagination?: Pagination;
+    host: string;
     period: string;
+    sort: OutgoingRequestHostSortKey;
+    direction: SortDir;
 }
 
-const columns = [
-    { key: 'method', label: 'Method' },
-    { key: 'url', label: 'URL' },
-    { key: 'status_code', label: 'Status' },
-    { key: 'duration', label: 'Duration (ms)' },
-    { key: 'recorded_at', label: 'Time' },
-];
+export default function OutgoingRequestHost({
+    graph,
+    stats,
+    runs,
+    pagination,
+    host,
+    period,
+    sort,
+    direction,
+}: Props) {
+    const { props } = usePage();
+    const { activeEnvironment } = props as {
+        activeEnvironment?: { slug: string } | null;
+    };
 
-export default function OutgoingRequestsHost({ analytics, period }: Props) {
+    const breadcrumbs = [
+        {
+            title: 'Outgoing Requests',
+            href: activeEnvironment
+                ? outgoingRequestsIndex.url({ environment: activeEnvironment.slug })
+                : '#',
+        },
+        { title: host || '…', href: '#' },
+    ];
+
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <DataTable
-                columns={columns}
-                rows={analytics.rows}
-                pagination={analytics.pagination}
-            />
+            <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
+                <OutgoingRequestHostCharts graph={graph!} stats={stats!} />
+            </Deferred>
+            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+                <OutgoingRequestHostTable
+                    runs={runs!}
+                    pagination={pagination!}
+                    sort={sort}
+                    direction={direction}
+                    count={stats?.total ?? 0}
+                />
+            </Deferred>
         </AnalyticsLayout>
     );
 }

@@ -36,6 +36,20 @@ export type OutgoingRequestSortKey =
     | 'total'
     | 'avg'
     | 'p95';
+
+export interface OutgoingRequestRunRow {
+    id: string;
+    recorded_at: string;
+    source: string | null;
+    source_preview: string | null;
+    method: string | null;
+    status_code: number | null;
+    url: string | null;
+    duration: number | null;
+}
+
+export type OutgoingRequestHostSortKey = 'date' | 'duration' | 'status';
+
 export type SortDir = 'asc' | 'desc';
 
 export type { Pagination } from '@/types/analytics';

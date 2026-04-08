@@ -42,13 +42,17 @@ test('log feed is ordered newest-first', function () {
     insertLog($ctx, ['message' => 'Third log', 'recorded_at' => now()->utc()->format('Y-m-d H:i:s')]);
 
     $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/logs/index',
+            'X-Inertia-Partial-Data' => 'logs',
+        ])
         ->get("/environments/{$ctx['env']->slug}/analytics/logs");
 
     $response->assertInertia(fn ($page) => $page
         ->component('analytics/logs/index')
-        ->where('analytics.rows.0.message', 'Third log')
-        ->where('analytics.rows.1.message', 'Second log')
-        ->where('analytics.rows.2.message', 'First log')
+        ->where('logs.0.message', 'Third log')
+        ->where('logs.1.message', 'Second log')
+        ->where('logs.2.message', 'First log')
     );
 });
 
@@ -60,11 +64,15 @@ test('log feed filters by level', function () {
     insertLog($ctx, ['level' => 'debug', 'message' => 'Debug message']);
 
     $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/logs/index',
+            'X-Inertia-Partial-Data' => 'logs',
+        ])
         ->get("/environments/{$ctx['env']->slug}/analytics/logs?level=error");
 
     $response->assertInertia(fn ($page) => $page
-        ->has('analytics.rows', 1)
-        ->where('analytics.rows.0.level', 'error')
+        ->has('logs', 1)
+        ->where('logs.0.level', 'error')
     );
 });
 
@@ -75,9 +83,13 @@ test('log feed with unknown level returns all logs', function () {
     insertLog($ctx, ['level' => 'error']);
 
     $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/logs/index',
+            'X-Inertia-Partial-Data' => 'logs',
+        ])
         ->get("/environments/{$ctx['env']->slug}/analytics/logs?level=unknown");
 
     $response->assertInertia(fn ($page) => $page
-        ->has('analytics.rows', 2)
+        ->has('logs', 2)
     );
 });

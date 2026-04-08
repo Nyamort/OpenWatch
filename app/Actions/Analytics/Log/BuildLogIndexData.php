@@ -2,13 +2,16 @@
 
 namespace App\Actions\Analytics\Log;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
-use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
 use App\Services\ClickHouse\ClickHouseService;
+use Carbon\Carbon;
 
 class BuildLogIndexData
 {
+    use PaginatesAnalyticsQuery;
+
     /** @var list<string> RFC 5424 log levels in severity order */
     public const LEVELS = ['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'];
 
@@ -43,38 +46,33 @@ class BuildLogIndexData
             $baseWhere .= " AND message LIKE {$escaped}";
         }
 
-        $perPage = 100;
         $total = (int) ($this->clickhouse->selectValue("
             SELECT count() FROM extraction_logs {$baseWhere}
         ") ?? 0);
 
-        $offset = ($page - 1) * $perPage;
+        $offset = $this->pageOffset($page);
 
         $rows = $this->clickhouse->select("
-            SELECT *
+            SELECT id, recorded_at, execution_source, execution_preview, level, message, context
             FROM extraction_logs
             {$baseWhere}
             ORDER BY recorded_at DESC
-            LIMIT {$perPage} OFFSET {$offset}
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
         ");
 
-        return (new AnalyticsResponseBuilder)
-            ->withSummary(['period_label' => $period->label])
-            ->withRows($rows->toArray())
-            ->withPagination([
-                'current_page' => $page,
-                'last_page' => (int) ceil($total / $perPage),
-                'per_page' => $perPage,
-                'total' => $total,
-            ])
-            ->withFiltersApplied([
-                'level' => $level,
-                'search' => $search,
-            ])
-            ->withConfig([
-                'levels' => self::LEVELS,
-                'period' => $period->label,
-            ])
-            ->build();
+        $logs = $rows->map(fn ($row) => [
+            'id' => $row->id,
+            'recorded_at' => Carbon::parse($row->recorded_at)->format('Y-m-d H:i:s'),
+            'source' => $row->execution_source ?: null,
+            'source_preview' => $row->execution_preview ?: null,
+            'level' => $row->level,
+            'message' => $row->message,
+            'context' => $row->context ?: null,
+        ])->all();
+
+        return [
+            'logs' => $logs,
+            'pagination' => $this->buildPaginationMeta($total, $page),
+        ];
     }
 }
