@@ -1,12 +1,9 @@
 # Docker Compose — Production
 # Usage: docker compose -f docker/production/docker-compose.prod.yml up -d
-#
-# Build the image first:
-#   docker build -f docker/production/Dockerfile -t openwatch:latest .
 
 services:
     app:
-        image: openwatch:latest
+        image: ghcr.io/nyamort/openwatch:latest
         command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
         restart: unless-stopped
         ports:
@@ -54,7 +51,7 @@ services:
             start_period: 30s
 
     worker:
-        image: openwatch:latest
+        image: ghcr.io/nyamort/openwatch:latest
         command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
         restart: unless-stopped
         environment: &app-env
@@ -84,7 +81,7 @@ services:
                 condition: service_healthy
 
     scheduler:
-        image: openwatch:latest
+        image: ghcr.io/nyamort/openwatch:latest
         command: php artisan schedule:work
         restart: unless-stopped
         environment: *app-env

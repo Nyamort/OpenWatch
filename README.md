@@ -6,10 +6,11 @@
 
 > Open-source application monitoring and telemetry platform — a self-hosted alternative to Laravel Nightwatch.
 
-Open Watch collects real-time telemetry from your PHP applications and provides analytics, issue tracking, and threshold-based alerting, all in a single self-hosted dashboard.
+OpenWatch collects real-time telemetry from your PHP applications and provides analytics, issue tracking, and threshold-based alerting, all in a single self-hosted dashboard.
 
 > **Status:** Active development — not yet production-ready.
 
+[![GitHub](https://img.shields.io/badge/GitHub-Nyamort%2FOpenWatch-181717?logo=github)](https://github.com/Nyamort/OpenWatch)
 ![PHP](https://img.shields.io/badge/PHP-8.5-blue?logo=php)
 ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
@@ -34,53 +35,110 @@ Open Watch collects real-time telemetry from your PHP applications and provides 
 |-------|------------|
 | Backend | Laravel 12, PHP 8.5 |
 | Frontend | React 19, TypeScript, Inertia.js v2, Tailwind CSS v4 |
-| Database | MySQL 8 (SQLite for testing) |
-| Cache / Queue | Redis, Laravel Horizon |
+| Database | MySQL 8 (SQLite for testing), ClickHouse 24 |
+| Cache / Queue | Redis 7 |
 | Auth | Laravel Fortify (2FA, email verification) |
 | Tests | Pest 4 |
 
-## Requirements
+---
 
-- PHP 8.2+
-- Composer
-- Node.js 20+ & npm
-- MySQL 8+ (or compatible)
-- Redis
+## Deployment
 
-## Installation
+Docker images are published to the GitHub Container Registry:
+
+```
+ghcr.io/nyamort/openwatch:latest           # standard image (PHP-FPM + Nginx)
+ghcr.io/nyamort/openwatch:standalone       # all-in-one image
+```
+
+### Option 1 — Docker Compose (recommended)
+
+Separate containers for the app, queue worker, scheduler, MySQL, Redis, and ClickHouse.
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/openwatch.git
-cd openwatch
+# 1. Download the compose file
+curl -o docker-compose.prod.yml \
+  https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker/production/docker-compose.prod.yml
 
-# 2. Install PHP dependencies
+# 2. Create your environment file
+cp .env.example .env   # or create from scratch — see required variables below
+
+# 3. Start
+docker compose -f docker-compose.prod.yml up -d
+```
+
+On first boot, the `app` container runs database migrations automatically. The worker and scheduler start once the app is healthy.
+
+**Required environment variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `APP_KEY` | Laravel app key (`php artisan key:generate --show`) |
+| `APP_URL` | Public URL, e.g. `https://watch.example.com` |
+| `DB_PASSWORD` | MySQL password |
+| `DB_ROOT_PASSWORD` | MySQL root password |
+
+### Option 2 — Standalone (single container)
+
+Everything bundled in one container — MySQL, Redis, ClickHouse, PHP-FPM, Nginx, queue worker, and scheduler.
+
+```bash
+docker run -d \
+  --name openwatch \
+  -p 80:80 \
+  -e APP_KEY="base64:your-key-here" \
+  -e APP_URL="http://your-server-ip" \
+  -e DB_PASSWORD="secret" \
+  -v openwatch-mysql:/var/lib/mysql \
+  -v openwatch-clickhouse:/var/lib/clickhouse \
+  -v openwatch-storage:/var/www/html/storage \
+  ghcr.io/nyamort/openwatch:standalone
+```
+
+Databases are initialized automatically on first run. All data is persisted in the named volumes.
+
+---
+
+## Development
+
+### Requirements
+
+- PHP 8.5+
+- Composer
+- Node.js 24+ & npm
+- MySQL 8+, Redis, ClickHouse 24
+
+### Quick start
+
+```bash
+# 1. Clone
+git clone https://github.com/Nyamort/OpenWatch.git
+cd OpenWatch
+
+# 2. Install dependencies
 composer install
-
-# 3. Install JS dependencies
 npm install
 
-# 4. Configure the environment
+# 3. Configure environment
 cp .env.example .env
 php artisan key:generate
 
-# 5. Configure your database and Redis in .env, then run migrations
+# 4. Run migrations
 php artisan migrate
 
-# 6. (Optional) Seed demo data
-php artisan db:seed
-
-# 7. Build frontend assets
-npm run build
+# 5. Start dev server (PHP + queue worker + Vite HMR)
+composer run dev
 ```
 
-## Quick Start (Development)
+Or with Laravel Sail:
 
 ```bash
-composer run dev   # starts PHP dev server + queue worker + Vite HMR
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail npm run dev
 ```
 
-**Demo credentials** (after seeding):
+**Demo credentials** (after `php artisan db:seed`):
 
 | Email | Password | Role |
 |-------|----------|------|
@@ -88,9 +146,20 @@ composer run dev   # starts PHP dev server + queue worker + Vite HMR
 | dev@example.com | password | Developer |
 | viewer@example.com | password | Viewer |
 
+### Useful commands
+
+```bash
+php artisan test --compact          # run test suite
+vendor/bin/pint                     # fix code style
+php artisan wayfinder:generate      # regenerate TypeScript route bindings
+npm run build                       # build frontend assets
+```
+
+---
+
 ## Architecture
 
-### Multi-tenant Hierarchy
+### Multi-tenant hierarchy
 
 ```
 Organization → Project → Environment → Telemetry records
@@ -98,7 +167,7 @@ Organization → Project → Environment → Telemetry records
 
 Every telemetry record is scoped to an `(organization_id, project_id, environment_id)` tuple. Cross-org data isolation is enforced at the middleware and Eloquent scope levels.
 
-### Ingestion Flow
+### Ingestion flow
 
 ```
 Agent SDK  →  POST /api/agent-auth  →  session token (Redis, 1 h TTL)
@@ -108,24 +177,13 @@ Agent SDK  →  POST /api/agent-auth  →  session token (Redis, 1 h TTL)
 
 The ingestion token is stored as a SHA-256 hash. The raw token is returned exactly once at creation.
 
-### Telemetry Types
+### Telemetry types
 
 `request` · `query` · `cache-event` · `command` · `log` · `notification` · `mail` · `queued-job` · `job-attempt` · `scheduled-task` · `outgoing-request` · `exception` · `user`
 
 Each type fans out into a typed extraction table for efficient analytical queries.
 
-## Key API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/health` | Liveness check (DB + cache) |
-| `POST` | `/api/agent-auth` | Exchange ingestion token for a session token |
-| `POST` | `/api/ingest` | Submit a gzip-compressed telemetry batch |
-| `GET` | `/dashboard` | Period-aware dashboard with deferred props |
-| `GET` | `/organizations/{org}/analytics/{domain}` | Analytics per telemetry type |
-| `GET` | `/organizations/{org}/audit` | Immutable audit log (owner/admin only) |
-
-## Scheduled Jobs
+### Scheduled jobs
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
@@ -134,21 +192,7 @@ Each type fans out into a typed extraction table for efficient analytical querie
 | `PurgeExpiredTelemetryRecords` | Daily | Hard-delete records past the retention window |
 | `AnonymizeStaleAuditEvents` | Daily | Anonymize PII in old audit entries |
 
-## Development Commands
-
-```bash
-# Run the test suite
-php artisan test --compact
-
-# Fix code style
-vendor/bin/pint
-
-# Regenerate TypeScript route bindings (after adding/modifying routes)
-php artisan wayfinder:generate
-
-# Build frontend assets
-npm run build
-```
+---
 
 ## Contributing
 
