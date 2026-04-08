@@ -39,7 +39,7 @@ Separate containers for the app, queue worker, scheduler, MySQL, Redis, and Clic
 
 ```bash
 # 1. Download and run the setup script
-curl -fsSL https://raw.githubusercontent.com/Nyamort/OpenWatch/main/docker/production/setup.sh -o setup.sh
+curl -fsSL https://raw.githubusercontent.com/Nyamort/OpenWatch/refs/heads/main/docker/production/setup.sh -o setup.sh
 bash setup.sh
 
 # 2. Start
