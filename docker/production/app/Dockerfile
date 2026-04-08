@@ -14,7 +14,7 @@ RUN composer install \
     --ignore-platform-reqs
 
 COPY . .
-RUN mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs \
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
     && composer dump-autoload --optimize --no-dev \
     && cp .env.example .env \
     && php artisan key:generate --ansi \
