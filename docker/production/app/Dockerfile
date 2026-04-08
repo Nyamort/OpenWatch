@@ -62,7 +62,6 @@ RUN apt-get update && apt-get install -y gnupg curl ca-certificates \
         php8.5-curl \
         php8.5-gd \
         php8.5-intl \
-        php8.5-pcntl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
