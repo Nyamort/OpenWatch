@@ -1,15 +1,15 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
-import { useClipboard } from '@/hooks/use-clipboard';
-import { CardSkeleton, ChartsSkeleton } from '@/components/analytics/skeletons';
+import { format as formatSql } from 'sql-formatter';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
+import { CardSkeleton, ChartsSkeleton } from '@/components/analytics/skeletons';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useClipboard } from '@/hooks/use-clipboard';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { formatDuration } from '@/lib/utils';
 import { index as queriesIndex } from '@/routes/analytics/queries';
-import { format as formatSql } from 'sql-formatter';
 import {
     QueryDetailCharts,
     type QueryDetailGraphBucket,

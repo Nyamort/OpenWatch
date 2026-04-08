@@ -1,5 +1,4 @@
 import { Check, Copy } from 'lucide-react';
-import { useClipboard } from '@/hooks/use-clipboard';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -9,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useClipboard } from '@/hooks/use-clipboard';
 
 export function TokenDialog({
     open,

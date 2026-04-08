@@ -1,7 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Check, Copy, Database } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useClipboard } from '@/hooks/use-clipboard';
 import { format as formatSql } from 'sql-formatter';
 import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
@@ -23,6 +22,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { formatDuration } from '@/lib/utils';
 import { show } from '@/routes/analytics/queries';
 import type { Pagination, QueryRow, QuerySortKey, SortDir } from '../types';

@@ -1,6 +1,6 @@
+import { router } from '@inertiajs/react';
 import type { VariantProps } from 'class-variance-authority';
 import { ArrowUpRight } from 'lucide-react';
-import { router } from '@inertiajs/react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge, type badgeVariants } from '@/components/ui/badge';

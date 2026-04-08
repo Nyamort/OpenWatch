@@ -1,10 +1,10 @@
 import { router, usePage } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { AlertCircle, ArrowUpRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
+import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,

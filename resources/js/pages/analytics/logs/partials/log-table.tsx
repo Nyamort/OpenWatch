@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { ScrollText } from 'lucide-react';
+import { useState } from 'react';
 import JsonSyntaxHighlighter from '@/components/analytics/json-syntax-highlighter';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { TablePagination } from '@/components/analytics/table/table-pagination';

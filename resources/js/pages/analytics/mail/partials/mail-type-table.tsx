@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { Paperclip, Users } from 'lucide-react';
+import { useState } from 'react';
+import { InfoRow } from '@/components/analytics/detail-card';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
-import { InfoRow } from '@/components/analytics/detail-card';
 import {
     Popover,
     PopoverContent,
