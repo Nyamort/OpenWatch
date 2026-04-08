@@ -91,11 +91,13 @@ if grep -q "^CLICKHOUSE_PASSWORD=\s*$" "$ENV_FILE"; then
     read -r CLICKHOUSE_PASSWORD_INPUT
 
     if [ -n "$CLICKHOUSE_PASSWORD_INPUT" ]; then
-        sed -i "s|^CLICKHOUSE_PASSWORD=.*|CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD_INPUT}|" "$ENV_FILE"
+        CLICKHOUSE_PASSWORD="$CLICKHOUSE_PASSWORD_INPUT"
         echo "  [✓] CLICKHOUSE_PASSWORD set"
     else
-        echo "  [✓] ClickHouse password skipped (no auth)"
+        CLICKHOUSE_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=' | head -c 24)"
+        echo "  [✓] Generated CLICKHOUSE_PASSWORD (saved in .env)"
     fi
+    sed -i "s|^CLICKHOUSE_PASSWORD=.*|CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}|" "$ENV_FILE"
     echo ""
 fi
 
