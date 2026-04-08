@@ -76,13 +76,12 @@ docker run -d \
   --name openwatch \
   -p 80:80 \
   -e APP_URL="http://your-server-ip" \
-  -v openwatch-mysql:/var/lib/mysql \
-  -v openwatch-clickhouse:/var/lib/clickhouse \
+  -v openwatch-data:/var/lib/openwatch \
   -v openwatch-storage:/var/www/html/storage \
   ghcr.io/nyamort/openwatch:standalone
 ```
 
-`APP_URL` is the only required variable. `APP_KEY`, database passwords, and all other secrets are generated automatically on first run and persisted in the storage volume.
+`APP_URL` is the only required variable. `APP_KEY`, database passwords, and all other secrets are generated automatically on first run and persisted in the storage volume. All database files (MySQL, ClickHouse, Redis) are stored under a single `/var/lib/openwatch` volume.
 
 ---
 

@@ -72,10 +72,16 @@ MAIL_PASSWORD=${MAIL_PASSWORD:-}
 MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-hello@example.com}
 ENV
 
+# ── Data directories ─────────────────────────────────────────
+mkdir -p /var/lib/openwatch/{mysql,clickhouse,redis}
+chown -R mysql:mysql /var/lib/openwatch/mysql
+chown -R clickhouse:clickhouse /var/lib/openwatch/clickhouse
+chown -R redis:redis /var/lib/openwatch/redis
+
 # ── MySQL ────────────────────────────────────────────────────
-if [ ! -d "/var/lib/mysql/mysql" ]; then
+if [ ! -d "/var/lib/openwatch/mysql/mysql" ]; then
     echo "==> Initializing MySQL data directory..."
-    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/openwatch/mysql
 fi
 
 echo "==> Starting MySQL..."
@@ -84,7 +90,7 @@ service mysql start
 echo "==> Waiting for MySQL..."
 until mysqladmin ping -h 127.0.0.1 -u root --silent 2>/dev/null; do sleep 1; done
 
-if [ ! -f /var/lib/mysql/.openwatch_initialized ]; then
+if [ ! -f /var/lib/openwatch/mysql/.openwatch_initialized ]; then
     echo "==> Creating MySQL database and user..."
     mysql -u root -e "
         CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;
@@ -92,7 +98,7 @@ if [ ! -f /var/lib/mysql/.openwatch_initialized ]; then
         GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_USERNAME}'@'%';
         FLUSH PRIVILEGES;
     "
-    touch /var/lib/mysql/.openwatch_initialized
+    touch /var/lib/openwatch/mysql/.openwatch_initialized
 fi
 
 # ── Redis ────────────────────────────────────────────────────
@@ -106,10 +112,10 @@ service clickhouse-server start
 echo "==> Waiting for ClickHouse..."
 until clickhouse-client --query="SELECT 1" 2>/dev/null; do sleep 2; done
 
-if [ ! -f /var/lib/clickhouse/.openwatch_initialized ]; then
+if [ ! -f /var/lib/openwatch/clickhouse/.openwatch_initialized ]; then
     echo "==> Creating ClickHouse database..."
     clickhouse-client --query="CREATE DATABASE IF NOT EXISTS \`${CLICKHOUSE_DATABASE}\`"
-    touch /var/lib/clickhouse/.openwatch_initialized
+    touch /var/lib/openwatch/clickhouse/.openwatch_initialized
 fi
 
 # ── Laravel bootstrap ────────────────────────────────────────
@@ -125,6 +131,7 @@ php artisan storage:link --force
 
 echo "==> Running migrations..."
 php artisan migrate --force
+php artisan clickhouse:migrate
 
 # ── Start app services via supervisord ───────────────────────
 echo "==> Starting application..."

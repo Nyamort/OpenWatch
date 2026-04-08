@@ -1,0 +1,5 @@
+<clickhouse>
+    <path>/var/lib/openwatch/clickhouse/</path>
+    <tmp_path>/var/lib/openwatch/clickhouse/tmp/</tmp_path>
+    <user_files_path>/var/lib/openwatch/clickhouse/user_files/</user_files_path>
+</clickhouse>

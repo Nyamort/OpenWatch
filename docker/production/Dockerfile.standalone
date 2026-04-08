@@ -88,9 +88,10 @@ COPY --from=node-build /app/public/build ./public/build
 COPY . .
 
 # ── Copy configs ─────────────────────────────────────────────
-COPY docker/production/nginx.conf               /etc/nginx/sites-available/default
+COPY docker/production/nginx.conf                  /etc/nginx/sites-available/default
 COPY docker/production/supervisord.standalone.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/production/entrypoint.standalone.sh /usr/local/bin/entrypoint.sh
+COPY docker/production/entrypoint.standalone.sh    /usr/local/bin/entrypoint.sh
+COPY docker/production/clickhouse-paths.xml        /etc/clickhouse-server/config.d/paths.xml
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     # PHP-FPM socket
@@ -98,17 +99,19 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
     && sed -i 's|;listen.owner = www-data|listen.owner = www-data|' /etc/php/8.5/fpm/pool.d/www.conf \
     && sed -i 's|;listen.group = www-data|listen.group = www-data|' /etc/php/8.5/fpm/pool.d/www.conf \
     && mkdir -p /run/php \
-    # MySQL — bind to localhost only
+    # MySQL — custom datadir + bind to localhost only
     && sed -i 's/^bind-address.*/bind-address = 127.0.0.1/' /etc/mysql/mysql.conf.d/mysqld.cnf \
-    # Redis — bind to localhost only
+    && echo "datadir = /var/lib/openwatch/mysql" >> /etc/mysql/mysql.conf.d/mysqld.cnf \
+    # Redis — custom dir + bind to localhost only
     && sed -i 's/^bind .*/bind 127.0.0.1/' /etc/redis/redis.conf \
+    && sed -i 's|^dir .*|dir /var/lib/openwatch/redis|' /etc/redis/redis.conf \
     # Storage permissions
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache public \
     && chmod -R 775 storage bootstrap/cache
 
-# Data volumes
-VOLUME ["/var/lib/mysql", "/var/lib/redis", "/var/lib/clickhouse", "/var/www/html/storage"]
+# Single data volume
+VOLUME ["/var/lib/openwatch", "/var/www/html/storage"]
 
 EXPOSE 80
 
