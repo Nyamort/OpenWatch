@@ -13,6 +13,7 @@ php artisan storage:link --force
 
 echo "==> Running migrations..."
 php artisan migrate --force
+php artisan clickhouse:migrate
 
 echo "==> Starting services..."
 exec "$@"

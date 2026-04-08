@@ -33,14 +33,7 @@ OpenWatch collects real-time telemetry from your PHP applications and provides a
 
 ## Deployment
 
-Docker images are published to the GitHub Container Registry:
-
-```
-ghcr.io/nyamort/openwatch:latest           # standard image (PHP-FPM + Nginx)
-ghcr.io/nyamort/openwatch:standalone       # all-in-one image
-```
-
-### Option 1 — Docker Compose (recommended)
+### Docker Compose
 
 Separate containers for the app, queue worker, scheduler, MySQL, Redis, and ClickHouse.
 
@@ -66,23 +59,6 @@ On first boot, the `app` container runs database migrations automatically. The w
 | `APP_URL` | Public URL, e.g. `https://watch.example.com` |
 | `DB_PASSWORD` | MySQL password |
 | `DB_ROOT_PASSWORD` | MySQL root password |
-
-### Option 2 — Standalone (single container)
-
-Everything bundled in one container — MySQL, Redis, ClickHouse, PHP-FPM, Nginx, queue worker, and scheduler.
-
-```bash
-docker run -d \
-  --name openwatch \
-  -p 80:80 \
-  -e APP_URL="http://your-server-ip" \
-  -v openwatch-data:/var/lib/openwatch \
-  -v openwatch-storage:/var/www/html/storage \
-  ghcr.io/nyamort/openwatch:standalone
-```
-
-`APP_URL` is the only required variable. `APP_KEY`, database passwords, and all other secrets are generated automatically on first run and persisted in the storage volume. All database files (MySQL, ClickHouse, Redis) are stored under a single `/var/lib/openwatch` volume.
-
 ---
 
 ---
