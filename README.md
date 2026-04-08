@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/favicon.svg" alt="OpenWatch Logo" width="120" />
+</p>
+
 # OpenWatch
 
 > Open-source application monitoring and telemetry platform — a self-hosted alternative to Laravel Nightwatch.
