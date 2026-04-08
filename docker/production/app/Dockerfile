@@ -83,7 +83,7 @@ COPY docker/production/app/supervisord.conf  /etc/supervisor/conf.d/supervisord.
 COPY docker/production/app/entrypoint.sh     /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
-    && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
+    && mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
     && chown -R www-data:www-data storage bootstrap/cache public \
     && chmod -R 775 storage bootstrap/cache \
     # Remove FPM default pool's listen on TCP, use socket
