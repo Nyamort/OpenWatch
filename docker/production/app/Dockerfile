@@ -14,7 +14,11 @@ RUN composer install \
     --ignore-platform-reqs
 
 COPY . .
-RUN mkdir -p bootstrap/cache && composer dump-autoload --optimize --no-dev
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+    && composer dump-autoload --optimize --no-dev \
+    && cp .env.example .env \
+    && php artisan key:generate --ansi \
+    && php artisan wayfinder:generate --with-form
 
 # ============================================================
 # Stage 2 — Node / Vite build
@@ -28,6 +32,8 @@ RUN npm ci
 
 COPY . .
 COPY --from=composer-deps /app/vendor ./vendor
+COPY --from=composer-deps /app/resources/js/actions ./resources/js/actions
+COPY --from=composer-deps /app/resources/js/routes ./resources/js/routes
 RUN WAYFINDER_COMMAND=true npm run build
 
 # ============================================================
