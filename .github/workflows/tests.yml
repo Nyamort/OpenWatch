@@ -85,7 +85,7 @@ jobs:
       - name: Run migrations
         run: |
           php artisan migrate --force
-          php artisan clickhouse:migrate --force
+          php artisan clickhouse:migrate
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
