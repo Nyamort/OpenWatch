@@ -29,7 +29,22 @@ function CheckIcon() {
     );
 }
 
-export default function AuthBrandedLayout({ children, title, description }: AuthLayoutProps) {
+type Props = AuthLayoutProps & {
+    eyebrow?: string;
+    headline?: React.ReactNode;
+    subHeadline?: string;
+    footerNote?: string;
+};
+
+export default function AuthBrandedLayout({
+    children,
+    title,
+    description,
+    eyebrow,
+    headline,
+    subHeadline,
+    footerNote,
+}: Props) {
     const { name } = usePage().props;
 
     return (
@@ -63,13 +78,21 @@ export default function AuthBrandedLayout({ children, title, description }: Auth
 
                     {/* Headline */}
                     <div className="mt-auto">
-                        <h1 className="text-4xl font-semibold tracking-tight text-white">
-                            Monitor your{' '}
-                            <span className="text-white/70">applications</span>
+                        {eyebrow && (
+                            <p className="text-xs font-medium tracking-widest text-white/40 uppercase">
+                                {eyebrow}
+                            </p>
+                        )}
+                        <h1 className={`text-4xl font-semibold tracking-tight text-white ${eyebrow ? 'mt-3' : ''}`}>
+                            {headline ?? (
+                                <>
+                                    Monitor your{' '}
+                                    <span className="text-white/70">applications</span>
+                                </>
+                            )}
                         </h1>
                         <p className="mt-4 max-w-sm text-base leading-relaxed text-white/50">
-                            Gain full visibility into errors, performance, and
-                            behaviour across all your environments.
+                            {subHeadline ?? 'Gain full visibility into errors, performance, and behaviour across all your environments.'}
                         </p>
 
                         <ul className="mt-10 space-y-3">
@@ -84,6 +107,10 @@ export default function AuthBrandedLayout({ children, title, description }: Auth
                             ))}
                         </ul>
                     </div>
+
+                    {footerNote && (
+                        <p className="mt-12 text-xs text-white/25">{footerNote}</p>
+                    )}
                 </div>
             </div>
 
