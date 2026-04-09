@@ -59,6 +59,7 @@ RUN apt-get update && apt-get install -y gnupg curl ca-certificates \
     && apt-get install -y \
         nginx \
         supervisor \
+        default-mysql-client \
         php8.5-fpm \
         php8.5-mysql \
         php8.5-redis \

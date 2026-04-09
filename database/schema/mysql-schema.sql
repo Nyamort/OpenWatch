@@ -94,8 +94,8 @@ CREATE TABLE `environments` (
   `project_id` bigint unsigned NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `color` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `archived_at` timestamp NULL DEFAULT NULL,
   `last_ingested_at` timestamp NULL DEFAULT NULL,
@@ -105,277 +105,6 @@ CREATE TABLE `environments` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `environments_project_id_slug_unique` (`project_id`,`slug`),
   CONSTRAINT `environments_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_cache_events`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_cache_events` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `store` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned NOT NULL,
-  `ttl` int unsigned DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_cache_events_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_commands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_commands` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `class` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `exit_code` tinyint DEFAULT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_commands_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_exceptions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_exceptions` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `trace_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `execution_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `group_key` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `class` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `line` int unsigned DEFAULT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `handled` tinyint(1) NOT NULL DEFAULT '0',
-  `php_version` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `laravel_version` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_exceptions_telemetry_record_id_unique` (`telemetry_record_id`),
-  KEY `exc_org_proj_env_recorded_at` (`organization_id`,`project_id`,`environment_id`,`recorded_at`),
-  KEY `extraction_exceptions_group_key_index` (`group_key`),
-  KEY `extraction_exceptions_class_index` (`class`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_job_attempts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_job_attempts` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `job_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `attempt_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `attempt` tinyint unsigned NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_job_attempts_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_logs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_logs` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `level` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `execution_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_logs_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_mails`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_mails` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `mailer` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `class` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `subject` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `to` json DEFAULT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `failed` tinyint(1) NOT NULL DEFAULT '0',
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_mails_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_notifications`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_notifications` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `channel` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `class` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `failed` tinyint(1) NOT NULL DEFAULT '0',
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_notifications_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_outgoing_requests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_outgoing_requests` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `host` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `method` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `url` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status_code` smallint unsigned DEFAULT NULL,
-  `duration` int unsigned NOT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_outgoing_requests_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_queries`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_queries` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `trace_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `execution_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sql_hash` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sql_normalized` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection_type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned NOT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_queries_telemetry_record_id_unique` (`telemetry_record_id`),
-  KEY `qry_org_proj_env_recorded_at` (`organization_id`,`project_id`,`environment_id`,`recorded_at`),
-  KEY `extraction_queries_sql_hash_index` (`sql_hash`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_queued_jobs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_queued_jobs` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `job_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_queued_jobs_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_requests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_requests` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `trace_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `method` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `url` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `route_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `route_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `route_action` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status_code` smallint unsigned NOT NULL,
-  `duration` int unsigned NOT NULL,
-  `request_size` int unsigned DEFAULT NULL,
-  `response_size` int unsigned DEFAULT NULL,
-  `peak_memory_usage` int unsigned DEFAULT NULL,
-  `exceptions` smallint unsigned NOT NULL DEFAULT '0',
-  `queries` smallint unsigned NOT NULL DEFAULT '0',
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_requests_telemetry_record_id_unique` (`telemetry_record_id`),
-  KEY `req_org_proj_env_recorded_at` (`organization_id`,`project_id`,`environment_id`,`recorded_at`),
-  KEY `extraction_requests_route_name_index` (`route_name`),
-  KEY `extraction_requests_status_code_index` (`status_code`),
-  KEY `extraction_requests_organization_id_index` (`organization_id`),
-  KEY `extraction_requests_project_id_index` (`project_id`),
-  KEY `extraction_requests_environment_id_index` (`environment_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_scheduled_tasks`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_scheduled_tasks` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cron` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration` int unsigned DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_scheduled_tasks_telemetry_record_id_unique` (`telemetry_record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `extraction_user_activities`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `extraction_user_activities` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `telemetry_record_id` bigint unsigned NOT NULL,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `recorded_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `extraction_user_activities_telemetry_record_id_unique` (`telemetry_record_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
@@ -647,7 +376,6 @@ CREATE TABLE `organizations` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `logo_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `timezone` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UTC',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -713,28 +441,6 @@ CREATE TABLE `sessions` (
   PRIMARY KEY (`id`),
   KEY `sessions_user_id_index` (`user_id`),
   KEY `sessions_last_activity_index` (`last_activity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `telemetry_records`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `telemetry_records` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `organization_id` bigint unsigned NOT NULL,
-  `project_id` bigint unsigned NOT NULL,
-  `environment_id` bigint unsigned NOT NULL,
-  `record_type` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `trace_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `group_key` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `execution_id` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `payload` json DEFAULT NULL,
-  `recorded_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `tel_org_proj_env_recorded_at` (`organization_id`,`project_id`,`environment_id`,`recorded_at`),
-  KEY `telemetry_records_record_type_index` (`record_type`),
-  KEY `telemetry_records_organization_id_index` (`organization_id`),
-  KEY `telemetry_records_project_id_index` (`project_id`),
-  KEY `telemetry_records_environment_id_index` (`environment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_notification_preferences`;
@@ -836,3 +542,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (43,'2026_03_22_221
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (44,'2026_03_22_224913_add_color_to_environments_table',7);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (45,'2026_03_23_221019_create_media_table',8);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (46,'2026_03_23_223039_add_name_to_organization_invitations_table',9);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (47,'2026_03_24_202405_add_url_to_environments_table',10);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (48,'2026_03_24_202634_remove_type_from_environments_table',11);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (49,'2026_03_28_152617_add_route_methods_to_extraction_requests',12);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (50,'2026_03_30_134528_drop_status_from_extraction_commands',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (51,'2026_03_31_223115_drop_timezone_from_organizations_table',14);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (52,'2026_04_02_182632_drop_mysql_extraction_tables',15);
