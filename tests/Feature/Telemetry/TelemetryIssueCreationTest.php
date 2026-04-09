@@ -5,6 +5,8 @@ use App\Jobs\ProcessTelemetryBatch;
 use App\Listeners\HandleExceptionTelemetry;
 use App\Models\Environment;
 use App\Models\Issue;
+use App\Services\Ingestion\DTOs\ExceptionRecordDTO;
+use App\Services\Ingestion\DTOs\RequestRecordDTO;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -28,7 +30,32 @@ function exceptionRecord(array $overrides = []): array
     ], $overrides);
 }
 
-test('ProcessTelemetryBatch dispatches TelemetryBatchIngested event', function () {
+function exceptionDto(array $overrides = []): ExceptionRecordDTO
+{
+    return new ExceptionRecordDTO(
+        timestamp: now()->timestamp,
+        deploy: 'abc123',
+        server: 'web-01',
+        traceId: fake()->uuid(),
+        executionId: fake()->uuid(),
+        executionSource: 'http',
+        executionStage: 'action',
+        executionPreview: null,
+        groupKey: null,
+        user: null,
+        class: $overrides['class'] ?? 'App\\Exceptions\\TestException',
+        file: $overrides['file'] ?? '/app/TestController.php',
+        line: $overrides['line'] ?? 42,
+        message: $overrides['message'] ?? 'Something went wrong',
+        code: null,
+        trace: '[]',
+        handled: 0,
+        phpVersion: null,
+        laravelVersion: null,
+    );
+}
+
+test('ProcessTelemetryBatch dispatches TelemetryBatchIngested event with parsed DTOs', function () {
     Event::fake();
 
     $environment = Environment::factory()->create();
@@ -43,12 +70,13 @@ test('ProcessTelemetryBatch dispatches TelemetryBatchIngested event', function (
 
     Event::assertDispatched(TelemetryBatchIngested::class, function (TelemetryBatchIngested $event) use ($environment) {
         return $event->environmentId === $environment->id
-            && count($event->records) === 1;
+            && count($event->records) === 1
+            && $event->records[0] instanceof ExceptionRecordDTO;
     });
 });
 
 test('ProcessTelemetryBatch does not dispatch event when all records are invalid', function () {
-    Event::fake([TelemetryBatchIngested::class]);
+    Event::fake();
 
     $environment = Environment::factory()->create();
 
@@ -63,20 +91,20 @@ test('ProcessTelemetryBatch does not dispatch event when all records are invalid
     Event::assertNotDispatched(TelemetryBatchIngested::class);
 });
 
-test('HandleExceptionTelemetry creates an issue for an exception record', function () {
+test('HandleExceptionTelemetry creates an issue for an exception DTO', function () {
     Queue::fake();
 
     $environment = Environment::factory()->create();
     $environment->load('project.organization');
 
-    $record = exceptionRecord(['class' => 'App\\Exceptions\\UniqueException'.uniqid()]);
+    $dto = exceptionDto(['class' => 'App\\Exceptions\\UniqueException'.uniqid()]);
 
     $listener = app(HandleExceptionTelemetry::class);
-    $listener->handle(new TelemetryBatchIngested($environment->id, [$record]));
+    $listener->handle(new TelemetryBatchIngested($environment->id, [$dto]));
 
     $this->assertDatabaseHas('issues', [
         'environment_id' => $environment->id,
-        'title' => $record['class'],
+        'title' => $dto->class,
         'type' => 'exception',
         'status' => 'open',
         'occurrence_count' => 1,
@@ -89,7 +117,7 @@ test('HandleExceptionTelemetry increments occurrence count on repeated exception
     $environment = Environment::factory()->create();
     $environment->load('project.organization');
 
-    $record = exceptionRecord([
+    $dto = exceptionDto([
         'class' => 'App\\Exceptions\\RepeatedEx'.uniqid(),
         'message' => 'Same error',
         'file' => '/app/Foo.php',
@@ -97,38 +125,67 @@ test('HandleExceptionTelemetry increments occurrence count on repeated exception
     ]);
 
     $listener = app(HandleExceptionTelemetry::class);
-    $event = new TelemetryBatchIngested($environment->id, [$record]);
+    $event = new TelemetryBatchIngested($environment->id, [$dto]);
 
     $listener->handle($event);
     $listener->handle($event);
 
-    expect(Issue::where('environment_id', $environment->id)->where('title', $record['class'])->count())->toBe(1);
+    expect(Issue::where('environment_id', $environment->id)->where('title', $dto->class)->count())->toBe(1);
 
-    $issue = Issue::where('environment_id', $environment->id)->where('title', $record['class'])->first();
+    $issue = Issue::where('environment_id', $environment->id)->where('title', $dto->class)->first();
     expect($issue->occurrence_count)->toBe(2);
 });
 
-test('HandleExceptionTelemetry ignores non-exception records', function () {
+test('HandleExceptionTelemetry ignores non-exception DTOs', function () {
     Queue::fake();
 
     $environment = Environment::factory()->create();
 
-    $record = [
-        'v' => 1,
-        't' => 'request',
-        'timestamp' => now()->timestamp,
-        'deploy' => 'abc123',
-        'server' => 'web-01',
-        'method' => 'GET',
-        'url' => 'https://example.com/test',
-        'status_code' => 200,
-        'duration' => 100,
-    ];
+    $dto = new RequestRecordDTO(
+        timestamp: now()->timestamp,
+        deploy: 'abc123',
+        server: 'web-01',
+        traceId: fake()->uuid(),
+        user: null,
+        ip: null,
+        method: 'GET',
+        url: 'https://example.com/test',
+        routeName: null,
+        routePath: '/test',
+        routeMethods: null,
+        routeAction: null,
+        routeDomain: null,
+        statusCode: 200,
+        duration: 100,
+        bootstrap: null,
+        beforeMiddleware: null,
+        action: null,
+        render: null,
+        afterMiddleware: null,
+        terminating: null,
+        sending: null,
+        requestSize: null,
+        responseSize: null,
+        peakMemoryUsage: null,
+        exceptions: 0,
+        queries: 0,
+        logs: 0,
+        cacheEvents: 0,
+        jobsQueued: 0,
+        notifications: 0,
+        outgoingRequests: 0,
+        lazyLoads: 0,
+        hydratedModels: 0,
+        filesRead: 0,
+        filesWritten: 0,
+        exceptionPreview: null,
+        headers: null,
+    );
 
     $before = Issue::where('environment_id', $environment->id)->count();
 
     $listener = app(HandleExceptionTelemetry::class);
-    $listener->handle(new TelemetryBatchIngested($environment->id, [$record]));
+    $listener->handle(new TelemetryBatchIngested($environment->id, [$dto]));
 
     expect(Issue::where('environment_id', $environment->id)->count())->toBe($before);
 });
@@ -139,7 +196,7 @@ test('HandleExceptionTelemetry does nothing when environment does not exist', fu
     $before = Issue::count();
 
     $listener = app(HandleExceptionTelemetry::class);
-    $listener->handle(new TelemetryBatchIngested(999999, [exceptionRecord()]));
+    $listener->handle(new TelemetryBatchIngested(999999, [exceptionDto()]));
 
     expect(Issue::count())->toBe($before);
 });

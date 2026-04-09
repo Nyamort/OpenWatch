@@ -5,9 +5,7 @@ namespace App\Jobs;
 use App\Events\TelemetryBatchIngested;
 use App\Models\Environment;
 use App\Services\ClickHouse\ClickHouseService;
-use App\Services\Ingestion\RecordExtractorRegistry;
-use App\Services\Ingestion\RecordValidatorRegistry;
-use Carbon\Carbon;
+use App\Services\Ingestion\RecordHandlerRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +24,7 @@ class ProcessTelemetryBatch implements ShouldQueue
         public readonly string $requestId,
     ) {}
 
-    public function handle(RecordValidatorRegistry $validatorRegistry, RecordExtractorRegistry $extractorRegistry, ClickHouseService $clickhouse): void
+    public function handle(RecordHandlerRegistry $registry, ClickHouseService $clickhouse): void
     {
         $environment = Environment::find($this->environmentId);
 
@@ -35,26 +33,22 @@ class ProcessTelemetryBatch implements ShouldQueue
         }
 
         $extractionRows = [];
-        $validatedRecords = [];
+        $parsedDtos = [];
 
         foreach ($this->records as $record) {
             try {
-                if (! $validatorRegistry->validate($record)) {
+                $type = $record['t'] ?? null;
+                $handler = $registry->for($type);
+                $dto = $handler->parse($record);
+
+                if ($dto === null) {
                     Log::info('Invalid telemetry record', ['record' => $record]);
 
                     continue;
                 }
 
-                $validatedRecords[] = $record;
-
-                $type = $record['t'];
-                $recordedAt = Carbon::createFromTimestamp((float) $record['timestamp'])->utc()->format('Y-m-d H:i:s.u');
-
-                $extractor = $extractorRegistry->for($type);
-
-                if ($extractor !== null) {
-                    $extractionRows[$extractor->table()][] = $extractor->extract($record, $this->environmentId, $recordedAt);
-                }
+                $parsedDtos[] = $dto;
+                $extractionRows[$handler->table()][] = $handler->extract($dto, $this->environmentId);
             } catch (InvalidArgumentException $e) {
                 report($e);
 
@@ -66,8 +60,8 @@ class ProcessTelemetryBatch implements ShouldQueue
             $clickhouse->insert($table, $rows);
         }
 
-        if (! empty($validatedRecords)) {
-            TelemetryBatchIngested::dispatch($this->environmentId, $validatedRecords);
+        if (! empty($parsedDtos)) {
+            TelemetryBatchIngested::dispatch($this->environmentId, $parsedDtos);
         }
     }
 }

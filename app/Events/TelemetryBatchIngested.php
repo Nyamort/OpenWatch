@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Services\Ingestion\DTOs\RecordDTO;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -10,7 +11,7 @@ class TelemetryBatchIngested
     use Dispatchable, SerializesModels;
 
     /**
-     * @param  array<int, array<string, mixed>>  $records
+     * @param  array<int, RecordDTO>  $records
      */
     public function __construct(
         public readonly int $environmentId,

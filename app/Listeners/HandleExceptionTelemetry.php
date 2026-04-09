@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Actions\Issues\CreateIssueFromAnalytics;
 use App\Events\TelemetryBatchIngested;
 use App\Models\Environment;
+use App\Services\Ingestion\DTOs\ExceptionRecordDTO;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class HandleExceptionTelemetry implements ShouldQueue
@@ -13,12 +14,12 @@ class HandleExceptionTelemetry implements ShouldQueue
 
     public function handle(TelemetryBatchIngested $event): void
     {
-        $exceptionRecords = array_values(array_filter(
+        $exceptionDtos = array_values(array_filter(
             $event->records,
-            fn (array $record) => ($record['t'] ?? null) === 'exception',
+            fn ($record) => $record instanceof ExceptionRecordDTO,
         ));
 
-        if (empty($exceptionRecords)) {
+        if (empty($exceptionDtos)) {
             return;
         }
 
@@ -33,7 +34,7 @@ class HandleExceptionTelemetry implements ShouldQueue
         $project = $environment->project;
         $organization = $project->organization;
 
-        foreach ($exceptionRecords as $record) {
+        foreach ($exceptionDtos as $dto) {
             $this->createIssue->handle(
                 $organization,
                 $project,
@@ -41,13 +42,13 @@ class HandleExceptionTelemetry implements ShouldQueue
                 null,
                 [
                     'source_type' => 'exception',
-                    'class' => $record['class'] ?? null,
-                    'message' => $record['message'] ?? null,
-                    'file' => $record['file'] ?? null,
-                    'line' => isset($record['line']) ? (int) $record['line'] : null,
-                    'group_key' => $record['_group'] ?? null,
-                    'trace_id' => $record['trace_id'] ?? null,
-                    'execution_id' => $record['execution_id'] ?? null,
+                    'class' => $dto->class,
+                    'message' => $dto->message,
+                    'file' => $dto->file,
+                    'line' => $dto->line,
+                    'group_key' => $dto->groupKey,
+                    'trace_id' => $dto->traceId,
+                    'execution_id' => $dto->executionId,
                 ],
             );
         }
