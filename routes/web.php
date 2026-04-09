@@ -12,8 +12,6 @@ use App\Http\Controllers\Project\ProjectSwitcherController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 Route::middleware('not.installed')->group(function () {
     Route::get('setup', [SetupController::class, 'show'])->name('setup.show');
@@ -21,9 +19,7 @@ Route::middleware('not.installed')->group(function () {
 });
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return redirect()->route('dashboard');
 })->name('home');
 
 Route::get('dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
