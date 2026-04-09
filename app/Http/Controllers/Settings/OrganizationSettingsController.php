@@ -18,7 +18,6 @@ use App\Http\Requests\Settings\UpdateMemberRoleRequest;
 use App\Http\Requests\Settings\UpdateOrganizationSettingsRequest;
 use App\Models\Environment;
 use App\Models\Organization;
-use App\Models\OrganizationAuditEvent;
 use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\Project;
@@ -162,44 +161,6 @@ class OrganizationSettingsController extends Controller
         app(\App\Actions\Organization\RemoveMember::class)->handle($organization, $member);
 
         return to_route('settings.organizations.members', $organization);
-    }
-
-    public function audit(Request $request, Organization $organization): Response
-    {
-        $userId = $request->user()->id;
-        $role = $this->permissionResolver->getRole($userId, $organization->id);
-
-        if (! in_array($role, ['owner', 'admin'], true)) {
-            abort(403);
-        }
-
-        $query = OrganizationAuditEvent::query()
-            ->where('organization_id', $organization->id)
-            ->latest('created_at');
-
-        if ($request->filled('event_type')) {
-            $query->where('event_type', $request->input('event_type'));
-        }
-
-        if ($request->filled('actor_id')) {
-            $query->where('actor_id', $request->input('actor_id'));
-        }
-
-        if ($request->filled('date_from')) {
-            $query->where('created_at', '>=', $request->input('date_from'));
-        }
-
-        if ($request->filled('date_to')) {
-            $query->where('created_at', '<=', $request->input('date_to'));
-        }
-
-        $events = $query->paginate(50)->withQueryString();
-
-        return Inertia::render('settings/organizations/audit', [
-            'organization' => $organization,
-            'events' => $events,
-            'filters' => $request->only(['event_type', 'actor_id', 'date_from', 'date_to']),
-        ]);
     }
 
     public function applications(Organization $organization): Response

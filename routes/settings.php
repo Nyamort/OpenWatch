@@ -31,7 +31,6 @@ Route::middleware(['auth', 'verified', 'organization.member'])->prefix('settings
     Route::delete('members/invitations/{invitation}', [OrganizationSettingsController::class, 'destroyInvitation'])->name('members.invitations.destroy');
     Route::patch('members/{member}', [OrganizationSettingsController::class, 'updateMemberRole'])->name('members.update-role');
     Route::delete('members/{member}', [OrganizationSettingsController::class, 'destroyMember'])->name('members.destroy');
-    Route::get('audit', [OrganizationSettingsController::class, 'audit'])->name('audit');
     Route::get('applications', [OrganizationSettingsController::class, 'applications'])->name('applications');
     Route::post('applications', [OrganizationSettingsController::class, 'storeApplication'])->name('applications.store');
     Route::get('applications/{project}', [OrganizationSettingsController::class, 'editApplication'])->name('applications.edit');

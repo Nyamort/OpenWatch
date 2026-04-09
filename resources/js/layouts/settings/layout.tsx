@@ -43,11 +43,6 @@ function orgNavItems(slug: string): NavItem[] {
             href: `/settings/organizations/${slug}/applications`,
             icon: null,
         },
-        {
-            title: 'Audit',
-            href: `/settings/organizations/${slug}/audit`,
-            icon: null,
-        },
     ];
 }
 

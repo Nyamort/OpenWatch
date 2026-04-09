@@ -2,11 +2,9 @@
 
 use App\Actions\Observability\RefreshOrganizationDashboardSnapshot;
 use App\Actions\Project\RecalculateProjectHealth;
-use App\Jobs\AnonymizeStaleAuditEvents;
 use App\Jobs\EvaluateAlertRules;
 use App\Jobs\PurgeExpiredTelemetryRecords;
 use App\Jobs\RefreshProjectHealth;
-use App\Models\AuditLog;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\RawTelemetryRecord;
@@ -19,23 +17,16 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('observability:prune {--telemetry-days=} {--audit-days=}', function (): void {
+Artisan::command('observability:prune {--telemetry-days=}', function (): void {
     $telemetryDaysOption = $this->option('telemetry-days');
-    $auditDaysOption = $this->option('audit-days');
 
     $telemetryRetentionDays = max((int) ($telemetryDaysOption ?? config('observability.telemetry_retention_days', 30)), 1);
-    $auditRetentionDays = max((int) ($auditDaysOption ?? config('observability.audit_retention_days', 90)), 1);
 
     $prunedTelemetryCount = RawTelemetryRecord::query()
         ->where('ts_utc', '<', now()->subDays($telemetryRetentionDays))
         ->delete();
 
-    $prunedAuditCount = AuditLog::query()
-        ->where('created_at', '<', now()->subDays($auditRetentionDays))
-        ->delete();
-
     $this->info("Pruned telemetry records: {$prunedTelemetryCount}");
-    $this->info("Pruned audit logs: {$prunedAuditCount}");
 })->purpose('Prune observability tables based on retention policies');
 
 Artisan::command('observability:refresh-dashboard-snapshots {organization?*}', function (RefreshOrganizationDashboardSnapshot $refreshDashboardSnapshot): void {
@@ -57,31 +48,6 @@ Artisan::command('observability:refresh-dashboard-snapshots {organization?*}', f
 
     $this->info("Dashboard snapshots refreshed: {$processedCount}");
 })->purpose('Refresh dashboard snapshots for organizations');
-
-Artisan::command('observability:anonymize-audit {--days=} {--limit=1000}', function (): void {
-    $retentionDays = max((int) ($this->option('days') ?? config('observability.audit_retention_days', 90)), 1);
-    $limit = max((int) $this->option('limit'), 1);
-
-    $updatedCount = 0;
-
-    AuditLog::query()
-        ->where('created_at', '<', now()->subDays($retentionDays))
-        ->where(function ($query): void {
-            $query->whereNotNull('ip_address')
-                ->orWhereNotNull('user_agent');
-        })
-        ->limit($limit)
-        ->eachById(function (AuditLog $log) use (&$updatedCount): void {
-            $log->forceFill([
-                'ip_address' => null,
-                'user_agent' => null,
-            ])->save();
-
-            $updatedCount++;
-        });
-
-    $this->info("Anonymized audit logs: {$updatedCount}");
-})->purpose('Anonymize stale audit records while preserving event integrity');
 
 Artisan::command('observability:prepare-partitions {--months=2}', function (): void {
     if (DB::getDriverName() !== 'pgsql') {
@@ -134,10 +100,8 @@ Artisan::command('projects:refresh-health {organization?*}', function (Recalcula
 })->purpose('Recalculate project health from environment signals');
 
 Schedule::command('observability:prune')->dailyAt('02:00');
-Schedule::command('observability:anonymize-audit')->dailyAt('02:10');
 Schedule::command('observability:refresh-dashboard-snapshots')->everyFiveMinutes();
 Schedule::command('projects:refresh-health')->everyMinute();
 Schedule::job(new EvaluateAlertRules)->everyMinute();
 Schedule::job(new PurgeExpiredTelemetryRecords)->daily();
-Schedule::job(new AnonymizeStaleAuditEvents)->daily();
 Schedule::job(new RefreshProjectHealth)->everyFiveMinutes();
