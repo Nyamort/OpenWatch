@@ -13,6 +13,7 @@ use App\Policies\IssuePolicy;
 use App\Policies\OrganizationPolicy;
 use App\Policies\ProjectPolicy;
 use App\Services\Ingestion\ConcurrencyLimiter;
+use App\Services\Ingestion\RecordExtractorRegistry;
 use App\Services\Ingestion\RecordValidatorRegistry;
 use App\Services\Ingestion\SessionTokenService;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SessionTokenService::class);
         $this->app->singleton(ConcurrencyLimiter::class);
         $this->app->singleton(RecordValidatorRegistry::class);
+        $this->app->singleton(RecordExtractorRegistry::class);
     }
 
     /**
