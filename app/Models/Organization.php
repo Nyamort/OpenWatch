@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -79,22 +78,6 @@ class Organization extends Model implements HasMedia
     public function invitations(): HasMany
     {
         return $this->hasMany(OrganizationInvitation::class);
-    }
-
-    /**
-     * Get the audit events for the organization.
-     */
-    public function auditEvents(): HasMany
-    {
-        return $this->hasMany(OrganizationAuditEvent::class);
-    }
-
-    /**
-     * Get the plan for the organization.
-     */
-    public function plan(): HasOne
-    {
-        return $this->hasOne(OrganizationPlan::class);
     }
 
     /**
