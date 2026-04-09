@@ -33,7 +33,7 @@ class CreateIssue
         Organization $organization,
         Project $project,
         Environment $environment,
-        User $actor,
+        ?User $actor,
         array $data,
     ): Issue {
         return DB::transaction(function () use ($organization, $project, $environment, $actor, $data): Issue {
@@ -81,7 +81,7 @@ class CreateIssue
 
             IssueActivity::create([
                 'issue_id' => $issue->id,
-                'actor_id' => $actor->id,
+                'actor_id' => $actor?->id,
                 'type' => 'created',
                 'metadata' => null,
                 'created_at' => now(),

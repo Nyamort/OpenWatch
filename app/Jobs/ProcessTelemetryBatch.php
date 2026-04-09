@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\TelemetryBatchIngested;
 use App\Models\Environment;
 use App\Services\ClickHouse\ClickHouseService;
 use App\Services\Ingestion\RecordValidatorRegistry;
@@ -39,6 +40,7 @@ class ProcessTelemetryBatch implements ShouldQueue
         }
 
         $extractionRows = [];
+        $validatedRecords = [];
 
         foreach ($this->records as $record) {
             try {
@@ -47,6 +49,8 @@ class ProcessTelemetryBatch implements ShouldQueue
 
                     continue;
                 }
+
+                $validatedRecords[] = $record;
 
                 $type = $record['t'];
                 $recordedAt = Carbon::createFromTimestamp((float) $record['timestamp'])->utc()->format('Y-m-d H:i:s.u');
@@ -69,6 +73,10 @@ class ProcessTelemetryBatch implements ShouldQueue
 
         foreach ($extractionRows as $table => $rows) {
             $clickhouse->insert($table, $rows);
+        }
+
+        if (! empty($validatedRecords)) {
+            TelemetryBatchIngested::dispatch($this->environmentId, $validatedRecords);
         }
     }
 

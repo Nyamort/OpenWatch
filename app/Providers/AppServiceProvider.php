@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\TelemetryBatchIngested;
+use App\Listeners\HandleExceptionTelemetry;
 use App\Models\AlertRule;
 use App\Models\Issue;
 use App\Models\Organization;
@@ -16,6 +18,7 @@ use App\Services\Ingestion\SessionTokenService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -41,6 +44,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(AlertRule::class, AlertRulePolicy::class);
         Gate::policy(Issue::class, IssuePolicy::class);
+
+        Event::listen(TelemetryBatchIngested::class, HandleExceptionTelemetry::class);
 
         $this->configureDefaults();
     }

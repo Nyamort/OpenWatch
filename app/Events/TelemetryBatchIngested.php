@@ -2,17 +2,18 @@
 
 namespace App\Events;
 
-use App\Models\Issue;
-use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class IssueCreated
+class TelemetryBatchIngested
 {
     use Dispatchable, SerializesModels;
 
+    /**
+     * @param  array<int, array<string, mixed>>  $records
+     */
     public function __construct(
-        public readonly Issue $issue,
-        public readonly ?User $actor,
+        public readonly int $environmentId,
+        public readonly array $records,
     ) {}
 }

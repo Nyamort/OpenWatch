@@ -40,7 +40,7 @@ class CreateIssueFromAnalytics
         Organization $organization,
         Project $project,
         Environment $environment,
-        User $actor,
+        ?User $actor,
         array $data,
     ): Issue {
         $sourceType = $data['source_type'];
