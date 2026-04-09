@@ -29,7 +29,9 @@ export function MailTypeCharts({ graph, stats }: MailTypeChartsProps) {
                 <span className="flex items-center gap-1 text-muted-foreground">
                     <span
                         className="inline-block h-3 w-1 rounded-sm"
-                        style={{ backgroundColor: mailsChartConfig.count.color }}
+                        style={{
+                            backgroundColor: mailsChartConfig.count.color,
+                        }}
                     />
                     Mails
                 </span>
@@ -74,13 +76,20 @@ export function MailTypeCharts({ graph, stats }: MailTypeChartsProps) {
                                         {
                                             color: mailsChartConfig.count.color,
                                             label: 'Mails',
-                                            value: payload?.find((p) => p.dataKey === 'count')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'count',
+                                                )?.value ?? 0,
                                         },
                                     ]}
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Bar
                             dataKey="count"
                             fill={mailsChartConfig.count.color}

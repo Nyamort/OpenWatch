@@ -17,10 +17,7 @@ interface Props {
     environment: { slug: string };
 }
 
-export default function AlertsIndex({
-    alertRules,
-    environment,
-}: Props) {
+export default function AlertsIndex({ alertRules, environment }: Props) {
     const createUrl = create.url(environment);
 
     return (

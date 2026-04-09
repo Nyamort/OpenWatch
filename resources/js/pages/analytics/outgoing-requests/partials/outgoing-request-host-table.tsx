@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { cn, formatDuration } from '@/lib/utils';
-import type { OutgoingRequestHostSortKey, OutgoingRequestRunRow, Pagination, SortDir } from '../types';
+import type {
+    OutgoingRequestHostSortKey,
+    OutgoingRequestRunRow,
+    Pagination,
+    SortDir,
+} from '../types';
 
 function statusColor(code: number | null): string {
     if (code === null) return '';
@@ -28,11 +33,18 @@ interface OutgoingRequestHostTableProps {
     count: number;
 }
 
-export function OutgoingRequestHostTable({ runs, pagination, sort, direction, count }: OutgoingRequestHostTableProps) {
-    const { handlePage, handleSort } = useAnalyticsTable<OutgoingRequestHostSortKey>({
-        search: '',
-        only: ['runs', 'pagination', 'sort', 'direction'],
-    });
+export function OutgoingRequestHostTable({
+    runs,
+    pagination,
+    sort,
+    direction,
+    count,
+}: OutgoingRequestHostTableProps) {
+    const { handlePage, handleSort } =
+        useAnalyticsTable<OutgoingRequestHostSortKey>({
+            search: '',
+            only: ['runs', 'pagination', 'sort', 'direction'],
+        });
 
     const onSort = (col: string) =>
         handleSort(col as OutgoingRequestHostSortKey, sort, direction);
@@ -41,7 +53,8 @@ export function OutgoingRequestHostTable({ runs, pagination, sort, direction, co
         <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">
-                    {count.toLocaleString()} {count === 1 ? 'request' : 'requests'}
+                    {count.toLocaleString()}{' '}
+                    {count === 1 ? 'request' : 'requests'}
                 </span>
             </div>
             <Table
@@ -62,7 +75,7 @@ export function OutgoingRequestHostTable({ runs, pagination, sort, direction, co
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Source
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Method
                         </TableHead>
                         <SortableHead
@@ -121,25 +134,39 @@ export function OutgoingRequestHostTable({ runs, pagination, sort, direction, co
                                             )}
                                         </div>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                     {row.method ? (
-                                        <Badge variant="outline" className="font-mono text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            className="font-mono text-xs"
+                                        >
                                             {row.method}
                                         </Badge>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                     {row.status_code !== null ? (
-                                        <span className={cn('font-mono text-sm font-medium tabular-nums', statusColor(row.status_code))}>
+                                        <span
+                                            className={cn(
+                                                'font-mono text-sm font-medium tabular-nums',
+                                                statusColor(row.status_code),
+                                            )}
+                                        >
                                             {row.status_code}
                                         </span>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 max-w-xs px-4">
@@ -148,7 +175,9 @@ export function OutgoingRequestHostTable({ runs, pagination, sort, direction, co
                                             {row.url}
                                         </span>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-5 text-right whitespace-nowrap tabular-nums">

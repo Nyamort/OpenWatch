@@ -1,6 +1,10 @@
 import { Head, usePage } from '@inertiajs/react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
+import {
+    Timeline,
+    executionsToTimelineSpans,
+    type Execution,
+} from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -64,7 +68,10 @@ export default function JobShow({ analytics }: Props) {
         {
             title: summary.name,
             href: envSlug
-                ? jobsType.url({ environment: envSlug, job: 0 }, { query: { name: summary.name } })
+                ? jobsType.url(
+                      { environment: envSlug, job: 0 },
+                      { query: { name: summary.name } },
+                  )
                 : '#',
         },
         { title: summary.name, href: '#' },
@@ -86,37 +93,75 @@ export default function JobShow({ analytics }: Props) {
                             <InfoRow
                                 label="Status"
                                 value={
-                                    <Badge variant={statusVariant[summary.status] ?? 'secondary'}>
+                                    <Badge
+                                        variant={
+                                            statusVariant[summary.status] ??
+                                            'secondary'
+                                        }
+                                    >
                                         {summary.status}
                                     </Badge>
                                 }
                             />
                             <InfoRow label="Date" value={summary.recorded_at} />
-                            <InfoRow label="Duration" value={formatDuration(summary.duration)} />
-                            <InfoRow label="Connection" value={summary.connection} />
+                            <InfoRow
+                                label="Duration"
+                                value={formatDuration(summary.duration)}
+                            />
+                            <InfoRow
+                                label="Connection"
+                                value={summary.connection}
+                            />
                             <InfoRow label="Queue" value={summary.queue} />
-                            <InfoRow label="Peak Memory" value={formatBytes(summary.peak_memory_usage)} />
+                            <InfoRow
+                                label="Peak Memory"
+                                value={formatBytes(summary.peak_memory_usage)}
+                            />
                             <InfoRow label="Server" value={summary.server} />
                         </Section>
 
                         {summary.user !== null && (
                             <Section title="User">
-                                <InfoRow label="Name" value={summary.user_name} />
-                                <InfoRow label="Email" value={summary.user_email} />
+                                <InfoRow
+                                    label="Name"
+                                    value={summary.user_name}
+                                />
+                                <InfoRow
+                                    label="Email"
+                                    value={summary.user_email}
+                                />
                             </Section>
                         )}
 
                         <Section title="Events">
                             <div className="grid grid-cols-2 gap-x-8">
                                 <div>
-                                    <InfoRow label="Queries" value={summary.queries} />
-                                    <InfoRow label="Cache" value={summary.cache_events} />
-                                    <InfoRow label="Notifications" value={summary.notifications} />
+                                    <InfoRow
+                                        label="Queries"
+                                        value={summary.queries}
+                                    />
+                                    <InfoRow
+                                        label="Cache"
+                                        value={summary.cache_events}
+                                    />
+                                    <InfoRow
+                                        label="Notifications"
+                                        value={summary.notifications}
+                                    />
                                 </div>
                                 <div>
-                                    <InfoRow label="Outgoing Requests" value={summary.outgoing_requests} />
-                                    <InfoRow label="Queued Jobs" value={summary.jobs_queued} />
-                                    <InfoRow label="Exceptions" value={summary.exceptions} />
+                                    <InfoRow
+                                        label="Outgoing Requests"
+                                        value={summary.outgoing_requests}
+                                    />
+                                    <InfoRow
+                                        label="Queued Jobs"
+                                        value={summary.jobs_queued}
+                                    />
+                                    <InfoRow
+                                        label="Exceptions"
+                                        value={summary.exceptions}
+                                    />
                                 </div>
                             </div>
                         </Section>

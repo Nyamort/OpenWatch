@@ -41,7 +41,6 @@ function statusClass(code: number): string {
     return '';
 }
 
-
 export function RouteTable({
     requests,
     pagination,

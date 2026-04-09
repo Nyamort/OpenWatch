@@ -1,5 +1,8 @@
 import { Deferred, Head } from '@inertiajs/react';
-import { ChartsSkeleton, TableWithSearchSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableWithSearchSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { CacheCharts } from './partials/cache-charts';
 import { CacheTable } from './partials/cache-table';

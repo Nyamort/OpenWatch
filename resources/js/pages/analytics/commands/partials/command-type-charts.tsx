@@ -37,10 +37,7 @@ interface CommandTypeChartsProps {
     stats: CommandTypeStats;
 }
 
-export function CommandTypeCharts({
-    graph,
-    stats,
-}: CommandTypeChartsProps) {
+export function CommandTypeCharts({ graph, stats }: CommandTypeChartsProps) {
     const callsStats = (
         <div className="flex gap-4 text-sm">
             {(['successful', 'failed'] as const).map((key) => (

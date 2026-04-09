@@ -1,5 +1,8 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as mailIndex } from '@/routes/analytics/mail';
 import { MailTypeCharts } from './partials/mail-type-charts';
@@ -40,7 +43,7 @@ export default function MailType({
     };
 
     const shortName = mailClass
-        ? mailClass.split('\\').pop() ?? mailClass
+        ? (mailClass.split('\\').pop() ?? mailClass)
         : '…';
 
     const breadcrumbs = [
@@ -59,7 +62,10 @@ export default function MailType({
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <MailTypeCharts graph={graph!} stats={stats!} />
             </Deferred>
-            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['runs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <MailTypeTable
                     runs={runs!}
                     pagination={pagination!}

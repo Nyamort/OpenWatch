@@ -1,11 +1,18 @@
 import { Head, usePage } from '@inertiajs/react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
+import {
+    Timeline,
+    executionsToTimelineSpans,
+    type Execution,
+} from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatBytes, formatDuration } from '@/lib/utils';
-import { index as scheduledTasksIndex, type as scheduledTasksType } from '@/routes/analytics/scheduled-tasks';
+import {
+    index as scheduledTasksIndex,
+    type as scheduledTasksType,
+} from '@/routes/analytics/scheduled-tasks';
 import type { BreadcrumbItem } from '@/types';
 
 interface TaskSummary {
@@ -71,7 +78,9 @@ export default function ScheduledTaskShow({ analytics }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Scheduled Tasks',
-            href: envSlug ? scheduledTasksIndex.url({ environment: envSlug }) : '#',
+            href: envSlug
+                ? scheduledTasksIndex.url({ environment: envSlug })
+                : '#',
         },
         {
             title: summary.name,
@@ -99,27 +108,68 @@ export default function ScheduledTaskShow({ analytics }: Props) {
                     <CardContent className="flex flex-col gap-8 py-6">
                         <Section>
                             <InfoRow label="Date" value={summary.recorded_at} />
-                            <InfoRow label="Status" value={statusBadge(summary.status)} />
-                            <InfoRow label="Duration" value={formatDuration(summary.duration)} />
-                            <InfoRow label="Peak Memory" value={formatBytes(summary.peak_memory_usage)} />
+                            <InfoRow
+                                label="Status"
+                                value={statusBadge(summary.status)}
+                            />
+                            <InfoRow
+                                label="Duration"
+                                value={formatDuration(summary.duration)}
+                            />
+                            <InfoRow
+                                label="Peak Memory"
+                                value={formatBytes(summary.peak_memory_usage)}
+                            />
                             <InfoRow label="Server" value={summary.server} />
-                            <InfoRow label="Without Overlapping" value={boolValue(summary.without_overlapping)} />
-                            <InfoRow label="On One Server" value={boolValue(summary.on_one_server)} />
-                            <InfoRow label="Run in Background" value={boolValue(summary.run_in_background)} />
-                            <InfoRow label="Even in Maintenance Mode" value={boolValue(summary.even_in_maintenance_mode)} />
+                            <InfoRow
+                                label="Without Overlapping"
+                                value={boolValue(summary.without_overlapping)}
+                            />
+                            <InfoRow
+                                label="On One Server"
+                                value={boolValue(summary.on_one_server)}
+                            />
+                            <InfoRow
+                                label="Run in Background"
+                                value={boolValue(summary.run_in_background)}
+                            />
+                            <InfoRow
+                                label="Even in Maintenance Mode"
+                                value={boolValue(
+                                    summary.even_in_maintenance_mode,
+                                )}
+                            />
                         </Section>
 
                         <Section title="Events">
                             <div className="grid grid-cols-2 gap-x-8">
                                 <div>
-                                    <InfoRow label="Queries" value={summary.queries} />
-                                    <InfoRow label="Cache" value={summary.cache_events} />
-                                    <InfoRow label="Notifications" value={summary.notifications} />
+                                    <InfoRow
+                                        label="Queries"
+                                        value={summary.queries}
+                                    />
+                                    <InfoRow
+                                        label="Cache"
+                                        value={summary.cache_events}
+                                    />
+                                    <InfoRow
+                                        label="Notifications"
+                                        value={summary.notifications}
+                                    />
                                 </div>
                                 <div>
-                                    <InfoRow label="Mail" value={summary.mail_count} />
-                                    <InfoRow label="Outgoing Requests" value={summary.outgoing_requests} />
-                                    <InfoRow label="Queued Jobs" value={summary.jobs_queued} />
+                                    <InfoRow
+                                        label="Mail"
+                                        value={summary.mail_count}
+                                    />
+                                    <InfoRow
+                                        label="Outgoing Requests"
+                                        value={summary.outgoing_requests}
+                                    />
+                                    <InfoRow
+                                        label="Queued Jobs"
+                                        value={summary.jobs_queued}
+                                    />
                                 </div>
                             </div>
                         </Section>
@@ -127,7 +177,10 @@ export default function ScheduledTaskShow({ analytics }: Props) {
                 </Card>
 
                 {(summary.duration ?? 0) > 0 && (
-                    <Timeline totalDurationUs={summary.duration!} spans={spans} />
+                    <Timeline
+                        totalDurationUs={summary.duration!}
+                        spans={spans}
+                    />
                 )}
             </div>
         </AppLayout>

@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import type { NotificationRunRow, NotificationTypeSortKey, Pagination, SortDir } from '../types';
+import type {
+    NotificationRunRow,
+    NotificationTypeSortKey,
+    Pagination,
+    SortDir,
+} from '../types';
 
 interface NotificationTypeTableProps {
     runs: NotificationRunRow[];
@@ -21,11 +26,18 @@ interface NotificationTypeTableProps {
     count: number;
 }
 
-export function NotificationTypeTable({ runs, pagination, sort, direction, count }: NotificationTypeTableProps) {
-    const { handlePage, handleSort } = useAnalyticsTable<NotificationTypeSortKey>({
-        search: '',
-        only: ['runs', 'pagination', 'sort', 'direction'],
-    });
+export function NotificationTypeTable({
+    runs,
+    pagination,
+    sort,
+    direction,
+    count,
+}: NotificationTypeTableProps) {
+    const { handlePage, handleSort } =
+        useAnalyticsTable<NotificationTypeSortKey>({
+            search: '',
+            only: ['runs', 'pagination', 'sort', 'direction'],
+        });
 
     const onSort = (col: string) =>
         handleSort(col as NotificationTypeSortKey, sort, direction);
@@ -34,7 +46,8 @@ export function NotificationTypeTable({ runs, pagination, sort, direction, count
         <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">
-                    {count.toLocaleString()} {count === 1 ? 'notification' : 'notifications'}
+                    {count.toLocaleString()}{' '}
+                    {count === 1 ? 'notification' : 'notifications'}
                 </span>
             </div>
             <Table
@@ -55,7 +68,7 @@ export function NotificationTypeTable({ runs, pagination, sort, direction, count
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Source
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Channel
                         </TableHead>
                         <SortableHead
@@ -102,11 +115,16 @@ export function NotificationTypeTable({ runs, pagination, sort, direction, count
                                             )}
                                         </div>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
-                                    <Badge variant="outline" className="font-mono text-xs">
+                                    <Badge
+                                        variant="outline"
+                                        className="font-mono text-xs"
+                                    >
                                         {row.channel}
                                     </Badge>
                                 </TableCell>

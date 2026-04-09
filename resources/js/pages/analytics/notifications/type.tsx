@@ -1,5 +1,8 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as notificationsIndex } from '@/routes/analytics/notifications';
 import { NotificationTypeCharts } from './partials/notification-type-charts';
@@ -40,14 +43,16 @@ export default function NotificationShow({
     };
 
     const shortName = notificationClass
-        ? notificationClass.split('\\').pop() ?? notificationClass
+        ? (notificationClass.split('\\').pop() ?? notificationClass)
         : '…';
 
     const breadcrumbs = [
         {
             title: 'Notifications',
             href: activeEnvironment
-                ? notificationsIndex.url({ environment: activeEnvironment.slug })
+                ? notificationsIndex.url({
+                      environment: activeEnvironment.slug,
+                  })
                 : '#',
         },
         { title: shortName, href: '#' },
@@ -59,7 +64,10 @@ export default function NotificationShow({
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <NotificationTypeCharts graph={graph!} stats={stats!} />
             </Deferred>
-            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['runs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <NotificationTypeTable
                     runs={runs!}
                     pagination={pagination!}

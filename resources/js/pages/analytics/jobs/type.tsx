@@ -1,5 +1,8 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as jobsIndex } from '@/routes/analytics/jobs';
 import { JobTypeCharts } from './partials/job-type-charts';

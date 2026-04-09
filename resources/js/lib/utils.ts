@@ -13,17 +13,18 @@ export function formatBytes(bytes: number | null): string {
     if (bytes === null) return '—';
     if (bytes === 0) return '0 B';
     const units = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const i = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(1024)),
+        units.length - 1,
+    );
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }
 
 export function formatDuration(us: number | null) {
     if (us == null) return `—`;
     if (us < 0)
-        throw new Error(
-            'Negative numbers are unsupported in formatDuration',
-        );
-    if (us === 0 ) return `${us}ms`;
+        throw new Error('Negative numbers are unsupported in formatDuration');
+    if (us === 0) return `${us}ms`;
     if (us < 1e3) return `${us.toFixed(0)}μs`;
     if (us < 1e6) return `${(us / 1e3).toFixed(2)}ms`;
 

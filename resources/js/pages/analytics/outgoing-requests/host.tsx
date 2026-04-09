@@ -1,5 +1,8 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as outgoingRequestsIndex } from '@/routes/analytics/outgoing-requests';
 import { OutgoingRequestHostCharts } from './partials/outgoing-request-host-charts';
@@ -43,7 +46,9 @@ export default function OutgoingRequestHost({
         {
             title: 'Outgoing Requests',
             href: activeEnvironment
-                ? outgoingRequestsIndex.url({ environment: activeEnvironment.slug })
+                ? outgoingRequestsIndex.url({
+                      environment: activeEnvironment.slug,
+                  })
                 : '#',
         },
         { title: host || '…', href: '#' },
@@ -55,7 +60,10 @@ export default function OutgoingRequestHost({
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
                 <OutgoingRequestHostCharts graph={graph!} stats={stats!} />
             </Deferred>
-            <Deferred data={['runs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['runs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <OutgoingRequestHostTable
                     runs={runs!}
                     pagination={pagination!}

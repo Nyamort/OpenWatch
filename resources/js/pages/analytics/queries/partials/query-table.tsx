@@ -55,7 +55,6 @@ function QueryCell({ query }: { query: string }) {
         if (closeTimer.current) clearTimeout(closeTimer.current);
     }
 
-
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -110,10 +109,9 @@ export function QueryTable({
     search,
 }: QueryTableProps) {
     const { props } = usePage();
-    const { activeEnvironment } =
-        props as unknown as {
-            activeEnvironment: { slug: string };
-        };
+    const { activeEnvironment } = props as unknown as {
+        activeEnvironment: { slug: string };
+    };
 
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<QuerySortKey>({

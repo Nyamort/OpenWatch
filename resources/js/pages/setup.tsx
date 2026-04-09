@@ -89,7 +89,9 @@ export default function Setup() {
                                 placeholder="Repeat your password"
                                 tabIndex={4}
                             />
-                            <InputError message={errors.password_confirmation} />
+                            <InputError
+                                message={errors.password_confirmation}
+                            />
                         </div>
 
                         <Button

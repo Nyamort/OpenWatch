@@ -35,7 +35,13 @@ interface QueryRunTableProps {
     count: number;
 }
 
-export function QueryRunTable({ runs, pagination, sort, direction, count }: QueryRunTableProps) {
+export function QueryRunTable({
+    runs,
+    pagination,
+    sort,
+    direction,
+    count,
+}: QueryRunTableProps) {
     const { handlePage, handleSort } = useAnalyticsTable<QueryRunSortKey>({
         search: '',
         only: ['runs', 'pagination', 'sort', 'direction'],
@@ -72,7 +78,7 @@ export function QueryRunTable({ runs, pagination, sort, direction, count }: Quer
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Location
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Connection
                         </TableHead>
                         <SortableHead
@@ -119,7 +125,9 @@ export function QueryRunTable({ runs, pagination, sort, direction, count }: Quer
                                             )}
                                         </div>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 px-4">
@@ -133,11 +141,16 @@ export function QueryRunTable({ runs, pagination, sort, direction, count }: Quer
                                             )}
                                         </span>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
-                                    <Badge variant="outline" className="font-mono text-xs">
+                                    <Badge
+                                        variant="outline"
+                                        className="font-mono text-xs"
+                                    >
                                         {row.connection}
                                     </Badge>
                                 </TableCell>

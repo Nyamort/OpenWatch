@@ -38,10 +38,9 @@ export function NotificationTable({
     search,
 }: NotificationTableProps) {
     const { props } = usePage();
-    const { activeEnvironment } =
-        props as unknown as {
-            activeEnvironment: { slug: string };
-        };
+    const { activeEnvironment } = props as unknown as {
+        activeEnvironment: { slug: string };
+    };
 
     const analyticsHref = useAnalyticsHref();
 

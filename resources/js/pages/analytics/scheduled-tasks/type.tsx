@@ -1,5 +1,8 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { ChartsSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import {
+    ChartsSkeleton,
+    TableSkeleton,
+} from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as scheduledTasksIndex } from '@/routes/analytics/scheduled-tasks';
 import { ScheduledTaskTypeCharts } from './partials/scheduled-task-type-charts';
@@ -46,7 +49,9 @@ export default function ScheduledTaskType({
             title: 'Scheduled Tasks',
             href:
                 activeOrganization && activeProject && activeEnvironment
-                    ? scheduledTasksIndex.url({ environment: activeEnvironment.slug })
+                    ? scheduledTasksIndex.url({
+                          environment: activeEnvironment.slug,
+                      })
                     : '#',
         },
         { title: name || 'Unknown Task', href: '#' },

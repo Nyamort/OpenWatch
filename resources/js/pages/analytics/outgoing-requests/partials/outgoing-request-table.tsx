@@ -37,10 +37,9 @@ export function OutgoingRequestTable({
     search,
 }: OutgoingRequestTableProps) {
     const { props } = usePage();
-    const { activeEnvironment } =
-        props as unknown as {
-            activeEnvironment: { slug: string };
-        };
+    const { activeEnvironment } = props as unknown as {
+        activeEnvironment: { slug: string };
+    };
 
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<OutgoingRequestSortKey>({

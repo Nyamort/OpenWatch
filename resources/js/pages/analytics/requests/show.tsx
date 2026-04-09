@@ -2,13 +2,24 @@ import { Head, usePage } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
+import {
+    Timeline,
+    executionsToTimelineSpans,
+    type Execution,
+} from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import AppLayout from '@/layouts/app-layout';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
-import { index as requestsIndex, route as requestsRoute } from '@/routes/analytics/requests';
+import {
+    index as requestsIndex,
+    route as requestsRoute,
+} from '@/routes/analytics/requests';
 import type { BreadcrumbItem } from '@/types';
 
 interface RequestSummary {
@@ -49,7 +60,8 @@ interface Props {
 }
 
 function StatusCodeBadge({ code }: { code: number }) {
-    const variant = code < 400 ? 'success' : code < 500 ? 'warning' : 'destructive';
+    const variant =
+        code < 400 ? 'success' : code < 500 ? 'warning' : 'destructive';
 
     return <Badge variant={variant}>{code}</Badge>;
 }
@@ -65,16 +77,23 @@ function HeadersCard({ headers }: { headers: string }) {
         }
     })();
 
-    const entries = parsed ? Object.entries(parsed).sort(([a], [b]) => a.localeCompare(b)) : [];
+    const entries = parsed
+        ? Object.entries(parsed).sort(([a], [b]) => a.localeCompare(b))
+        : [];
 
     return (
         <Collapsible open={open} onOpenChange={setOpen}>
             <Card className="gap-0 bg-surface py-0">
                 <CollapsibleTrigger asChild>
                     <CardHeader className="flex cursor-pointer flex-row items-center justify-between border-b py-4 select-none data-[state=closed]:border-b-0">
-                        <span className="text-base font-semibold text-foreground">Headers</span>
+                        <span className="text-base font-semibold text-foreground">
+                            Headers
+                        </span>
                         <ChevronDownIcon
-                            className={cn('size-4 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
+                            className={cn(
+                                'size-4 text-muted-foreground transition-transform duration-200',
+                                open && 'rotate-180',
+                            )}
                         />
                     </CardHeader>
                 </CollapsibleTrigger>
@@ -82,7 +101,11 @@ function HeadersCard({ headers }: { headers: string }) {
                     <CardContent className="py-4">
                         <div className="flex flex-col gap-1">
                             {entries.map(([name, values]) => (
-                                <InfoRow key={name} label={name} value={values.join(', ')} />
+                                <InfoRow
+                                    key={name}
+                                    label={name}
+                                    value={values.join(', ')}
+                                />
                             ))}
                         </div>
                     </CardContent>
@@ -144,13 +167,20 @@ export default function RequestShow({ analytics }: Props) {
                             <InfoRow label="Date" value={summary.recorded_at} />
                             <InfoRow
                                 label="Status Code"
-                                value={<StatusCodeBadge code={summary.status_code} />}
+                                value={
+                                    <StatusCodeBadge
+                                        code={summary.status_code}
+                                    />
+                                }
                             />
                         </Section>
 
                         {/* Performance */}
                         <Section>
-                            <InfoRow label="Server" value={summary.server || '—'} />
+                            <InfoRow
+                                label="Server"
+                                value={summary.server || '—'}
+                            />
                             <InfoRow
                                 label="Duration"
                                 value={formatDuration(summary.duration)}
@@ -174,8 +204,14 @@ export default function RequestShow({ analytics }: Props) {
                             <InfoRow label="IP Address" value={summary.ip} />
                             {summary.user !== null && (
                                 <>
-                                    <InfoRow label="Name" value={summary.user_name} />
-                                    <InfoRow label="Email" value={summary.user_email} />
+                                    <InfoRow
+                                        label="Name"
+                                        value={summary.user_name}
+                                    />
+                                    <InfoRow
+                                        label="Email"
+                                        value={summary.user_email}
+                                    />
                                 </>
                             )}
                         </Section>
@@ -184,9 +220,18 @@ export default function RequestShow({ analytics }: Props) {
                         <Section title="Events">
                             <div className="grid grid-cols-2 gap-x-8">
                                 <div>
-                                    <InfoRow label="Queries" value={summary.queries} />
-                                    <InfoRow label="Mail" value={summary.mail_count} />
-                                    <InfoRow label="Cache" value={summary.cache_events} />
+                                    <InfoRow
+                                        label="Queries"
+                                        value={summary.queries}
+                                    />
+                                    <InfoRow
+                                        label="Mail"
+                                        value={summary.mail_count}
+                                    />
+                                    <InfoRow
+                                        label="Cache"
+                                        value={summary.cache_events}
+                                    />
                                 </div>
                                 <div>
                                     <InfoRow

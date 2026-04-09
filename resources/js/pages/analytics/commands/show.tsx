@@ -1,11 +1,18 @@
 import { Head, usePage } from '@inertiajs/react';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
-import { Timeline, executionsToTimelineSpans, type Execution } from '@/components/analytics/timeline';
+import {
+    Timeline,
+    executionsToTimelineSpans,
+    type Execution,
+} from '@/components/analytics/timeline';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatBytes, formatDuration } from '@/lib/utils';
-import { index as commandsIndex, type as commandsType } from '@/routes/analytics/commands';
+import {
+    index as commandsIndex,
+    type as commandsType,
+} from '@/routes/analytics/commands';
 import type { BreadcrumbItem } from '@/types';
 
 interface CommandSummary {
@@ -62,9 +69,7 @@ export default function CommandShow({ analytics }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Commands',
-            href: envSlug
-                ? commandsIndex.url({ environment: envSlug })
-                : '#',
+            href: envSlug ? commandsIndex.url({ environment: envSlug }) : '#',
         },
         {
             title: summary.name,
@@ -91,24 +96,51 @@ export default function CommandShow({ analytics }: Props) {
 
                     <CardContent className="flex flex-col gap-8 py-6">
                         <Section>
-                            <InfoRow label="Exit Code" value={exitCodeBadge(summary.exit_code)} />
+                            <InfoRow
+                                label="Exit Code"
+                                value={exitCodeBadge(summary.exit_code)}
+                            />
                             <InfoRow label="Date" value={summary.recorded_at} />
-                            <InfoRow label="Duration" value={formatDuration(summary.duration)} />
-                            <InfoRow label="Peak Memory" value={formatBytes(summary.peak_memory_usage)} />
+                            <InfoRow
+                                label="Duration"
+                                value={formatDuration(summary.duration)}
+                            />
+                            <InfoRow
+                                label="Peak Memory"
+                                value={formatBytes(summary.peak_memory_usage)}
+                            />
                             <InfoRow label="Server" value={summary.server} />
                         </Section>
 
                         <Section title="Events">
                             <div className="grid grid-cols-2 gap-x-8">
                                 <div>
-                                    <InfoRow label="Queries" value={summary.queries} />
-                                    <InfoRow label="Cache" value={summary.cache_events} />
-                                    <InfoRow label="Notifications" value={summary.notifications} />
+                                    <InfoRow
+                                        label="Queries"
+                                        value={summary.queries}
+                                    />
+                                    <InfoRow
+                                        label="Cache"
+                                        value={summary.cache_events}
+                                    />
+                                    <InfoRow
+                                        label="Notifications"
+                                        value={summary.notifications}
+                                    />
                                 </div>
                                 <div>
-                                    <InfoRow label="Mail" value={summary.mail_count} />
-                                    <InfoRow label="Outgoing Requests" value={summary.outgoing_requests} />
-                                    <InfoRow label="Queued Jobs" value={summary.jobs_queued} />
+                                    <InfoRow
+                                        label="Mail"
+                                        value={summary.mail_count}
+                                    />
+                                    <InfoRow
+                                        label="Outgoing Requests"
+                                        value={summary.outgoing_requests}
+                                    />
+                                    <InfoRow
+                                        label="Queued Jobs"
+                                        value={summary.jobs_queued}
+                                    />
                                 </div>
                             </div>
                         </Section>

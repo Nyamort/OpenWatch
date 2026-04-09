@@ -13,10 +13,7 @@ interface Props {
     members: Member[];
 }
 
-export default function CreateAlertRule({
-    environment,
-    members,
-}: Props) {
+export default function CreateAlertRule({ environment, members }: Props) {
     const baseUrl = store.url(environment);
     const { data, setData, post, errors } = useForm({
         name: '',

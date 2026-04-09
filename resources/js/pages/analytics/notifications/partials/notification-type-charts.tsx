@@ -11,7 +11,10 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from '@/components/ui/chart';
-import type { NotificationTypeGraphBucket, NotificationTypeStats } from '../types';
+import type {
+    NotificationTypeGraphBucket,
+    NotificationTypeStats,
+} from '../types';
 
 const notificationsChartConfig = {
     count: { label: 'Notifications', color: 'oklch(0.50 0 0)' },
@@ -22,14 +25,20 @@ interface NotificationTypeChartsProps {
     stats: NotificationTypeStats;
 }
 
-export function NotificationTypeCharts({ graph, stats }: NotificationTypeChartsProps) {
+export function NotificationTypeCharts({
+    graph,
+    stats,
+}: NotificationTypeChartsProps) {
     const notificationsStats = (
         <div className="flex gap-4 text-sm">
             <div className="flex flex-col items-end gap-0.5">
                 <span className="flex items-center gap-1 text-muted-foreground">
                     <span
                         className="inline-block h-3 w-1 rounded-sm"
-                        style={{ backgroundColor: notificationsChartConfig.count.color }}
+                        style={{
+                            backgroundColor:
+                                notificationsChartConfig.count.color,
+                        }}
                     />
                     Notifications
                 </span>
@@ -72,15 +81,23 @@ export function NotificationTypeCharts({ graph, stats }: NotificationTypeChartsP
                                     label={label}
                                     rows={[
                                         {
-                                            color: notificationsChartConfig.count.color,
+                                            color: notificationsChartConfig
+                                                .count.color,
                                             label: 'Notifications',
-                                            value: payload?.find((p) => p.dataKey === 'count')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'count',
+                                                )?.value ?? 0,
                                         },
                                     ]}
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Bar
                             dataKey="count"
                             fill={notificationsChartConfig.count.color}

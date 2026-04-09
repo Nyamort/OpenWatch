@@ -76,70 +76,90 @@ export function AppSidebar() {
                           {
                               title: 'Requests',
                               href: analyticsHref(
-                                  requestsIndex.url({ environment: activeEnvironment!.slug }),
+                                  requestsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Globe,
                           },
                           {
                               title: 'Jobs',
                               href: analyticsHref(
-                                  jobsIndex.url({ environment: activeEnvironment!.slug }),
+                                  jobsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: BriefcaseBusiness,
                           },
                           {
                               title: 'Commands',
                               href: analyticsHref(
-                                  commandsIndex.url({ environment: activeEnvironment!.slug }),
+                                  commandsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Terminal,
                           },
                           {
                               title: 'Scheduled Tasks',
                               href: analyticsHref(
-                                  scheduledTasksIndex.url({ environment: activeEnvironment!.slug }),
+                                  scheduledTasksIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: CalendarClock,
                           },
                           {
                               title: 'Exceptions',
                               href: analyticsHref(
-                                  exceptionsIndex.url({ environment: activeEnvironment!.slug }),
+                                  exceptionsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: AlertCircle,
                           },
                           {
                               title: 'Queries',
                               href: analyticsHref(
-                                  queriesIndex.url({ environment: activeEnvironment!.slug }),
+                                  queriesIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Database,
                           },
                           {
                               title: 'Notifications',
                               href: analyticsHref(
-                                  notificationsIndex.url({ environment: activeEnvironment!.slug }),
+                                  notificationsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Bell,
                           },
                           {
                               title: 'Mails',
                               href: analyticsHref(
-                                  mailIndex.url({ environment: activeEnvironment!.slug }),
+                                  mailIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Mail,
                           },
                           {
                               title: 'Cache',
                               href: analyticsHref(
-                                  cacheEventsIndex.url({ environment: activeEnvironment!.slug }),
+                                  cacheEventsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: HardDrive,
                           },
                           {
                               title: 'Outgoing Requests',
                               href: analyticsHref(
-                                  outgoingRequestsIndex.url({ environment: activeEnvironment!.slug }),
+                                  outgoingRequestsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: ArrowUpRight,
                           },
@@ -151,14 +171,18 @@ export function AppSidebar() {
                           {
                               title: 'Users',
                               href: analyticsHref(
-                                  usersIndex.url({ environment: activeEnvironment!.slug }),
+                                  usersIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: Users,
                           },
                           {
                               title: 'Logs',
                               href: analyticsHref(
-                                  logsIndex.url({ environment: activeEnvironment!.slug }),
+                                  logsIndex.url({
+                                      environment: activeEnvironment!.slug,
+                                  }),
                               ),
                               icon: ScrollText,
                           },

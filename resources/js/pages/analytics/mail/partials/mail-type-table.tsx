@@ -19,7 +19,12 @@ import {
 } from '@/components/ui/table';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { formatDuration } from '@/lib/utils';
-import type { MailRunRow, MailTypeSortKey, Pagination, SortDir } from '../types';
+import type {
+    MailRunRow,
+    MailTypeSortKey,
+    Pagination,
+    SortDir,
+} from '../types';
 
 interface RecipientsProps {
     to: number;
@@ -75,7 +80,13 @@ interface MailTypeTableProps {
     count: number;
 }
 
-export function MailTypeTable({ runs, pagination, sort, direction, count }: MailTypeTableProps) {
+export function MailTypeTable({
+    runs,
+    pagination,
+    sort,
+    direction,
+    count,
+}: MailTypeTableProps) {
     const { handlePage, handleSort } = useAnalyticsTable<MailTypeSortKey>({
         search: '',
         only: ['runs', 'pagination', 'sort', 'direction'],
@@ -109,13 +120,13 @@ export function MailTypeTable({ runs, pagination, sort, direction, count }: Mail
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Source
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Mailer
                         </TableHead>
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Subject
                         </TableHead>
-                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                        <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             Recipients
                         </TableHead>
                         <SortableHead
@@ -162,11 +173,16 @@ export function MailTypeTable({ runs, pagination, sort, direction, count }: Mail
                                             )}
                                         </div>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">
-                                    <Badge variant="outline" className="font-mono text-xs">
+                                    <Badge
+                                        variant="outline"
+                                        className="font-mono text-xs"
+                                    >
                                         {row.mailer}
                                     </Badge>
                                 </TableCell>
@@ -176,7 +192,9 @@ export function MailTypeTable({ runs, pagination, sort, direction, count }: Mail
                                             {row.subject}
                                         </span>
                                     ) : (
-                                        <span className="text-muted-foreground">—</span>
+                                        <span className="text-muted-foreground">
+                                            —
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell className="h-11 w-px px-4 whitespace-nowrap">

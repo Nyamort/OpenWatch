@@ -16,7 +16,10 @@ export default function LogsIndex({ logs, pagination, period, search }: Props) {
     return (
         <AnalyticsLayout period={period}>
             <Head />
-            <Deferred data={['logs', 'pagination']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['logs', 'pagination']}
+                fallback={<TableSkeleton />}
+            >
                 <LogTable
                     logs={logs!}
                     pagination={pagination!}

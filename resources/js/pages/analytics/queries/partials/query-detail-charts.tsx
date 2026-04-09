@@ -46,7 +46,9 @@ export function QueryDetailCharts({ graph, stats }: QueryDetailChartsProps) {
                 <span className="flex items-center gap-1 text-muted-foreground">
                     <span
                         className="inline-block h-3 w-1 rounded-sm"
-                        style={{ backgroundColor: callsChartConfig.calls.color }}
+                        style={{
+                            backgroundColor: callsChartConfig.calls.color,
+                        }}
                     />
                     Calls
                 </span>
@@ -91,13 +93,20 @@ export function QueryDetailCharts({ graph, stats }: QueryDetailChartsProps) {
                                         {
                                             color: callsChartConfig.calls.color,
                                             label: 'Calls',
-                                            value: payload?.find((p) => p.dataKey === 'calls')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'calls',
+                                                )?.value ?? 0,
                                         },
                                     ]}
                                 />
                             )}
                         />
-                        <ChartLegend verticalAlign="top" content={legendContent} />
+                        <ChartLegend
+                            verticalAlign="top"
+                            content={legendContent}
+                        />
                         <Bar
                             dataKey="calls"
                             fill={callsChartConfig.calls.color}

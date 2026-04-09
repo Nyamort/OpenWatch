@@ -42,7 +42,13 @@ export function useTimelineZoom(): UseTimelineZoomReturn {
         const onMouseMove = (e: MouseEvent) => {
             if (!dragRef.current) return;
             const delta = e.clientX - dragRef.current.startX;
-            const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, dragRef.current.startZoom * (1 + delta / 200)));
+            const newZoom = Math.min(
+                MAX_ZOOM,
+                Math.max(
+                    MIN_ZOOM,
+                    dragRef.current.startZoom * (1 + delta / 200),
+                ),
+            );
             if (newZoom === zoomRef.current) return;
 
             const ratio = newZoom / zoomRef.current;

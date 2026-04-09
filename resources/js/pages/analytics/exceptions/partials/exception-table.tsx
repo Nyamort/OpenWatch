@@ -38,10 +38,9 @@ export function ExceptionTable({
     search,
 }: ExceptionTableProps) {
     const { props } = usePage();
-    const { activeEnvironment } =
-        props as unknown as {
-            activeEnvironment: { slug: string };
-        };
+    const { activeEnvironment } = props as unknown as {
+        activeEnvironment: { slug: string };
+    };
 
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<ExceptionSortKey>({
@@ -144,10 +143,16 @@ export function ExceptionTable({
                                 <TableCell className="overflow-hidden px-4 py-2">
                                     <div className="flex min-w-0 items-start gap-2">
                                         <Badge
-                                            variant={row.handled ? 'secondary' : 'destructive'}
+                                            variant={
+                                                row.handled
+                                                    ? 'secondary'
+                                                    : 'destructive'
+                                            }
                                             className="mt-0.5 shrink-0"
                                         >
-                                            {row.handled ? 'Handled' : 'Unhandled'}
+                                            {row.handled
+                                                ? 'Handled'
+                                                : 'Unhandled'}
                                         </Badge>
                                         <div className="flex min-w-0 flex-col">
                                             <span className="truncate font-mono text-sm">

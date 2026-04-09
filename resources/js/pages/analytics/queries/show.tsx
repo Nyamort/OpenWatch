@@ -53,7 +53,16 @@ function SqlBlock({ sql }: { sql: string }) {
     );
 }
 
-export default function QueryShow({ graph, stats, runs, pagination, sql_normalized, period, sort, direction }: Props) {
+export default function QueryShow({
+    graph,
+    stats,
+    runs,
+    pagination,
+    sql_normalized,
+    period,
+    sort,
+    direction,
+}: Props) {
     const { props } = usePage();
     const { activeEnvironment } = props as {
         activeEnvironment?: { slug: string } | null;
@@ -67,7 +76,10 @@ export default function QueryShow({ graph, stats, runs, pagination, sql_normaliz
                 : '#',
         },
         {
-            title: sql_normalized ? sql_normalized.slice(0, 20).trimEnd() + (sql_normalized.length > 20 ? '…' : '') : '…',
+            title: sql_normalized
+                ? sql_normalized.slice(0, 20).trimEnd() +
+                  (sql_normalized.length > 20 ? '…' : '')
+                : '…',
             href: '#',
         },
     ];
@@ -79,7 +91,10 @@ export default function QueryShow({ graph, stats, runs, pagination, sql_normaliz
                 <QueryDetailCharts graph={graph!} stats={stats!} />
             </Deferred>
 
-            <Deferred data={['stats', 'runs', 'pagination']} fallback={<CardSkeleton />}>
+            <Deferred
+                data={['stats', 'runs', 'pagination']}
+                fallback={<CardSkeleton />}
+            >
                 <Card className="gap-0 bg-surface py-0">
                     <CardHeader className="border-b py-4">
                         <span className="text-sm font-medium">Query</span>

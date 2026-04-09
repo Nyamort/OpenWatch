@@ -84,19 +84,36 @@ export function OutgoingRequestHostCharts({
                                     label={label}
                                     rows={[
                                         {
-                                            color: requestsChartConfig.success.color,
+                                            color: requestsChartConfig.success
+                                                .color,
                                             label: '1/2/3xx',
-                                            value: payload?.find((p) => p.dataKey === 'success')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey === 'success',
+                                                )?.value ?? 0,
                                         },
                                         {
-                                            color: requestsChartConfig.count_4xx.color,
+                                            color: requestsChartConfig.count_4xx
+                                                .color,
                                             label: '4xx',
-                                            value: payload?.find((p) => p.dataKey === 'count_4xx')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey ===
+                                                        'count_4xx',
+                                                )?.value ?? 0,
                                         },
                                         {
-                                            color: requestsChartConfig.count_5xx.color,
+                                            color: requestsChartConfig.count_5xx
+                                                .color,
                                             label: '5xx',
-                                            value: payload?.find((p) => p.dataKey === 'count_5xx')?.value ?? 0,
+                                            value:
+                                                payload?.find(
+                                                    (p) =>
+                                                        p.dataKey ===
+                                                        'count_5xx',
+                                                )?.value ?? 0,
                                         },
                                     ]}
                                 />

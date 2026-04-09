@@ -28,7 +28,8 @@ const LEVEL_COLORS: Record<string, string> = {
     alert: 'border-red-500/50 bg-red-500/10 text-red-600 dark:text-red-400',
     critical: 'border-red-400/50 bg-red-400/10 text-red-500 dark:text-red-400',
     error: 'border-red-400/40 bg-red-400/8 text-red-500 dark:text-red-400',
-    warning: 'border-orange-400/50 bg-orange-400/10 text-orange-600 dark:text-orange-400',
+    warning:
+        'border-orange-400/50 bg-orange-400/10 text-orange-600 dark:text-orange-400',
     notice: 'border-blue-400/50 bg-blue-400/10 text-blue-600 dark:text-blue-400',
     info: 'border-emerald-400/50 bg-emerald-400/10 text-emerald-600 dark:text-emerald-500',
     debug: 'border-border bg-muted/50 text-muted-foreground',
@@ -74,13 +75,13 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                 >
                     <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                         <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
-                            <TableHead className="h-11 w-px px-5 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                            <TableHead className="h-11 w-px px-5 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                                 Date
                             </TableHead>
                             <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                 Source
                             </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase whitespace-nowrap">
+                            <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                                 Level
                             </TableHead>
                             <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -121,13 +122,18 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                                                 )}
                                             </div>
                                         ) : (
-                                            <span className="text-muted-foreground">—</span>
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4 whitespace-nowrap">
                                         <Badge
                                             variant="outline"
-                                            className={cn('font-mono text-xs capitalize', LEVEL_COLORS[row.level])}
+                                            className={cn(
+                                                'font-mono text-xs capitalize',
+                                                LEVEL_COLORS[row.level],
+                                            )}
                                         >
                                             {row.level}
                                         </Badge>
@@ -145,19 +151,28 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                 <TablePagination pagination={pagination} onPage={handlePage} />
             </div>
 
-            <Sheet open={selected !== null} onOpenChange={(open) => !open && setSelected(null)}>
-                <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
+            <Sheet
+                open={selected !== null}
+                onOpenChange={(open) => !open && setSelected(null)}
+            >
+                <SheetContent
+                    side="right"
+                    className="w-full overflow-y-auto sm:max-w-lg"
+                >
                     {selected && (
                         <>
                             <SheetHeader className="gap-2">
                                 <div className="flex items-center gap-2 pr-6">
                                     <Badge
                                         variant="outline"
-                                        className={cn('shrink-0 font-mono text-xs capitalize', LEVEL_COLORS[selected.level])}
+                                        className={cn(
+                                            'shrink-0 font-mono text-xs capitalize',
+                                            LEVEL_COLORS[selected.level],
+                                        )}
                                     >
                                         {selected.level}
                                     </Badge>
-                                    <SheetTitle className="text-sm font-medium leading-snug">
+                                    <SheetTitle className="text-sm leading-snug font-medium">
                                         {selected.message}
                                     </SheetTitle>
                                 </div>
@@ -165,25 +180,35 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                             <div className="flex flex-col gap-3 px-4 pb-4">
                                 <Card className="gap-0 bg-surface py-0">
                                     <CardHeader className="border-b py-4">
-                                        <span className="text-sm font-semibold">Source</span>
+                                        <span className="text-sm font-semibold">
+                                            Source
+                                        </span>
                                     </CardHeader>
                                     <CardContent className="py-4">
-                                        <span className="break-all font-mono text-sm text-muted-foreground">
-                                            {selected.source_preview ?? selected.source ?? '—'}
+                                        <span className="font-mono text-sm break-all text-muted-foreground">
+                                            {selected.source_preview ??
+                                                selected.source ??
+                                                '—'}
                                         </span>
                                     </CardContent>
                                 </Card>
                                 <Card className="gap-0 bg-surface py-0">
                                     <CardHeader className="border-b py-4">
-                                        <span className="text-sm font-semibold">Log Context</span>
+                                        <span className="text-sm font-semibold">
+                                            Log Context
+                                        </span>
                                     </CardHeader>
                                     <CardContent className="py-4">
                                         {selected.context ? (
                                             <JsonSyntaxHighlighter className="overflow-x-auto rounded-md bg-muted p-3">
-                                                {formatContext(selected.context)}
+                                                {formatContext(
+                                                    selected.context,
+                                                )}
                                             </JsonSyntaxHighlighter>
                                         ) : (
-                                            <span className="text-sm text-muted-foreground">—</span>
+                                            <span className="text-sm text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </CardContent>
                                 </Card>
