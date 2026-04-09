@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('alert_rules', function (Blueprint $table) {
@@ -22,15 +19,13 @@ return new class extends Migration
             $table->decimal('threshold', 10, 2);
             $table->unsignedSmallInteger('window_minutes');
             $table->boolean('enabled')->default(true);
+            $table->boolean('create_issue_on_trigger')->default(false);
             $table->timestamps();
 
             $table->index(['organization_id', 'project_id', 'environment_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('alert_rules');

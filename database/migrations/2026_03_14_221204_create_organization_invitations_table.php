@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('organization_invitations', function (Blueprint $table) {
@@ -18,6 +15,7 @@ return new class extends Migration
             $table->foreignId('invited_by_user_id')->constrained('users')->restrictOnDelete();
             $table->foreignId('accepted_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('email');
+            $table->string('name')->nullable();
             $table->string('token_hash', 64)->unique();
             $table->timestamp('expires_at');
             $table->timestamp('accepted_at')->nullable();
@@ -27,9 +25,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('organization_invitations');
