@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowUpRight,
+    Bug,
     Bell,
     BriefcaseBusiness,
     CalendarClock,
@@ -39,6 +40,7 @@ import { index as queriesIndex } from '@/routes/analytics/queries';
 import { index as requestsIndex } from '@/routes/analytics/requests';
 import { index as scheduledTasksIndex } from '@/routes/analytics/scheduled-tasks';
 import { index as usersIndex } from '@/routes/analytics/users';
+import { index as issuesIndex } from '@/routes/issues';
 import type { NavItem } from '@/types/navigation';
 
 export function AppSidebar() {
@@ -66,6 +68,15 @@ export function AppSidebar() {
                     href: dashboard(),
                     icon: LayoutGrid,
                 },
+                ...(hasContext
+                    ? [
+                          {
+                              title: 'Issues',
+                              href: issuesIndex.url(activeEnvironment!.slug),
+                              icon: Bug,
+                          },
+                      ]
+                    : []),
             ],
         },
         ...(hasContext
