@@ -40,6 +40,8 @@ class IssueController extends Controller
             'issues' => $data['issues'],
             'pagination' => $data['pagination'],
             'filters' => $data['filters'],
+            'sort' => $data['filters']['sort'],
+            'direction' => $data['filters']['direction'],
         ]);
     }
 

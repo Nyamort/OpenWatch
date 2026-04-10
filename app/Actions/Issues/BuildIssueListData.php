@@ -23,6 +23,7 @@ class BuildIssueListData
         $search = $request->input('search');
         $priority = $request->input('priority');
         $sort = $request->input('sort', 'last_seen_at');
+        $direction = $request->input('direction', 'desc');
 
         $query = Issue::query()
             ->where('organization_id', $organization->id)
@@ -50,12 +51,14 @@ class BuildIssueListData
             $query->where('priority', $priority);
         }
 
-        $allowedSorts = ['last_seen_at', 'occurrence_count', 'first_seen_at'];
+        $allowedSorts = ['id', 'last_seen_at', 'occurrence_count', 'first_seen_at'];
         if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'last_seen_at';
         }
 
-        $query->orderBy($sort, 'desc');
+        $direction = in_array($direction, ['asc', 'desc'], true) ? $direction : 'desc';
+
+        $query->orderBy($sort, $direction);
 
         $paginator = $query->paginate(25);
 
@@ -66,6 +69,7 @@ class BuildIssueListData
             'search' => $search,
             'priority' => $priority,
             'sort' => $sort,
+            'direction' => $direction,
         ];
 
         return [

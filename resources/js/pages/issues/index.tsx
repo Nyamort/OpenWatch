@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ArrowUpRight, Bug } from 'lucide-react';
+import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -10,9 +11,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import AppLayout from '@/layouts/app-layout';
-import { index, show } from '@/routes/issues';
+import { show } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
+
+type IssueSortKey = 'id' | 'last_seen_at' | 'occurrence_count' | 'first_seen_at';
+type SortDir = 'asc' | 'desc';
 
 interface Issue {
     id: number;
@@ -36,6 +41,8 @@ interface Pagination {
 interface Props {
     issues: Issue[];
     pagination: Pagination;
+    sort: IssueSortKey;
+    direction: SortDir;
 }
 
 const priorityVariantMap: Record<
@@ -50,11 +57,24 @@ const priorityVariantMap: Record<
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Issues', href: '#' }];
 
-export default function IssuesIndex({ issues, pagination }: Props) {
+export default function IssuesIndex({
+    issues,
+    pagination,
+    sort,
+    direction,
+}: Props) {
     const { props } = usePage();
     const { activeEnvironment } = props as unknown as {
         activeEnvironment: { slug: string };
     };
+
+    const { handleSort } = useAnalyticsTable<IssueSortKey>({
+        search: '',
+        only: ['issues', 'pagination', 'sort', 'direction'],
+    });
+
+    const onSort = (col: string) =>
+        handleSort(col as IssueSortKey, sort, direction);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -74,28 +94,53 @@ export default function IssuesIndex({ issues, pagination }: Props) {
                 >
                     <TableHeader className="sticky top-16 z-10 backdrop-blur-sm [&_tr]:border-0">
                         <TableRow className="border-0 shadow-sm shadow-black/4 hover:bg-transparent [&_th]:border-y [&_th]:border-border [&_th]:bg-muted/50 [&_th:first-child]:rounded-l-lg [&_th:first-child]:border-l [&_th:last-child]:rounded-r-lg [&_th:last-child]:border-r">
-                            <TableHead className="h-11 w-px pl-5 text-xs font-medium whitespace-nowrap">
+                            <SortableHead
+                                column="id"
+                                sort={sort}
+                                direction={direction}
+                                onSort={onSort}
+                                className="h-11 w-px pl-5 text-xs font-medium whitespace-nowrap"
+                            >
                                 ID
-                            </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap">
+                            </SortableHead>
+                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
                                 Priority
                             </TableHead>
-                            <TableHead className="h-11 px-4 text-xs font-medium">
+                            <TableHead className="h-11 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 Issue
                             </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap">
+                            <SortableHead
+                                column="occurrence_count"
+                                sort={sort}
+                                direction={direction}
+                                onSort={onSort}
+                                align="right"
+                                className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap"
+                            >
                                 Count
-                            </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap">
+                            </SortableHead>
+                            <TableHead className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
                                 Users
                             </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap">
+                            <SortableHead
+                                column="first_seen_at"
+                                sort={sort}
+                                direction={direction}
+                                onSort={onSort}
+                                className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap"
+                            >
                                 First Seen
-                            </TableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap">
+                            </SortableHead>
+                            <SortableHead
+                                column="last_seen_at"
+                                sort={sort}
+                                direction={direction}
+                                onSort={onSort}
+                                className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap"
+                            >
                                 Last Seen
-                            </TableHead>
-                            <TableHead className="h-11 w-px pr-5 text-xs font-medium whitespace-nowrap">
+                            </SortableHead>
+                            <TableHead className="h-11 w-px pr-5 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
                                 Assigned
                             </TableHead>
                         </TableRow>
