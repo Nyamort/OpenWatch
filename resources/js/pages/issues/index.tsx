@@ -94,7 +94,7 @@ export default function IssuesIndex({
                                 ID
                             </SortableHead>
                             <TableHead className="h-11 w-px px-4">
-                                <PriorityBars priority="high" />
+                                <PriorityBars priority={0} />
                             </TableHead>
                             <TableHead className="h-11 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 Issue
