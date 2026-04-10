@@ -187,15 +187,12 @@ export default function IssuesIndex({
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="overflow-hidden px-4 py-2">
-                                        <div className="flex min-w-0 items-start gap-2">
-                                            <Badge
-                                                variant="outline"
-                                                className="mt-0.5 shrink-0"
-                                            >
-                                                {issue.type}
-                                            </Badge>
+                                        <div className="flex min-w-0 flex-col">
                                             <span className="truncate text-sm font-medium">
                                                 {issue.title}
+                                            </span>
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {issue.type}
                                             </span>
                                         </div>
                                     </TableCell>
