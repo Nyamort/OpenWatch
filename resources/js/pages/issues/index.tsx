@@ -140,16 +140,17 @@ export default function IssuesIndex({
                             >
                                 Last Seen
                             </SortableHead>
-                            <TableHead className="h-11 w-px pr-5 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
+                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
                                 Assigned
                             </TableHead>
+                            <TableHead className="h-11 w-px pr-5" />
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {issues.length === 0 ? (
                             <TableRow className="border-0 hover:bg-transparent">
                                 <TableCell
-                                    colSpan={8}
+                                    colSpan={9}
                                     className="py-12 text-center text-sm text-muted-foreground"
                                 >
                                     No issues found.
@@ -216,13 +217,13 @@ export default function IssuesIndex({
                                             { addSuffix: true },
                                         )}
                                     </TableCell>
+                                    <TableCell className="h-11 w-px px-4 text-sm whitespace-nowrap text-muted-foreground">
+                                        {issue.assignee
+                                            ? issue.assignee.name
+                                            : '—'}
+                                    </TableCell>
                                     <TableCell className="h-11 w-px pr-5">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <span className="text-sm whitespace-nowrap text-muted-foreground">
-                                                {issue.assignee
-                                                    ? issue.assignee.name
-                                                    : '—'}
-                                            </span>
+                                        <div className="flex items-center justify-end">
                                             <span className="flex items-center rounded-sm border border-border/20 bg-muted/30 text-foreground/10 transition-colors group-hover/row:border-border/60 group-hover/row:text-emerald-500 dark:border-white/7 dark:bg-white/1 dark:text-white/10 dark:group-hover/row:border-white/15 dark:group-hover/row:text-emerald-500">
                                                 <span className="flex size-6 items-center justify-center">
                                                     <ArrowUpRight className="size-4" />
