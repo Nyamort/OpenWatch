@@ -87,6 +87,10 @@ class IssueController extends Controller
             $assignIssue->handle($issue, $validated['assignee_id'], auth()->user());
         }
 
+        if (array_key_exists('priority', $validated)) {
+            $issue->update(['priority' => $validated['priority']]);
+        }
+
         return back();
     }
 

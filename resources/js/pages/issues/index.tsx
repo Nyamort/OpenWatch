@@ -3,6 +3,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ArrowUpRight, Bug } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { PriorityBars } from '@/components/issues/priority-bars';
+import { PriorityPopover } from '@/components/issues/priority-popover';
 import {
     Table,
     TableBody,
@@ -165,7 +166,11 @@ export default function IssuesIndex({
                                         #{issue.id}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
-                                        <PriorityBars priority={issue.priority} />
+                                        <PriorityPopover
+                                            environmentSlug={activeEnvironment.slug}
+                                            issueId={issue.id}
+                                            priority={issue.priority}
+                                        />
                                     </TableCell>
                                     <TableCell className="overflow-hidden px-4 py-2">
                                         <div className="flex min-w-0 flex-col">

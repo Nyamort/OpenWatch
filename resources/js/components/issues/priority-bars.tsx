@@ -4,6 +4,7 @@ const colors = ['bg-blue-500', 'bg-amber-500', 'bg-rose-500'];
 const heights = ['h-[6px]', 'h-[9px]', 'h-[12px]'];
 
 const priorityLevel: Record<string, number> = {
+    none: 0,
     low: 1,
     medium: 2,
     high: 3,

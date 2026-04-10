@@ -25,6 +25,7 @@ class UpdateIssueRequest extends FormRequest
         return [
             'status' => ['sometimes', 'string', Rule::in(['open', 'resolved', 'ignored'])],
             'assignee_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
+            'priority' => ['sometimes', 'string', Rule::in(['none', 'low', 'medium', 'high'])],
         ];
     }
 }
