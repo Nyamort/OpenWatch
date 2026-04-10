@@ -17,7 +17,7 @@ import AppLayout from '@/layouts/app-layout';
 import { show } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
 
-type IssueSortKey = 'id' | 'last_seen_at' | 'occurrence_count' | 'first_seen_at';
+type IssueSortKey = 'id' | 'priority' | 'last_seen_at' | 'occurrence_count' | 'first_seen_at';
 type SortDir = 'asc' | 'desc';
 
 interface Issue {
@@ -94,9 +94,15 @@ export default function IssuesIndex({
                             >
                                 ID
                             </SortableHead>
-                            <TableHead className="h-11 w-px px-4">
+                            <SortableHead
+                                column="priority"
+                                sort={sort}
+                                direction={direction}
+                                onSort={onSort}
+                                className="h-11 w-px px-4"
+                            >
                                 <PriorityBars priority={0} />
-                            </TableHead>
+                            </SortableHead>
                             <TableHead className="h-11 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 Issue
                             </TableHead>

@@ -51,7 +51,7 @@ class BuildIssueListData
             $query->where('priority', $priority);
         }
 
-        $allowedSorts = ['id', 'last_seen_at', 'occurrence_count', 'first_seen_at'];
+        $allowedSorts = ['id', 'priority', 'last_seen_at', 'occurrence_count', 'first_seen_at'];
         if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'last_seen_at';
         }
