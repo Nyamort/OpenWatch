@@ -2,7 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ArrowUpRight, Bug } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
-import { Badge } from '@/components/ui/badge';
+import { PriorityBars } from '@/components/issues/priority-bars';
 import {
     Table,
     TableBody,
@@ -44,16 +44,6 @@ interface Props {
     sort: IssueSortKey;
     direction: SortDir;
 }
-
-const priorityVariantMap: Record<
-    string,
-    'default' | 'secondary' | 'destructive' | 'outline'
-> = {
-    critical: 'destructive',
-    high: 'default',
-    medium: 'secondary',
-    low: 'outline',
-};
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Issues', href: '#' }];
 
@@ -103,8 +93,8 @@ export default function IssuesIndex({
                             >
                                 ID
                             </SortableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
-                                Priority
+                            <TableHead className="h-11 w-px px-4">
+                                <PriorityBars priority="high" />
                             </TableHead>
                             <TableHead className="h-11 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 Issue
@@ -175,16 +165,7 @@ export default function IssuesIndex({
                                         #{issue.id}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
-                                        <Badge
-                                            variant={
-                                                priorityVariantMap[
-                                                    issue.priority
-                                                ] ?? 'outline'
-                                            }
-                                            className="capitalize"
-                                        >
-                                            {issue.priority}
-                                        </Badge>
+                                        <PriorityBars priority={issue.priority} />
                                     </TableCell>
                                     <TableCell className="overflow-hidden px-4 py-2">
                                         <div className="flex min-w-0 flex-col">
