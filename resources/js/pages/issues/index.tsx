@@ -96,18 +96,7 @@ export default function IssuesIndex({
 
     const baseUrl = index.url(environment);
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: organization.name,
-            href: `/organizations/${organization.slug}`,
-        },
-        {
-            title: project.name,
-            href: `/organizations/${organization.slug}/projects/${project.slug}`,
-        },
-        { title: environment.name, href: baseUrl },
-        { title: 'Issues', href: baseUrl },
-    ];
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Issues', href: baseUrl }];
 
     function filterByStatus(status: string) {
         router.get(baseUrl, { ...filters, status }, { preserveState: true });
