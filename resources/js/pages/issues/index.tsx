@@ -24,6 +24,7 @@ type SortDir = 'asc' | 'desc';
 interface Issue {
     id: number;
     title: string;
+    subtitle: string | null;
     type: string;
     status: string;
     priority: string;
@@ -194,7 +195,7 @@ export default function IssuesIndex({
                                                 {issue.title}
                                             </span>
                                             <span className="truncate text-xs text-muted-foreground">
-                                                {issue.type}
+                                                {issue.subtitle ?? issue.type}
                                             </span>
                                         </div>
                                     </TableCell>

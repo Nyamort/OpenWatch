@@ -139,6 +139,24 @@ test('viewer cannot bulk update issues', function () {
     $response->assertStatus(403);
 });
 
+test('issue list exposes subtitle in response', function () {
+    $ctx = issueListContext(uniqid());
+
+    (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'App\\Exceptions\\SubtitleListTest',
+        'subtitle' => 'Something went wrong in the list',
+        'fingerprint' => hash('sha256', 'subtitle-list-'.uniqid()),
+    ]);
+
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
+
+    $this->actingAs($ctx['user'])->get("{$baseUrl}?status=open")
+        ->assertInertia(fn ($page) => $page
+            ->component('issues/index')
+            ->where('issues.0.subtitle', 'Something went wrong in the list')
+        );
+});
+
 test('assigning issue to non-member is rejected', function () {
     $ctx = issueListContext(uniqid());
     $nonMember = User::factory()->create();
