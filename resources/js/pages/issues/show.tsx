@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import AppLayout from '@/layouts/app-layout';
 import { index, show } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
@@ -23,6 +25,7 @@ interface Props {
 export default function IssueShow({ environment, issue }: Props) {
     const baseUrl = index.url(environment);
     const issueUrl = show.url({ environment, issue: issue.id });
+    const [body, setBody] = useState('');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Issues', href: baseUrl },
@@ -32,12 +35,13 @@ export default function IssueShow({ environment, issue }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={issue.title} />
-            <div className="p-6">
+            <div className="space-y-6 p-6">
                 <h1 className="text-3xl font-semibold break-all">
                     {issue.subtitle
                         ? `${issue.title}: ${issue.subtitle}`
                         : issue.title}
                 </h1>
+                <MarkdownEditor value={body} onChange={setBody} />
             </div>
         </AppLayout>
     );
