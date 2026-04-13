@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Issue extends Model
 {
@@ -25,6 +26,8 @@ class Issue extends Model
         'priority',
         'assignee_id',
         'occurrence_count',
+        'detail_type',
+        'detail_id',
         'first_seen_at',
         'last_seen_at',
     ];
@@ -97,6 +100,11 @@ class Issue extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(IssueComment::class);
+    }
+
+    public function detail(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     /**

@@ -28,6 +28,7 @@ class IssueSource extends Model
         'trace_id',
         'group_key',
         'execution_id',
+        'user_identifier',
         'snapshot',
         'created_at',
     ];
