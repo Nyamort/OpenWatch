@@ -29,7 +29,7 @@ class BuildIssueListData
             ->where('organization_id', $organization->id)
             ->where('project_id', $project->id)
             ->where('environment_id', $environment->id)
-            ->with('assignee:id,name,email');
+            ->with(['assignee:id,name,email', 'detail']);
 
         if ($status) {
             $query->where('status', $status);

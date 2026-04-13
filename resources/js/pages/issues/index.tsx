@@ -27,6 +27,7 @@ interface Issue {
     status: string;
     priority: string;
     occurrence_count: number;
+    detail: { user_count: number } | null;
     first_seen_at: string;
     last_seen_at: string;
     assignee: { id: number; name: string; email: string } | null;
@@ -192,7 +193,9 @@ export default function IssuesIndex({
                                         {issue.occurrence_count.toLocaleString()}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums text-muted-foreground">
-                                        —
+                                        {issue.detail?.user_count
+                                            ? issue.detail.user_count.toLocaleString()
+                                            : '—'}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                         {formatDistanceToNow(
@@ -206,10 +209,17 @@ export default function IssuesIndex({
                                             { addSuffix: true },
                                         )}
                                     </TableCell>
-                                    <TableCell className="h-11 w-px px-4 text-sm whitespace-nowrap text-muted-foreground">
-                                        {issue.assignee
-                                            ? issue.assignee.name
-                                            : '—'}
+                                    <TableCell className="h-11 w-px px-4">
+                                        {issue.assignee ? (
+                                            <div
+                                                className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-medium"
+                                                title={issue.assignee.name}
+                                            >
+                                                {issue.assignee.name[0].toUpperCase()}
+                                            </div>
+                                        ) : (
+                                            <div className="size-6 rounded-full border border-dashed border-muted-foreground/40" />
+                                        )}
                                     </TableCell>
                                     <TableCell className="h-11 w-px pr-5">
                                         <div className="flex items-center justify-end">
