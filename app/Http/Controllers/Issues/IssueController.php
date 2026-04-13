@@ -33,6 +33,11 @@ class IssueController extends Controller
 
         $data = $action->handle($organization, $project, $environment, request());
 
+        $members = $organization->members()->with('user:id,name,email')->get()
+            ->map(fn ($member) => $member->user)
+            ->filter()
+            ->values();
+
         return Inertia::render('issues/index', [
             'organization' => $organization,
             'project' => $project,
@@ -42,6 +47,7 @@ class IssueController extends Controller
             'filters' => $data['filters'],
             'sort' => $data['filters']['sort'],
             'direction' => $data['filters']['direction'],
+            'members' => $members,
         ]);
     }
 

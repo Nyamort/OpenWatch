@@ -2,6 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ArrowUpRight, Bug } from 'lucide-react';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
+import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityBars } from '@/components/issues/priority-bars';
 import { PriorityPopover } from '@/components/issues/priority-popover';
 import {
@@ -40,11 +41,18 @@ interface Pagination {
     total: number;
 }
 
+interface Member {
+    id: number;
+    name: string;
+    email: string;
+}
+
 interface Props {
     issues: Issue[];
     pagination: Pagination;
     sort: IssueSortKey;
     direction: SortDir;
+    members: Member[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Issues', href: '#' }];
@@ -54,6 +62,7 @@ export default function IssuesIndex({
     pagination,
     sort,
     direction,
+    members,
 }: Props) {
     const { props } = usePage();
     const { activeEnvironment } = props as unknown as {
@@ -210,16 +219,12 @@ export default function IssuesIndex({
                                         )}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
-                                        {issue.assignee ? (
-                                            <div
-                                                className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-medium"
-                                                title={issue.assignee.name}
-                                            >
-                                                {issue.assignee.name[0].toUpperCase()}
-                                            </div>
-                                        ) : (
-                                            <div className="size-6 rounded-full border border-dashed border-muted-foreground/40" />
-                                        )}
+                                        <AssigneePopover
+                                            environmentSlug={activeEnvironment.slug}
+                                            issueId={issue.id}
+                                            assignee={issue.assignee}
+                                            members={members}
+                                        />
                                     </TableCell>
                                     <TableCell className="h-11 w-px pr-5">
                                         <div className="flex items-center justify-end">
