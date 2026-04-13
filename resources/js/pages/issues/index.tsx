@@ -194,9 +194,11 @@ export default function IssuesIndex({
                                             <span className="truncate text-sm font-medium">
                                                 {issue.title}
                                             </span>
-                                            <span className="truncate text-xs text-muted-foreground">
-                                                {issue.subtitle ?? issue.type}
-                                            </span>
+                                            {issue.subtitle && (
+                                                <span className="truncate text-xs text-muted-foreground">
+                                                    {issue.subtitle}
+                                                </span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
