@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Enums\IssueStatus;
 use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\Organization;
@@ -29,9 +30,9 @@ class BulkUpdateIssues
         User $actor,
     ): array {
         $newStatus = match ($action) {
-            'resolve' => 'resolved',
-            'ignore' => 'ignored',
-            'reopen' => 'open',
+            'resolve' => IssueStatus::Resolved,
+            'ignore' => IssueStatus::Ignored,
+            'reopen' => IssueStatus::Open,
             default => throw new \InvalidArgumentException("Invalid bulk action: {$action}"),
         };
 

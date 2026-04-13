@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\IssuePriority;
+use App\Enums\IssueStatus;
+use App\Enums\IssueType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +43,9 @@ class Issue extends Model
     protected function casts(): array
     {
         return [
+            'status' => IssueStatus::class,
+            'type' => IssueType::class,
+            'priority' => IssuePriority::class,
             'occurrence_count' => 'integer',
             'first_seen_at' => 'datetime',
             'last_seen_at' => 'datetime',

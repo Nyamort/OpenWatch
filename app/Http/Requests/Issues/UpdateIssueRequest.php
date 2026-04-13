@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Issues;
 
+use App\Enums\IssuePriority;
+use App\Enums\IssueStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,9 +25,9 @@ class UpdateIssueRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['sometimes', 'string', Rule::in(['open', 'resolved', 'ignored'])],
+            'status' => ['sometimes', Rule::enum(IssueStatus::class)],
             'assignee_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
-            'priority' => ['sometimes', 'string', Rule::in(['none', 'low', 'medium', 'high'])],
+            'priority' => ['sometimes', Rule::enum(IssuePriority::class)],
         ];
     }
 }

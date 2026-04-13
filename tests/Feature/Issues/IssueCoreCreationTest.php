@@ -5,6 +5,7 @@ use App\Actions\Organization\CreateOrganization;
 use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
+use App\Enums\IssueStatus;
 use App\Events\IssueCreated;
 use App\Models\Issue;
 use App\Models\IssueSource;
@@ -39,7 +40,7 @@ test('first occurrence creates a new issue', function () {
     expect($issue)->toBeInstanceOf(Issue::class)
         ->and($issue->title)->toBe('Test Exception')
         ->and($issue->fingerprint)->toBe($fingerprint)
-        ->and($issue->status)->toBe('open')
+        ->and($issue->status)->toBe(IssueStatus::Open)
         ->and($issue->occurrence_count)->toBe(1);
 
     $this->assertDatabaseHas('issues', [

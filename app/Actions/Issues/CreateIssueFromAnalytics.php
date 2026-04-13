@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Enums\IssueType;
 use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\Organization;
@@ -73,15 +74,15 @@ class CreateIssueFromAnalytics
         };
 
         $type = match ($sourceType) {
-            'request' => 'performance',
-            'job' => 'other',
-            default => 'exception',
+            'request' => IssueType::Performance,
+            'job' => IssueType::Other,
+            default => IssueType::Exception,
         };
 
         return $this->createIssue->handle($organization, $project, $environment, $actor, [
             'title' => $title,
             'fingerprint' => $fingerprint,
-            'type' => $type,
+            'type' => $type->value,
             'source_type' => $sourceType,
             'trace_id' => $data['trace_id'] ?? null,
             'group_key' => $data['group_key'] ?? null,

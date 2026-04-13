@@ -8,6 +8,7 @@ use App\Actions\Organization\CreateOrganization;
 use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
+use App\Enums\IssueStatus;
 use App\Models\IssueActivity;
 use App\Models\OrganizationMember;
 use App\Models\User;
@@ -51,7 +52,7 @@ test('issue list is filtered by status', function () {
         'fingerprint' => hash('sha256', 'resolved-'.uniqid()),
     ]);
 
-    (new UpdateIssueStatus)->handle($resolvedIssue, 'resolved', $ctx['user']);
+    (new UpdateIssueStatus)->handle($resolvedIssue, IssueStatus::Resolved, $ctx['user']);
 
     $baseUrl = "/environments/{$ctx['env']->slug}/issues";
 
@@ -76,7 +77,7 @@ test('issue status transition open to resolved creates activity', function () {
         'fingerprint' => hash('sha256', 'transition-'.uniqid()),
     ]);
 
-    (new UpdateIssueStatus)->handle($issue, 'resolved', $ctx['user']);
+    (new UpdateIssueStatus)->handle($issue, IssueStatus::Resolved, $ctx['user']);
 
     $activity = IssueActivity::where('issue_id', $issue->id)
         ->where('type', 'status_changed')
@@ -114,8 +115,8 @@ test('bulk update skips out-of-scope issues', function () {
 
     $issueA->refresh();
     $issueB->refresh();
-    expect($issueA->status)->toBe('resolved')
-        ->and($issueB->status)->toBe('open');
+    expect($issueA->status)->toBe(IssueStatus::Resolved)
+        ->and($issueB->status)->toBe(IssueStatus::Open);
 });
 
 test('viewer cannot bulk update issues', function () {

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Enums\IssueType;
 use App\Models\AlertRule;
 use App\Models\Issue;
 use App\Models\User;
@@ -29,7 +30,7 @@ class CreateIssueFromAlert
             [
                 'title' => 'Alert: '.$alertRule->name,
                 'fingerprint' => $fingerprint,
-                'type' => 'performance',
+                'type' => IssueType::Performance->value,
             ],
         );
     }

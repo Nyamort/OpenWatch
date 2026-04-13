@@ -7,6 +7,7 @@ use App\Actions\Issues\BuildIssueListData;
 use App\Actions\Issues\BulkUpdateIssues;
 use App\Actions\Issues\CreateIssue;
 use App\Actions\Issues\UpdateIssueStatus;
+use App\Enums\IssueStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Issues\BulkUpdateIssuesRequest;
 use App\Http\Requests\Issues\StoreIssueRequest;
@@ -86,7 +87,7 @@ class IssueController extends Controller
         $validated = $request->validated();
 
         if (array_key_exists('status', $validated)) {
-            $updateStatus->handle($issue, $validated['status'], auth()->user());
+            $updateStatus->handle($issue, IssueStatus::from($validated['status']), auth()->user());
         }
 
         if (array_key_exists('assignee_id', $validated)) {

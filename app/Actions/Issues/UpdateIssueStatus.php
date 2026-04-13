@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Enums\IssueStatus;
 use App\Events\IssueStatusChanged;
 use App\Models\Issue;
 use App\Models\IssueActivity;
@@ -13,12 +14,12 @@ class UpdateIssueStatus
     /**
      * Allowed status transitions.
      *
-     * @var array<string, list<string>>
+     * @var array<string, list<IssueStatus>>
      */
     private const ALLOWED_TRANSITIONS = [
-        'open' => ['resolved', 'ignored'],
-        'resolved' => ['open'],
-        'ignored' => ['open'],
+        IssueStatus::Open->value => [IssueStatus::Resolved, IssueStatus::Ignored],
+        IssueStatus::Resolved->value => [IssueStatus::Open],
+        IssueStatus::Ignored->value => [IssueStatus::Open],
     ];
 
     /**
@@ -26,14 +27,14 @@ class UpdateIssueStatus
      *
      * @throws ValidationException
      */
-    public function handle(Issue $issue, string $newStatus, User $actor): Issue
+    public function handle(Issue $issue, IssueStatus $newStatus, User $actor): Issue
     {
         $currentStatus = $issue->status;
-        $allowed = self::ALLOWED_TRANSITIONS[$currentStatus] ?? [];
+        $allowed = self::ALLOWED_TRANSITIONS[$currentStatus->value] ?? [];
 
-        if (! in_array($newStatus, $allowed, true)) {
+        if (! in_array($newStatus, $allowed, strict: true)) {
             throw ValidationException::withMessages([
-                'status' => "Cannot transition issue from '{$currentStatus}' to '{$newStatus}'.",
+                'status' => "Cannot transition issue from '{$currentStatus->value}' to '{$newStatus->value}'.",
             ]);
         }
 
@@ -43,11 +44,11 @@ class UpdateIssueStatus
             'issue_id' => $issue->id,
             'actor_id' => $actor->id,
             'type' => 'status_changed',
-            'metadata' => ['from' => $currentStatus, 'to' => $newStatus],
+            'metadata' => ['from' => $currentStatus->value, 'to' => $newStatus->value],
             'created_at' => now(),
         ]);
 
-        IssueStatusChanged::dispatch($issue, $currentStatus, $newStatus, $actor);
+        IssueStatusChanged::dispatch($issue, $currentStatus->value, $newStatus->value, $actor);
 
         return $issue;
     }

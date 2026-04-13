@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Issues;
 
+use App\Enums\IssuePriority;
+use App\Enums\IssueType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,8 +27,8 @@ class StoreIssueRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:500'],
             'fingerprint' => ['required', 'string', 'size:64'],
-            'type' => ['nullable', 'string', Rule::in(['exception', 'performance', 'other'])],
-            'priority' => ['nullable', 'string', Rule::in(['low', 'medium', 'high', 'critical'])],
+            'type' => ['nullable', Rule::enum(IssueType::class)],
+            'priority' => ['nullable', Rule::enum(IssuePriority::class)],
             'source_type' => ['nullable', 'string', Rule::in(['exception', 'request', 'job'])],
             'trace_id' => ['nullable', 'string', 'max:36'],
             'group_key' => ['nullable', 'string', 'max:64'],

@@ -2,6 +2,9 @@
 
 namespace App\Actions\Issues;
 
+use App\Enums\IssuePriority;
+use App\Enums\IssueStatus;
+use App\Enums\IssueType;
 use App\Events\IssueCreated;
 use App\Models\Environment;
 use App\Models\Issue;
@@ -44,7 +47,7 @@ class CreateIssue
                 ->where('project_id', $project->id)
                 ->where('environment_id', $environment->id)
                 ->where('fingerprint', $data['fingerprint'])
-                ->where('status', 'open')
+                ->where('status', IssueStatus::Open)
                 ->lockForUpdate()
                 ->first();
 
@@ -65,21 +68,14 @@ class CreateIssue
                     }
                 }
 
-                if (! empty($data['source_type'])) {
-                    IssueSource::create([
-                        'issue_id' => $existing->id,
-                        'source_type' => $data['source_type'],
-                        'trace_id' => $data['trace_id'] ?? null,
-                        'group_key' => $data['group_key'] ?? null,
-                        'execution_id' => $data['execution_id'] ?? null,
-                        'user_identifier' => $userIdentifier,
-                        'snapshot' => $data['snapshot'] ?? null,
-                        'created_at' => now(),
-                    ]);
-                }
+                $this->createSource($existing, $data);
 
                 return $existing;
             }
+
+            $type = IssueType::tryFrom($data['type'] ?? '') ?? IssueType::Exception;
+            $priority = IssuePriority::tryFrom($data['priority'] ?? '') ?? IssuePriority::None;
+            $userIdentifier = $data['user_identifier'] ?? null;
 
             $issue = Issue::create([
                 'organization_id' => $organization->id,
@@ -87,9 +83,9 @@ class CreateIssue
                 'environment_id' => $environment->id,
                 'title' => $data['title'],
                 'fingerprint' => $data['fingerprint'],
-                'type' => $data['type'] ?? 'exception',
-                'status' => 'open',
-                'priority' => 0,
+                'type' => $type,
+                'status' => IssueStatus::Open,
+                'priority' => $priority,
                 'occurrence_count' => 1,
                 'first_seen_at' => now(),
                 'last_seen_at' => now(),
@@ -103,22 +99,9 @@ class CreateIssue
                 'created_at' => now(),
             ]);
 
-            $userIdentifier = $data['user_identifier'] ?? null;
+            $this->createSource($issue, $data);
 
-            if (! empty($data['source_type'])) {
-                IssueSource::create([
-                    'issue_id' => $issue->id,
-                    'source_type' => $data['source_type'],
-                    'trace_id' => $data['trace_id'] ?? null,
-                    'group_key' => $data['group_key'] ?? null,
-                    'execution_id' => $data['execution_id'] ?? null,
-                    'user_identifier' => $userIdentifier,
-                    'snapshot' => $data['snapshot'] ?? null,
-                    'created_at' => now(),
-                ]);
-            }
-
-            if ($data['type'] ?? 'exception' === 'exception') {
+            if ($type === IssueType::Exception) {
                 $detail = IssueExceptionDetail::create([
                     'user_count' => $userIdentifier !== null ? 1 : 0,
                 ]);
@@ -133,5 +116,23 @@ class CreateIssue
 
             return $issue;
         });
+    }
+
+    private function createSource(Issue $issue, array $data): void
+    {
+        if (empty($data['source_type'])) {
+            return;
+        }
+
+        IssueSource::create([
+            'issue_id' => $issue->id,
+            'source_type' => $data['source_type'],
+            'trace_id' => $data['trace_id'] ?? null,
+            'group_key' => $data['group_key'] ?? null,
+            'execution_id' => $data['execution_id'] ?? null,
+            'user_identifier' => $data['user_identifier'] ?? null,
+            'snapshot' => $data['snapshot'] ?? null,
+            'created_at' => now(),
+        ]);
     }
 }
