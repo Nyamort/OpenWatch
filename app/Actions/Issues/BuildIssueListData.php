@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Data\IssueListData;
 use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\Organization;
@@ -12,10 +13,8 @@ class BuildIssueListData
 {
     /**
      * Build the paginated issue list data with filters applied.
-     *
-     * @return array{issues: list<array<string, mixed>>, pagination: array<string, mixed>, filters: array<string, mixed>}
      */
-    public function handle(Organization $organization, Project $project, Environment $environment, Request $request): array
+    public function handle(Organization $organization, Project $project, Environment $environment, Request $request): IssueListData
     {
         $status = $request->input('status', 'open');
         $type = $request->input('type');
@@ -62,25 +61,23 @@ class BuildIssueListData
 
         $paginator = $query->paginate(25);
 
-        $filters = [
-            'status' => $status,
-            'type' => $type,
-            'assignee_id' => $assigneeId,
-            'search' => $search,
-            'priority' => $priority,
-            'sort' => $sort,
-            'direction' => $direction,
-        ];
-
-        return [
-            'issues' => $paginator->items(),
-            'pagination' => [
+        return new IssueListData(
+            issues: $paginator->items(),
+            pagination: [
                 'current_page' => $paginator->currentPage(),
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
             ],
-            'filters' => $filters,
-        ];
+            filters: [
+                'status' => $status,
+                'type' => $type,
+                'assignee_id' => $assigneeId,
+                'search' => $search,
+                'priority' => $priority,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+        );
     }
 }

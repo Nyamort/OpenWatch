@@ -8,6 +8,7 @@ use App\Actions\Projects\GenerateToken;
 use App\Enums\IssueStatus;
 use App\Events\IssueCreated;
 use App\Models\Issue;
+use App\Models\IssueExceptionDetail;
 use App\Models\IssueSource;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
@@ -109,4 +110,60 @@ test('issue creation stores source linkage', function () {
         ->and($source->trace_id)->toBe($traceId)
         ->and($source->group_key)->toBe($groupKey)
         ->and($source->snapshot)->toEqual(['class' => 'App\\Exceptions\\Test', 'line' => 42]);
+});
+
+test('exception issue tracks unique user count across occurrences', function () {
+    $ctx = issueContext(uniqid());
+    $fingerprint = hash('sha256', 'user-count-'.uniqid());
+    $action = new CreateIssue;
+
+    $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'User Count Test',
+        'fingerprint' => $fingerprint,
+        'type' => 'exception',
+        'source_type' => 'exception',
+        'user_identifier' => 'user-1',
+    ]);
+
+    $issue = Issue::where('fingerprint', $fingerprint)->first();
+    $detail = IssueExceptionDetail::find($issue->detail_id);
+    expect($detail->user_count)->toBe(1);
+
+    // Same user — count must not change
+    $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'User Count Test',
+        'fingerprint' => $fingerprint,
+        'type' => 'exception',
+        'source_type' => 'exception',
+        'user_identifier' => 'user-1',
+    ]);
+
+    $detail->refresh();
+    expect($detail->user_count)->toBe(1);
+
+    // New user — count must increment
+    $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'User Count Test',
+        'fingerprint' => $fingerprint,
+        'type' => 'exception',
+        'source_type' => 'exception',
+        'user_identifier' => 'user-2',
+    ]);
+
+    $detail->refresh();
+    expect($detail->user_count)->toBe(2);
+});
+
+test('non-exception issue does not create exception detail', function () {
+    $ctx = issueContext(uniqid());
+    $fingerprint = hash('sha256', 'perf-'.uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Slow endpoint',
+        'fingerprint' => $fingerprint,
+        'type' => 'performance',
+    ]);
+
+    expect($issue->detail_id)->toBeNull();
+    $this->assertDatabaseMissing('issue_exception_details', ['id' => $issue->detail_id]);
 });
