@@ -49,6 +49,7 @@ class HandleExceptionTelemetry implements ShouldQueue
                     'group_key' => $dto->groupKey,
                     'trace_id' => $dto->traceId,
                     'execution_id' => $dto->executionId,
+                    'user_identifier' => $dto->user,
                 ],
             );
         }

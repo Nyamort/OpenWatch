@@ -6,6 +6,7 @@ use App\Events\IssueCreated;
 use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\IssueActivity;
+use App\Models\IssueExceptionDetail;
 use App\Models\IssueSource;
 use App\Models\Organization;
 use App\Models\Project;
@@ -26,6 +27,7 @@ class CreateIssue
      *   trace_id?: string|null,
      *   group_key?: string|null,
      *   execution_id?: string|null,
+     *   user_identifier?: string|null,
      *   snapshot?: array|null,
      * } $data
      */
@@ -50,6 +52,19 @@ class CreateIssue
                 $existing->increment('occurrence_count');
                 $existing->update(['last_seen_at' => now()]);
 
+                $userIdentifier = $data['user_identifier'] ?? null;
+
+                if ($userIdentifier !== null && $existing->detail instanceof IssueExceptionDetail) {
+                    $alreadySeen = IssueSource::query()
+                        ->where('issue_id', $existing->id)
+                        ->where('user_identifier', $userIdentifier)
+                        ->exists();
+
+                    if (! $alreadySeen) {
+                        $existing->detail->increment('user_count');
+                    }
+                }
+
                 if (! empty($data['source_type'])) {
                     IssueSource::create([
                         'issue_id' => $existing->id,
@@ -57,6 +72,7 @@ class CreateIssue
                         'trace_id' => $data['trace_id'] ?? null,
                         'group_key' => $data['group_key'] ?? null,
                         'execution_id' => $data['execution_id'] ?? null,
+                        'user_identifier' => $userIdentifier,
                         'snapshot' => $data['snapshot'] ?? null,
                         'created_at' => now(),
                     ]);
@@ -87,6 +103,8 @@ class CreateIssue
                 'created_at' => now(),
             ]);
 
+            $userIdentifier = $data['user_identifier'] ?? null;
+
             if (! empty($data['source_type'])) {
                 IssueSource::create([
                     'issue_id' => $issue->id,
@@ -94,8 +112,20 @@ class CreateIssue
                     'trace_id' => $data['trace_id'] ?? null,
                     'group_key' => $data['group_key'] ?? null,
                     'execution_id' => $data['execution_id'] ?? null,
+                    'user_identifier' => $userIdentifier,
                     'snapshot' => $data['snapshot'] ?? null,
                     'created_at' => now(),
+                ]);
+            }
+
+            if ($data['type'] ?? 'exception' === 'exception') {
+                $detail = IssueExceptionDetail::create([
+                    'user_count' => $userIdentifier !== null ? 1 : 0,
+                ]);
+
+                $issue->update([
+                    'detail_type' => IssueExceptionDetail::class,
+                    'detail_id' => $detail->id,
                 ]);
             }
 
