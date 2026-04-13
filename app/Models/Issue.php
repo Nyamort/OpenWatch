@@ -23,6 +23,7 @@ class Issue extends Model
         'project_id',
         'environment_id',
         'title',
+        'subtitle',
         'fingerprint',
         'type',
         'status',

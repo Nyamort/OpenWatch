@@ -37,6 +37,7 @@ interface Comment {
 interface Issue {
     id: number;
     title: string;
+    subtitle: string | null;
     type: string;
     status: string;
     priority: string;
@@ -108,25 +109,11 @@ function activityLabel(activity: IssueActivity): string {
     }
 }
 
-export default function IssueShow({
-    organization,
-    project,
-    environment,
-    issue,
-    comments,
-}: Props) {
+export default function IssueShow({ environment, issue, comments }: Props) {
     const baseUrl = index.url(environment);
     const issueUrl = show.url({ environment, issue: issue.id });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: organization.name,
-            href: `/organizations/${organization.slug}`,
-        },
-        {
-            title: project.name,
-            href: `/organizations/${organization.slug}/projects/${project.slug}`,
-        },
         { title: 'Issues', href: baseUrl },
         { title: `#${issue.id}`, href: issueUrl },
     ];
@@ -149,6 +136,11 @@ export default function IssueShow({
                         <h1 className="text-xl font-semibold break-all">
                             {issue.title}
                         </h1>
+                        {issue.subtitle && (
+                            <p className="mt-1 text-sm text-muted-foreground break-all">
+                                {issue.subtitle}
+                            </p>
+                        )}
                         <p className="mt-1 text-sm text-muted-foreground">
                             First seen{' '}
                             {new Date(issue.first_seen_at).toLocaleString()}{' '}

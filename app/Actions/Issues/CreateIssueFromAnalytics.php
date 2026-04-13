@@ -79,8 +79,11 @@ class CreateIssueFromAnalytics
             default => IssueType::Exception,
         };
 
+        $subtitle = $sourceType === 'exception' ? ($data['message'] ?? null) : null;
+
         return $this->createIssue->handle($organization, $project, $environment, $actor, [
             'title' => $title,
+            'subtitle' => $subtitle,
             'fingerprint' => $fingerprint,
             'type' => $type->value,
             'source_type' => $sourceType,

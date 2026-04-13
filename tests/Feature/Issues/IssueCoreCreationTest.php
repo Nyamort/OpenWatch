@@ -154,6 +154,32 @@ test('exception issue tracks unique user count across occurrences', function () 
     expect($detail->user_count)->toBe(2);
 });
 
+test('subtitle is stored when provided', function () {
+    $ctx = issueContext(uniqid());
+    $fingerprint = hash('sha256', 'subtitle-'.uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'App\\Exceptions\\PaymentException',
+        'subtitle' => 'Card declined for user 42',
+        'fingerprint' => $fingerprint,
+    ]);
+
+    expect($issue->subtitle)->toBe('Card declined for user 42');
+    $this->assertDatabaseHas('issues', ['id' => $issue->id, 'subtitle' => 'Card declined for user 42']);
+});
+
+test('subtitle defaults to null when not provided', function () {
+    $ctx = issueContext(uniqid());
+    $fingerprint = hash('sha256', 'subtitle-null-'.uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Some Issue',
+        'fingerprint' => $fingerprint,
+    ]);
+
+    expect($issue->subtitle)->toBeNull();
+});
+
 test('non-exception issue does not create exception detail', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'perf-'.uniqid());

@@ -111,6 +111,27 @@ test('HandleExceptionTelemetry creates an issue for an exception DTO', function 
     ]);
 });
 
+test('HandleExceptionTelemetry stores exception message as issue subtitle', function () {
+    Queue::fake();
+
+    $environment = Environment::factory()->create();
+    $environment->load('project.organization');
+
+    $dto = exceptionDto([
+        'class' => 'App\\Exceptions\\SubtitleEx'.uniqid(),
+        'message' => 'Division by zero',
+    ]);
+
+    $listener = app(HandleExceptionTelemetry::class);
+    $listener->handle(new TelemetryBatchIngested($environment->id, [$dto]));
+
+    $this->assertDatabaseHas('issues', [
+        'environment_id' => $environment->id,
+        'title' => $dto->class,
+        'subtitle' => 'Division by zero',
+    ]);
+});
+
 test('HandleExceptionTelemetry increments occurrence count on repeated exception', function () {
     Queue::fake();
 

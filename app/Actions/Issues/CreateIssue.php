@@ -23,6 +23,7 @@ class CreateIssue
      *
      * @param  array{
      *   title: string,
+     *   subtitle?: string|null,
      *   fingerprint: string,
      *   type?: string,
      *   priority?: string,
@@ -82,6 +83,7 @@ class CreateIssue
                 'project_id' => $project->id,
                 'environment_id' => $environment->id,
                 'title' => $data['title'],
+                'subtitle' => $data['subtitle'] ?? null,
                 'fingerprint' => $data['fingerprint'],
                 'type' => $type,
                 'status' => IssueStatus::Open,
