@@ -24,6 +24,7 @@ class CreateIssueFromAnalytics
      *   trace_id?: string|null,
      *   group_key?: string|null,
      *   execution_id?: string|null,
+     *   user_identifier?: string|null,
      *   snapshot?: array|null,
      *   class?: string|null,
      *   message?: string|null,
@@ -85,6 +86,7 @@ class CreateIssueFromAnalytics
             'trace_id' => $data['trace_id'] ?? null,
             'group_key' => $data['group_key'] ?? null,
             'execution_id' => $data['execution_id'] ?? null,
+            'user_identifier' => $data['user_identifier'] ?? null,
             'snapshot' => $data['snapshot'] ?? null,
         ]);
     }

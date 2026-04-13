@@ -89,7 +89,7 @@ class CreateIssue
                 'fingerprint' => $data['fingerprint'],
                 'type' => $data['type'] ?? 'exception',
                 'status' => 'open',
-                'priority' => $data['priority'] ?? 'medium',
+                'priority' => 0,
                 'occurrence_count' => 1,
                 'first_seen_at' => now(),
                 'last_seen_at' => now(),
