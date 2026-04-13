@@ -133,14 +133,11 @@ export default function IssueShow({ environment, issue, comments }: Props) {
                 {/* Left column */}
                 <div className="min-w-0 flex-1 space-y-6">
                     <div>
-                        <h1 className="text-xl font-semibold break-all">
-                            {issue.title}
+                        <h1 className="text-3xl font-semibold break-all">
+                            {issue.subtitle
+                                ? `${issue.title}: ${issue.subtitle}`
+                                : issue.title}
                         </h1>
-                        {issue.subtitle && (
-                            <p className="mt-1 text-sm text-muted-foreground break-all">
-                                {issue.subtitle}
-                            </p>
-                        )}
                         <p className="mt-1 text-sm text-muted-foreground">
                             First seen{' '}
                             {new Date(issue.first_seen_at).toLocaleString()}{' '}
