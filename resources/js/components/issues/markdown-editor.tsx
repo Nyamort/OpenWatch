@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -11,6 +11,14 @@ type Tab = 'write' | 'preview';
 
 export function MarkdownEditor({ value, onChange }: Props) {
     const [tab, setTab] = useState<Tab>('write');
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        const el = textareaRef.current;
+        if (!el) { return; }
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+    }, [value, tab]);
 
     return (
         <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
@@ -36,10 +44,12 @@ export function MarkdownEditor({ value, onChange }: Props) {
             <div>
                 {tab === 'write' ? (
                     <textarea
+                        ref={textareaRef}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full resize-y rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
+                        className="w-full resize-none overflow-hidden rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
                         placeholder="Enter a description…"
+                        rows={1}
                     />
                 ) : (
                     <div
