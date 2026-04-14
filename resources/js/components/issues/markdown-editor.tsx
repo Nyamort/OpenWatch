@@ -39,7 +39,7 @@ export function MarkdownEditor({ value, onChange }: Props) {
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         className="w-full min-h-48 resize-y rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
-                        placeholder="Write markdown here…"
+                        placeholder="Enter a description…"
                     />
                 ) : (
                     <div
