@@ -33,12 +33,12 @@ export function MarkdownEditor({ value, onChange }: Props) {
             </div>
 
             {/* Content */}
-            <div className="min-h-48">
+            <div>
                 {tab === 'write' ? (
                     <textarea
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full min-h-48 resize-y rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
+                        className="w-full resize-y rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
                         placeholder="Enter a description…"
                     />
                 ) : (
