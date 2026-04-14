@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { marked } from 'marked';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -38,13 +35,11 @@ export function MarkdownEditor({ value, onChange }: Props) {
             {/* Content */}
             <div className="min-h-48">
                 {tab === 'write' ? (
-                    <CodeMirror
+                    <textarea
                         value={value}
-                        onChange={onChange}
-                        extensions={[markdown()]}
-                        theme={oneDark}
-                        basicSetup={{ lineNumbers: false, foldGutter: false }}
-                        className="text-sm [&_.cm-editor]:rounded-b-xl [&_.cm-editor]:border-0 [&_.cm-scroller]:min-h-48 [&_.cm-scroller]:p-4 [&_.cm-focused]:outline-none"
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full min-h-48 resize-y rounded-b-xl bg-transparent p-4 text-sm outline-none placeholder:text-muted-foreground"
+                        placeholder="Write markdown here…"
                     />
                 ) : (
                     <div
