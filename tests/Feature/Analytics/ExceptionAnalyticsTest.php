@@ -124,6 +124,51 @@ test('exception show returns flat summary with aggregate stats', function () {
     );
 });
 
+test('exception show summary stats are all-time and not filtered by the selected period', function () {
+    $ctx = setupExceptionContext(uniqid());
+    $groupKey = hash('sha256', 'AllTimeException-'.uniqid());
+
+    // Insert an exception outside the default 24h period
+    insertException($ctx, [
+        'group_key' => $groupKey,
+        'handled' => 0,
+        'user' => 'u1',
+        'server' => 'web-1',
+        'deploy' => 'v1.0.0',
+        'recorded_at' => now()->utc()->subDays(7)->format('Y-m-d H:i:s'),
+    ]);
+
+    // Insert one within the period
+    insertException($ctx, [
+        'group_key' => $groupKey,
+        'handled' => 1,
+        'user' => 'u2',
+        'server' => 'web-2',
+        'deploy' => 'v1.0.0',
+        'recorded_at' => now()->utc()->subHours(1)->format('Y-m-d H:i:s'),
+    ]);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/exceptions/{$groupKey}?period=24h";
+
+    $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/exceptions/show',
+            'X-Inertia-Partial-Data' => 'summary,stats',
+        ])
+        ->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        // Summary card must reflect all-time totals (both records)
+        ->where('summary.occurrences', 2)
+        ->where('summary.impacted_users', 2)
+        ->where('summary.servers', 2)
+        // Period stats must only count the one occurrence within 24h
+        ->where('stats.count', 1)
+        ->where('stats.handled', 1)
+        ->where('stats.unhandled', 0)
+    );
+});
+
 test('exceptions index is blocked for non-members', function () {
     $ctx = setupExceptionContext(uniqid());
     $outsider = User::factory()->create();

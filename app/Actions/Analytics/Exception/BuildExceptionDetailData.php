@@ -37,14 +37,23 @@ class BuildExceptionDetailData
             abort(404, 'Exception group not found.');
         }
 
-        // Aggregate metrics for the period
-        $aggregates = $this->clickhouse->selectOne("
+        // All-time aggregate metrics (independent of the selected period)
+        $allTimeAggregates = $this->clickhouse->selectOne("
             SELECT
                 count() AS occurrences,
                 uniqExact(user) AS impacted_users,
                 uniqExact(server) AS servers,
                 max(recorded_at) AS last_seen,
-                min(recorded_at) AS first_seen,
+                min(recorded_at) AS first_seen
+            FROM extraction_exceptions
+            WHERE environment_id = {$envId}
+              AND group_key = {$escapedKey}
+        ");
+
+        // Period-scoped aggregate metrics (for chart and stats only)
+        $aggregates = $this->clickhouse->selectOne("
+            SELECT
+                count() AS occurrences,
                 sum(handled) AS handled_count,
                 sum(1 - handled) AS unhandled_count
             FROM extraction_exceptions
@@ -115,12 +124,12 @@ class BuildExceptionDetailData
         return (new AnalyticsResponseBuilder)
             ->withSummary(array_merge((array) $representative, [
                 'related_requests' => $relatedRequests,
-                'last_seen' => $aggregates?->last_seen,
-                'first_seen' => $aggregates?->first_seen,
+                'last_seen' => $allTimeAggregates?->last_seen,
+                'first_seen' => $allTimeAggregates?->first_seen,
                 'first_reported_in' => $firstDeploy ?: null,
-                'impacted_users' => (int) ($aggregates?->impacted_users ?? 0),
-                'occurrences' => $total,
-                'servers' => (int) ($aggregates?->servers ?? 0),
+                'impacted_users' => (int) ($allTimeAggregates?->impacted_users ?? 0),
+                'occurrences' => (int) ($allTimeAggregates?->occurrences ?? 0),
+                'servers' => (int) ($allTimeAggregates?->servers ?? 0),
             ]))
             ->withRows($occurrences->toArray())
             ->withPagination([
