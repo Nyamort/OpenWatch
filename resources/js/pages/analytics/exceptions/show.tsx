@@ -9,6 +9,7 @@ import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { DataTable } from '@/components/analytics/data-table';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
 import { CardSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import { Badge } from '@/components/ui/badge';
 import ExceptionCard from '@/components/exceptions/exception-card';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
 import {
@@ -38,6 +39,8 @@ interface Summary {
     first_reported_in: string | null;
     impacted_users: number;
     occurrences: number;
+    occurrences_7d: number;
+    occurrences_24h: number;
     servers: number;
     [key: string]: unknown;
 }
@@ -207,6 +210,32 @@ function ExceptionDetailChart({
     );
 }
 
+function OccurrenceBreakdown({
+    count7d,
+    count24h,
+}: {
+    count7d: number;
+    count24h: number;
+}) {
+    return (
+        <div className="flex gap-4 text-muted-foreground uppercase">
+            {(
+                [
+                    { label: '7 days', value: count7d },
+                    { label: '24 hours', value: count24h },
+                ] as const
+            ).map(({ label, value }) => (
+                <span key={label} className="flex items-center gap-1.5">
+                    {label}
+                    <Badge className="bg-black/8 text-neutral-900 dark:border-neutral-700 dark:bg-white/10 dark:text-neutral-100">
+                        {value.toLocaleString()}
+                    </Badge>
+                </span>
+            ))}
+        </div>
+    );
+}
+
 function ExceptionDetailStats({ summary }: { summary: Summary }) {
     return (
         <Card className="gap-0 bg-surface py-0">
@@ -230,7 +259,12 @@ function ExceptionDetailStats({ summary }: { summary: Summary }) {
                     />
                     <InfoRow
                         label="Occurrences"
-                        value={summary.occurrences.toLocaleString()}
+                        value={
+                            <OccurrenceBreakdown
+                                count7d={summary.occurrences_7d}
+                                count24h={summary.occurrences_24h}
+                            />
+                        }
                     />
                     <InfoRow
                         label="Servers"

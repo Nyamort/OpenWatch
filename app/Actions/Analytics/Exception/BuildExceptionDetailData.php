@@ -44,7 +44,9 @@ class BuildExceptionDetailData
                 uniqExact(user) AS impacted_users,
                 uniqExact(server) AS servers,
                 max(recorded_at) AS last_seen,
-                min(recorded_at) AS first_seen
+                min(recorded_at) AS first_seen,
+                countIf(recorded_at >= now() - INTERVAL 7 DAY) AS occurrences_7d,
+                countIf(recorded_at >= now() - INTERVAL 1 DAY) AS occurrences_24h
             FROM extraction_exceptions
             WHERE environment_id = {$envId}
               AND group_key = {$escapedKey}
@@ -129,6 +131,8 @@ class BuildExceptionDetailData
                 'first_reported_in' => $firstDeploy ?: null,
                 'impacted_users' => (int) ($allTimeAggregates?->impacted_users ?? 0),
                 'occurrences' => (int) ($allTimeAggregates?->occurrences ?? 0),
+                'occurrences_7d' => (int) ($allTimeAggregates?->occurrences_7d ?? 0),
+                'occurrences_24h' => (int) ($allTimeAggregates?->occurrences_24h ?? 0),
                 'servers' => (int) ($allTimeAggregates?->servers ?? 0),
             ]))
             ->withRows($occurrences->toArray())
