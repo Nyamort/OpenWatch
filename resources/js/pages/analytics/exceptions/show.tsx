@@ -277,8 +277,8 @@ export default function ExceptionShow({
                 fallback={topSectionSkeleton}
             >
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    <ExceptionDetailChart graph={graph!} stats={stats!} />
                     <ExceptionDetailStats summary={summary!} />
+                    <ExceptionDetailChart graph={graph!} stats={stats!} />
                 </div>
             </Deferred>
             <Deferred data={['rows']} fallback={<TableSkeleton />}>
@@ -296,7 +296,7 @@ export default function ExceptionShow({
                     <h2 className="mb-2 text-sm font-medium">
                         Latest Occurrence
                     </h2>
-                    <ExceptionCard exception={summaryToOccurrence(summary!)} />
+                    {summary && <ExceptionCard exception={summaryToOccurrence(summary)} />}
                 </section>
             </Deferred>
         </AnalyticsLayout>
