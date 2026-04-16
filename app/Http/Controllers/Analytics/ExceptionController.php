@@ -53,10 +53,17 @@ class ExceptionController extends AnalyticsController
         $ctx = $this->resolveContext($request, $environment);
         $period = $this->buildPeriod($request);
 
-        $data = $this->buildDetail->handle($ctx, $period, $group);
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period, $group): array {
+            return $data ??= $this->buildDetail->handle($ctx, $period, $group);
+        };
 
         return Inertia::render('analytics/exceptions/show', [
-            'analytics' => $data,
+            'summary' => Inertia::defer(fn () => $resolve()['summary']),
+            'rows' => Inertia::defer(fn () => $resolve()['rows']),
+            'pagination' => Inertia::defer(fn () => $resolve()['pagination']),
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
             'period' => $request->query('period', '24h'),
         ]);
     }

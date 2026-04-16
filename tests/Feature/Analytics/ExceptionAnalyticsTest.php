@@ -29,6 +29,8 @@ function insertException(array $ctx, array $overrides = []): void
         'execution_id' => 'exec-'.uniqid(),
         'group_key' => hash('sha256', 'SomeException'),
         'user' => null,
+        'server' => 'web-1',
+        'deploy' => 'v1.0.0',
         'class' => 'App\\Exceptions\\SomeException',
         'file' => '/app/src/Something.php',
         'line' => 42,
@@ -89,6 +91,36 @@ test('exceptions index row for group shows correct count and global stats show h
         ->where('exceptions.0.count', 3)
         ->where('stats.unhandled', 2)
         ->where('stats.handled', 1)
+    );
+});
+
+test('exception show returns flat summary with aggregate stats', function () {
+    $ctx = setupExceptionContext(uniqid());
+    $groupKey = hash('sha256', 'ShowException-'.uniqid());
+
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 0, 'user' => 'u1', 'server' => 'web-1', 'deploy' => 'v1.0.0']);
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 0, 'user' => 'u2', 'server' => 'web-2', 'deploy' => 'v1.0.0']);
+    insertException($ctx, ['group_key' => $groupKey, 'handled' => 1, 'user' => 'u1', 'server' => 'web-1', 'deploy' => 'v1.0.0']);
+
+    $url = "/environments/{$ctx['env']->slug}/analytics/exceptions/{$groupKey}";
+
+    $response = $this->actingAs($ctx['user'])
+        ->withHeaders([
+            'X-Inertia-Partial-Component' => 'analytics/exceptions/show',
+            'X-Inertia-Partial-Data' => 'summary,graph,stats',
+        ])
+        ->get($url);
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('analytics/exceptions/show')
+        ->where('summary.occurrences', 3)
+        ->where('summary.impacted_users', 2)
+        ->where('summary.servers', 2)
+        ->where('summary.first_reported_in', 'v1.0.0')
+        ->where('stats.count', 3)
+        ->where('stats.handled', 1)
+        ->where('stats.unhandled', 2)
+        ->has('graph')
     );
 });
 
