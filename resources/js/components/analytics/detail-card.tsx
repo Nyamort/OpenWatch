@@ -25,7 +25,7 @@ export function Section({
     className?: string;
 }) {
     return (
-        <div className={cn('flex flex-col gap-1', className)}>
+        <div className={cn('flex flex-col gap-3', className)}>
             {title && (
                 <h3 className="mb-1 text-base font-semibold text-foreground">
                     {title}
