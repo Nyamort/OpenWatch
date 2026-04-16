@@ -8,6 +8,8 @@ import {
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { DataTable } from '@/components/analytics/data-table';
 import { CardSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
+import ExceptionCard from '@/components/exceptions/exception-card';
+import type { ExceptionOccurrence } from '@/components/exceptions/types';
 import {
     ChartLegend,
     ChartTooltip,
@@ -17,11 +19,17 @@ import AnalyticsLayout from '@/layouts/analytics-layout';
 import type { ExceptionGraphBucket, ExceptionStats, Pagination } from './types';
 
 interface Summary {
+    group_key: string;
+    recorded_at: string;
     class: string;
     message: string;
     file: string;
     line: number;
-    handled: boolean;
+    handled: boolean | number;
+    code: string | null;
+    php_version: string | null;
+    laravel_version: string | null;
+    trace: string;
     last_seen: string | null;
     first_seen: string | null;
     first_reported_in: string | null;
@@ -29,6 +37,29 @@ interface Summary {
     occurrences: number;
     servers: number;
     [key: string]: unknown;
+}
+
+function summaryToOccurrence(summary: Summary): ExceptionOccurrence {
+    let trace: ExceptionOccurrence['trace'] = [];
+    try {
+        trace = JSON.parse(summary.trace);
+    } catch {
+        // malformed trace — leave empty
+    }
+
+    return {
+        group: summary.group_key,
+        timestamp: summary.recorded_at,
+        file: summary.file,
+        line: summary.line,
+        class: summary.class,
+        message: summary.message,
+        handled: Boolean(summary.handled),
+        code: summary.code ?? '0',
+        php_version: summary.php_version ?? '',
+        laravel_version: summary.laravel_version ?? '',
+        trace,
+    };
 }
 
 interface Props {
@@ -258,6 +289,14 @@ export default function ExceptionShow({
                         rows={rows ?? []}
                         pagination={pagination}
                     />
+                </section>
+            </Deferred>
+            <Deferred data={['summary']} fallback={<CardSkeleton />}>
+                <section>
+                    <h2 className="mb-2 text-sm font-medium">
+                        Latest Occurrence
+                    </h2>
+                    <ExceptionCard exception={summaryToOccurrence(summary!)} />
                 </section>
             </Deferred>
         </AnalyticsLayout>
