@@ -15,7 +15,9 @@ export function MarkdownEditor({ value, onChange }: Props) {
 
     useEffect(() => {
         const el = textareaRef.current;
-        if (!el) { return; }
+        if (!el) {
+            return;
+        }
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
     }, [value, tab]);
@@ -53,7 +55,7 @@ export function MarkdownEditor({ value, onChange }: Props) {
                     />
                 ) : (
                     <div
-                        className="prose prose-sm dark:prose-invert max-w-none p-4"
+                        className="prose prose-sm max-w-none p-4 dark:prose-invert"
                         dangerouslySetInnerHTML={{
                             __html: marked(value) as string,
                         }}

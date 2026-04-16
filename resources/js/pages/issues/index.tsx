@@ -18,7 +18,12 @@ import AppLayout from '@/layouts/app-layout';
 import { show } from '@/routes/issues';
 import type { BreadcrumbItem } from '@/types';
 
-type IssueSortKey = 'id' | 'priority' | 'last_seen_at' | 'occurrence_count' | 'first_seen_at';
+type IssueSortKey =
+    | 'id'
+    | 'priority'
+    | 'last_seen_at'
+    | 'occurrence_count'
+    | 'first_seen_at';
 type SortDir = 'asc' | 'desc';
 
 interface Issue {
@@ -114,7 +119,7 @@ export default function IssuesIndex({
                             >
                                 <PriorityBars priority={0} />
                             </SortableHead>
-                            <TableHead className="h-11 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                 Issue
                             </TableHead>
                             <SortableHead
@@ -127,7 +132,7 @@ export default function IssuesIndex({
                             >
                                 Count
                             </SortableHead>
-                            <TableHead className="h-11 w-px px-4 text-right text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
+                            <TableHead className="h-11 w-px px-4 text-right text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                                 Users
                             </TableHead>
                             <SortableHead
@@ -148,7 +153,7 @@ export default function IssuesIndex({
                             >
                                 Last Seen
                             </SortableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium whitespace-nowrap text-muted-foreground uppercase tracking-wide">
+                            <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                                 Assigned
                             </TableHead>
                             <TableHead className="h-11 w-px pr-5" />
@@ -184,7 +189,9 @@ export default function IssuesIndex({
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
                                         <PriorityPopover
-                                            environmentSlug={activeEnvironment.slug}
+                                            environmentSlug={
+                                                activeEnvironment.slug
+                                            }
                                             issueId={issue.id}
                                             priority={issue.priority}
                                         />
@@ -204,7 +211,7 @@ export default function IssuesIndex({
                                     <TableCell className="h-11 w-px px-4 text-right font-medium whitespace-nowrap tabular-nums">
                                         {issue.occurrence_count.toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap tabular-nums text-muted-foreground">
+                                    <TableCell className="h-11 w-px px-4 text-right whitespace-nowrap text-muted-foreground tabular-nums">
                                         {issue.detail?.user_count
                                             ? issue.detail.user_count.toLocaleString()
                                             : '—'}
@@ -223,7 +230,9 @@ export default function IssuesIndex({
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
                                         <AssigneePopover
-                                            environmentSlug={activeEnvironment.slug}
+                                            environmentSlug={
+                                                activeEnvironment.slug
+                                            }
                                             issueId={issue.id}
                                             assignee={issue.assignee}
                                             members={members}

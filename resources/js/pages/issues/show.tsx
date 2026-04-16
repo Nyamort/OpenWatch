@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
 import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import AppLayout from '@/layouts/app-layout';
 import { index, show } from '@/routes/issues';

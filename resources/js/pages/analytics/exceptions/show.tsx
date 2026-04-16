@@ -1,12 +1,12 @@
 import { Deferred, Head } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { DataTable } from '@/components/analytics/data-table';
 import {
     BarCursor,
     ChartPanel,
     tooltipProps,
 } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
+import { DataTable } from '@/components/analytics/data-table';
 import { CardSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import {
     ChartLegend,
