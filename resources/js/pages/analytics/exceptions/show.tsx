@@ -1,4 +1,4 @@
-import { Deferred, Head } from '@inertiajs/react';
+import { Deferred, Head, usePage } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import {
     BarCursor,
@@ -7,6 +7,7 @@ import {
 } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
 import { DataTable } from '@/components/analytics/data-table';
+import { InfoRow, Section } from '@/components/analytics/detail-card';
 import { CardSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import ExceptionCard from '@/components/exceptions/exception-card';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
@@ -15,7 +16,9 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from '@/components/ui/chart';
+import { Card, CardContent } from '@/components/ui/card';
 import AnalyticsLayout from '@/layouts/analytics-layout';
+import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
 import type { ExceptionGraphBucket, ExceptionStats, Pagination } from './types';
 
 interface Summary {
@@ -94,17 +97,6 @@ function formatDatetime(value: string | null | undefined): string {
         hour: '2-digit',
         minute: '2-digit',
     });
-}
-
-function StatItem({ label, value }: { label: string; value: React.ReactNode }) {
-    return (
-        <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {label}
-            </span>
-            <span className="font-semibold tabular-nums">{value ?? '—'}</span>
-        </div>
-    );
 }
 
 function ExceptionDetailChart({
@@ -217,40 +209,36 @@ function ExceptionDetailChart({
 
 function ExceptionDetailStats({ summary }: { summary: Summary }) {
     return (
-        <div className="flex flex-col justify-between gap-6 rounded-xl border bg-surface p-5">
-            <div className="flex flex-col gap-1">
-                <p className="font-mono text-xs text-muted-foreground">
-                    {summary.file}:{summary.line}
-                </p>
-                <p className="font-medium">{summary.message}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                <StatItem
-                    label="Last Seen"
-                    value={formatDatetime(summary.last_seen)}
-                />
-                <StatItem
-                    label="First Seen"
-                    value={formatDatetime(summary.first_seen)}
-                />
-                <StatItem
-                    label="First Reported In"
-                    value={summary.first_reported_in ?? '—'}
-                />
-                <StatItem
-                    label="Impacted Users"
-                    value={summary.impacted_users.toLocaleString()}
-                />
-                <StatItem
-                    label="Occurrences"
-                    value={summary.occurrences.toLocaleString()}
-                />
-                <StatItem
-                    label="Servers"
-                    value={summary.servers.toLocaleString()}
-                />
-            </div>
-        </div>
+        <Card className="gap-0 bg-surface py-0">
+            <CardContent className="py-6">
+                <Section>
+                    <InfoRow
+                        label="Last Seen"
+                        value={formatDatetime(summary.last_seen)}
+                    />
+                    <InfoRow
+                        label="First Seen"
+                        value={formatDatetime(summary.first_seen)}
+                    />
+                    <InfoRow
+                        label="First Reported In"
+                        value={summary.first_reported_in ?? '—'}
+                    />
+                    <InfoRow
+                        label="Impacted Users"
+                        value={summary.impacted_users.toLocaleString()}
+                    />
+                    <InfoRow
+                        label="Occurrences"
+                        value={summary.occurrences.toLocaleString()}
+                    />
+                    <InfoRow
+                        label="Servers"
+                        value={summary.servers.toLocaleString()}
+                    />
+                </Section>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -269,8 +257,26 @@ export default function ExceptionShow({
     stats,
     period,
 }: Props) {
+    const { props } = usePage();
+    const { activeEnvironment } = props as {
+        activeEnvironment?: { slug: string } | null;
+    };
+
+    const breadcrumbs = [
+        {
+            title: 'Exceptions',
+            href: activeEnvironment
+                ? exceptionsIndex.url({ environment: activeEnvironment.slug })
+                : '#',
+        },
+        {
+            title: summary?.message ?? '…',
+            href: '#',
+        },
+    ];
+
     return (
-        <AnalyticsLayout period={period}>
+        <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred
                 data={['graph', 'stats', 'summary']}
