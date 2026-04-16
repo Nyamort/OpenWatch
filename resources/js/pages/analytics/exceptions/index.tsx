@@ -4,7 +4,7 @@ import {
     TableWithSearchSkeleton,
 } from '@/components/analytics/skeletons';
 import AnalyticsLayout from '@/layouts/analytics-layout';
-import { ExceptionCharts } from './partials/exception-charts';
+import { ExceptionCharts } from '@/components/exceptions/exception-charts';
 import { ExceptionTable } from './partials/exception-table';
 import type {
     ExceptionGraphBucket,
@@ -42,7 +42,7 @@ export default function ExceptionsIndex({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <ExceptionCharts graph={graph!} stats={stats!} />
+                <ExceptionCharts graph={graph!} stats={stats!} syncId="exceptions" />
             </Deferred>
             <Deferred
                 data={['exceptions', 'pagination']}

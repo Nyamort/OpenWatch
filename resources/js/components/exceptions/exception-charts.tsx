@@ -10,19 +10,20 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from '@/components/ui/chart';
-import type { ExceptionGraphBucket, ExceptionStats } from '../types';
+import type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
 
 const chartConfig = {
     handled: { label: 'Handled', color: 'oklch(0.50 0 0)' },
     unhandled: { label: 'Unhandled', color: 'hsl(0 72% 51%)' },
 } satisfies ChartConfig;
 
-interface ExceptionDetailChartProps {
+interface ExceptionChartsProps {
     graph: ExceptionGraphBucket[];
     stats: ExceptionStats;
+    syncId?: string;
 }
 
-export function ExceptionDetailChart({ graph, stats }: ExceptionDetailChartProps) {
+export function ExceptionCharts({ graph, stats, syncId }: ExceptionChartsProps) {
     const legendStats = (
         <div className="flex gap-4 text-sm">
             {(['handled', 'unhandled'] as const).map((key) => (
@@ -53,6 +54,7 @@ export function ExceptionDetailChart({ graph, stats }: ExceptionDetailChartProps
         >
             {(legendContent) => (
                 <BarChart
+                    syncId={syncId}
                     data={graph}
                     margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                 >
@@ -84,7 +86,8 @@ export function ExceptionDetailChart({ graph, stats }: ExceptionDetailChartProps
                                         label: 'Unhandled',
                                         value:
                                             payload?.find(
-                                                (p) => p.dataKey === 'unhandled',
+                                                (p) =>
+                                                    p.dataKey === 'unhandled',
                                             )?.value ?? 0,
                                     },
                                 ]}

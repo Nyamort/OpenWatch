@@ -6,7 +6,7 @@ import type { ExceptionOccurrence } from '@/components/exceptions/types';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
 import type { ExceptionGraphBucket, ExceptionStats, ExceptionSummary, Pagination } from './types';
-import { ExceptionDetailChart } from './partials/exception-detail-chart';
+import { ExceptionCharts } from '@/components/exceptions/exception-charts';
 import { ExceptionDetailStats } from './partials/exception-detail-stats';
 
 interface Props {
@@ -77,7 +77,7 @@ export default function ExceptionShow({ summary, rows, pagination, graph, stats,
             <Deferred data={['graph', 'stats', 'summary']} fallback={topSectionSkeleton}>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <ExceptionDetailStats summary={summary!} />
-                    <ExceptionDetailChart graph={graph!} stats={stats!} />
+                    <ExceptionCharts graph={graph!} stats={stats!} />
                 </div>
             </Deferred>
             <Deferred data={['rows']} fallback={<TableSkeleton />}>

@@ -1,3 +1,15 @@
+export interface ExceptionGraphBucket {
+    bucket: string;
+    handled: number;
+    unhandled: number;
+}
+
+export interface ExceptionStats {
+    count: number;
+    handled: number;
+    unhandled: number;
+}
+
 export interface ExceptionTrace {
     /** "app/Http/Kernel.php:42" */
     file: string;

@@ -1,14 +1,4 @@
-export interface ExceptionGraphBucket {
-    bucket: string;
-    handled: number;
-    unhandled: number;
-}
-
-export interface ExceptionStats {
-    count: number;
-    handled: number;
-    unhandled: number;
-}
+export type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
 
 export interface ExceptionRow {
     group_key: string;
