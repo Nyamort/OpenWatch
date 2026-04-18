@@ -80,16 +80,13 @@ export default function ExceptionShow({ summary, rows, pagination, graph, stats,
                     <ExceptionCharts graph={graph!} stats={stats!} />
                 </div>
             </Deferred>
+            <Deferred data={['summary']} fallback={<CardSkeleton />}>
+                {summary && <ExceptionCard exception={summaryToOccurrence(summary)} />}
+            </Deferred>
             <Deferred data={['rows']} fallback={<TableSkeleton />}>
                 <section>
                     <h2 className="mb-2 text-sm font-medium">Occurrences</h2>
                     <DataTable columns={occurrenceColumns} rows={rows ?? []} pagination={pagination} />
-                </section>
-            </Deferred>
-            <Deferred data={['summary']} fallback={<CardSkeleton />}>
-                <section>
-                    <h2 className="mb-2 text-sm font-medium">Latest Occurrence</h2>
-                    {summary && <ExceptionCard exception={summaryToOccurrence(summary)} />}
                 </section>
             </Deferred>
         </AnalyticsLayout>
