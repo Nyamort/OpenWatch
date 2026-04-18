@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { CodeBlock } from '@/components/ui/code-block';
 import { cn } from '@/lib/utils';
-import { CodeBlock, EnvVar } from './shared';
 
 export function WizardStep2({
     token,
@@ -20,20 +20,25 @@ export function WizardStep2({
                 <p className="mb-2 text-xs font-semibold text-zinc-400">
                     Install the Nightwatch package
                 </p>
-                <CodeBlock onCopy="composer require laravel/nightwatch">
-                    <span className="text-zinc-100">
-                        composer require laravel/nightwatch
-                    </span>
-                </CodeBlock>
+                <CodeBlock
+                    code="composer require laravel/nightwatch"
+                    language="bash"
+                    copyable
+                    className="rounded-md bg-zinc-900 px-4 py-3"
+                />
             </div>
 
             <div>
                 <p className="mb-2 text-xs font-semibold text-zinc-400">
                     Add the token to your environment variables
                 </p>
-                <CodeBlock onCopy={`NIGHTWATCH_TOKEN=${token}`}>
-                    <EnvVar name="NIGHTWATCH_TOKEN" value={token || '...'} />
-                </CodeBlock>
+                <CodeBlock
+                    code={`NIGHTWATCH_TOKEN=${token || '...'}`}
+                    copyValue={`NIGHTWATCH_TOKEN=${token}`}
+                    language="bash"
+                    copyable
+                    className="rounded-md bg-zinc-900 px-4 py-3"
+                />
             </div>
 
             <div>
@@ -60,13 +65,19 @@ export function WizardStep2({
                     ))}
                 </div>
                 {logTab === 'single' ? (
-                    <CodeBlock onCopy="LOG_CHANNEL=nightwatch">
-                        <EnvVar name="LOG_CHANNEL" value="nightwatch" />
-                    </CodeBlock>
+                    <CodeBlock
+                        code="LOG_CHANNEL=nightwatch"
+                        language="bash"
+                        copyable
+                        className="rounded-md bg-zinc-900 px-4 py-3"
+                    />
                 ) : (
-                    <CodeBlock onCopy="LOG_STACK=nightwatch">
-                        <EnvVar name="LOG_STACK" value="nightwatch" />
-                    </CodeBlock>
+                    <CodeBlock
+                        code="LOG_STACK=nightwatch"
+                        language="bash"
+                        copyable
+                        className="rounded-md bg-zinc-900 px-4 py-3"
+                    />
                 )}
             </div>
 

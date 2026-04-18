@@ -2,12 +2,12 @@ import { router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Check, Copy, Database } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { format as formatSql } from 'sql-formatter';
-import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CodeBlock } from '@/components/ui/code-block';
 import {
     Popover,
     PopoverContent,
@@ -62,12 +62,12 @@ function QueryCell({ query }: { query: string }) {
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    <SqlSyntaxHighlighter
-                        className="overflow-hidden"
+                    <CodeBlock
+                        code={query}
+                        language="sql"
                         wrapLongLines={false}
-                    >
-                        {query}
-                    </SqlSyntaxHighlighter>
+                        className="overflow-hidden"
+                    />
                 </div>
             </PopoverTrigger>
             <PopoverContent
@@ -92,9 +92,10 @@ function QueryCell({ query }: { query: string }) {
                     </Button>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-3">
-                    <SqlSyntaxHighlighter wrapLongLines>
-                        {formatSql(query, { language: 'sql' })}
-                    </SqlSyntaxHighlighter>
+                    <CodeBlock
+                        code={formatSql(query, { language: 'sql' })}
+                        language="sql"
+                    />
                 </div>
             </PopoverContent>
         </Popover>

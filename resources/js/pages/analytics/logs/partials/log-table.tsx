@@ -1,10 +1,10 @@
 import { ScrollText } from 'lucide-react';
 import { useState } from 'react';
-import JsonSyntaxHighlighter from '@/components/analytics/json-syntax-highlighter';
 import { AnalyticsTableHeader } from '@/components/analytics/table/analytics-table-header';
 import { TablePagination } from '@/components/analytics/table/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { CodeBlock } from '@/components/ui/code-block';
 import {
     Sheet,
     SheetContent,
@@ -200,11 +200,13 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                                     </CardHeader>
                                     <CardContent className="py-4">
                                         {selected.context ? (
-                                            <JsonSyntaxHighlighter className="overflow-x-auto rounded-md bg-muted p-3">
-                                                {formatContext(
+                                            <CodeBlock
+                                                code={formatContext(
                                                     selected.context,
                                                 )}
-                                            </JsonSyntaxHighlighter>
+                                                language="json"
+                                                className="overflow-x-auto rounded-md bg-muted p-3"
+                                            />
                                         ) : (
                                             <span className="text-sm text-muted-foreground">
                                                 —

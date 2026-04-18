@@ -2,6 +2,7 @@ import { ChevronDown, Info } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { CodeBlock } from '@/components/ui/code-block';
 import {
     Select,
     SelectContent,
@@ -9,7 +10,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { CodeBlock, EnvVar } from './shared';
 
 const RATE_OPTIONS = [
     { label: '0%', value: '0' },
@@ -266,17 +266,13 @@ export function WizardStep3({
 
             {allEnvLines.length > 0 && (
                 <CodeBlock
-                    onCopy={allEnvLines
+                    code={allEnvLines
                         .map((l) => `${l.envVar}=${l.value}`)
                         .join('\n')}
-                >
-                    {allEnvLines.map((line, i) => (
-                        <span key={line.envVar}>
-                            <EnvVar name={line.envVar} value={line.value} />
-                            {i < allEnvLines.length - 1 && '\n'}
-                        </span>
-                    ))}
-                </CodeBlock>
+                    language="bash"
+                    copyable
+                    className="rounded-md bg-zinc-900 px-4 py-3"
+                />
             )}
 
             <div className="flex items-center gap-2 rounded-md border border-blue-800 bg-blue-950/40 px-3 py-2">

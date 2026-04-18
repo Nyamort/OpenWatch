@@ -1,8 +1,8 @@
 import { Check, Wifi, WifiOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { CodeBlock } from '@/components/ui/code-block';
 import { cn } from '@/lib/utils';
-import { CodeBlock } from './shared';
 
 export function WizardStep4({
     onComplete,
@@ -37,11 +37,12 @@ export function WizardStep4({
                 <p className="mb-2 text-xs font-semibold text-zinc-400">
                     Run the Nightwatch Agent
                 </p>
-                <CodeBlock onCopy="php artisan nightwatch:agent">
-                    <span className="text-zinc-100">
-                        php artisan nightwatch:agent
-                    </span>
-                </CodeBlock>
+                <CodeBlock
+                    code="php artisan nightwatch:agent"
+                    language="bash"
+                    copyable
+                    className="rounded-md bg-zinc-900 px-4 py-3"
+                />
             </div>
 
             <div

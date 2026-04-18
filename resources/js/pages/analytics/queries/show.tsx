@@ -1,12 +1,9 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { Check, Copy } from 'lucide-react';
 import { format as formatSql } from 'sql-formatter';
 import { InfoRow, Section } from '@/components/analytics/detail-card';
 import { CardSkeleton, ChartsSkeleton } from '@/components/analytics/skeletons';
-import SqlSyntaxHighlighter from '@/components/analytics/sql-syntax-highlighter';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useClipboard } from '@/hooks/use-clipboard';
+import { CodeBlock } from '@/components/ui/code-block';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { formatDuration } from '@/lib/utils';
 import { index as queriesIndex } from '@/routes/analytics/queries';
@@ -30,26 +27,13 @@ interface Props {
 }
 
 function SqlBlock({ sql }: { sql: string }) {
-    const [copiedText, copy] = useClipboard();
-
     return (
-        <div className="group/sql relative overflow-hidden rounded-lg border border-border bg-muted/30">
-            <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 size-7 opacity-0 transition-opacity group-hover/sql:opacity-100"
-                onClick={() => copy(sql)}
-            >
-                {copiedText !== null ? (
-                    <Check className="size-3.5 text-emerald-500" />
-                ) : (
-                    <Copy className="size-3.5" />
-                )}
-            </Button>
-            <SqlSyntaxHighlighter className="p-4 text-xs" wrapLongLines>
-                {formatSql(sql, { language: 'sql' })}
-            </SqlSyntaxHighlighter>
-        </div>
+        <CodeBlock
+            code={formatSql(sql, { language: 'sql' })}
+            language="sql"
+            copyable
+            className="overflow-hidden rounded-lg border border-border bg-muted/30 p-4"
+        />
     );
 }
 

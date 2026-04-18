@@ -1,7 +1,7 @@
 import { ChevronsDownUp, ChevronsUpDown, Info } from 'lucide-react';
 import { useState } from 'react';
+import { CodeBlock } from '@/components/ui/code-block';
 import { cn } from '@/lib/utils';
-import { CodeBlock } from './code-block';
 import { FilePath } from './file-path';
 import { SourceLabel } from './source-label';
 import type { IndexedTrace } from './types';
@@ -108,9 +108,13 @@ export function AppFrame({
 
             {hasCode && expanded && (
                 <CodeBlock
-                    code={frame.code!}
-                    highlightedLine={lineNumber ? +lineNumber : 0}
-                    className="border-t border-neutral-100 dark:border-white/10"
+                    code={Object.values(frame.code!).join('\n')}
+                    language="php"
+                    startingLineNumber={+Object.keys(frame.code!)[0]}
+                    showLineNumbers
+                    highlightedLine={lineNumber ? +lineNumber : undefined}
+                    wrapLongLines={false}
+                    className="border-t border-neutral-100 bg-neutral-50 px-2 py-2 dark:border-white/10 dark:bg-neutral-900"
                 />
             )}
         </div>
