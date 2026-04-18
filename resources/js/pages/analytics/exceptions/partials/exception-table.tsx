@@ -13,6 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import { show } from '@/routes/analytics/exceptions';
 import type {
@@ -41,6 +42,7 @@ export function ExceptionTable({
     const { activeEnvironment } = props as unknown as {
         activeEnvironment: { slug: string };
     };
+    const analyticsHref = useAnalyticsHref();
 
     const { searchValue, handleSearch, handlePage, handleSort } =
         useAnalyticsTable<ExceptionSortKey>({
@@ -124,10 +126,12 @@ export function ExceptionTable({
                                 key={row.group_key}
                                 onClick={() =>
                                     router.visit(
-                                        show.url({
-                                            environment: activeEnvironment.slug,
-                                            group: row.group_key,
-                                        }),
+                                        analyticsHref(
+                                            show.url({
+                                                environment: activeEnvironment.slug,
+                                                group: row.group_key,
+                                            }),
+                                        ),
                                     )
                                 }
                                 className="group/row cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
