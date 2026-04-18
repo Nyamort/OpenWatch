@@ -60,7 +60,7 @@ export function ExceptionOccurrenceTable({
                         <TableHead className="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             Message
                         </TableHead>
-                        <TableHead className="h-11 w-px px-5 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
+                        <TableHead className="h-11 w-px px-5 text-right text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                             User
                         </TableHead>
                     </TableRow>
