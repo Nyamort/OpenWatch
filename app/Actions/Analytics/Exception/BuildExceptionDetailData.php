@@ -110,12 +110,17 @@ class BuildExceptionDetailData
         $offset = $this->pageOffset($page);
 
         $occurrences = $this->clickhouse->select("
-            SELECT *
-            FROM extraction_exceptions
-            WHERE environment_id = {$envId}
-              AND group_key = {$escapedKey}
-              AND recorded_at BETWEEN {$start} AND {$end}
-            ORDER BY recorded_at DESC
+            SELECT
+                e.*,
+                u.username AS user_email
+            FROM extraction_exceptions e
+            LEFT JOIN extraction_user_activities u
+                ON u.environment_id = e.environment_id
+                AND u.user_id = e.user
+            WHERE e.environment_id = {$envId}
+              AND e.group_key = {$escapedKey}
+              AND e.recorded_at BETWEEN {$start} AND {$end}
+            ORDER BY e.recorded_at DESC
             LIMIT {$this->analyticsPerPage} OFFSET {$offset}
         ");
 
@@ -127,6 +132,16 @@ class BuildExceptionDetailData
             WHERE environment_id = {$envId}
               AND trace_id = {$traceId}
         ")->toArray();
+
+        $rows = $occurrences->map(function ($row) {
+            $data = (array) $row;
+            $data['user'] = $row->user_email !== '' && $row->user_email !== null
+                ? $row->user_email
+                : null;
+            unset($data['user_email']);
+
+            return $data;
+        })->all();
 
         return (new AnalyticsResponseBuilder)
             ->withSummary(array_merge((array) $representative, [
@@ -140,7 +155,7 @@ class BuildExceptionDetailData
                 'occurrences_24h' => (int) ($allTimeAggregates?->occurrences_24h ?? 0),
                 'servers' => (int) ($allTimeAggregates?->servers ?? 0),
             ]))
-            ->withRows($occurrences->toArray())
+            ->withRows($rows)
             ->withPagination($this->buildPaginationMeta($total, $page))
             ->build() + [
                 'graph' => $graph,
