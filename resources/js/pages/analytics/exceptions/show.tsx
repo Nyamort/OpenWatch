@@ -1,29 +1,25 @@
 import { Deferred, Head, usePage } from '@inertiajs/react';
-import { DataTable } from '@/components/analytics/data-table';
 import { CardSkeleton, TableSkeleton } from '@/components/analytics/skeletons';
 import ExceptionCard from '@/components/exceptions/exception-card';
+import { ExceptionCharts } from '@/components/exceptions/exception-charts';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
 import type { ExceptionGraphBucket, ExceptionStats, ExceptionSummary, Pagination } from './types';
-import { ExceptionCharts } from '@/components/exceptions/exception-charts';
 import { ExceptionDetailStats } from './partials/exception-detail-stats';
+import {
+    ExceptionOccurrenceTable,
+    type ExceptionOccurrenceRow,
+} from './partials/exception-occurrence-table';
 
 interface Props {
     summary?: ExceptionSummary;
-    rows?: Array<Record<string, unknown>>;
+    rows?: ExceptionOccurrenceRow[];
     pagination?: Pagination | null;
     graph?: ExceptionGraphBucket[];
     stats?: ExceptionStats;
     period: string;
 }
-
-const occurrenceColumns = [
-    { key: 'user', label: 'User' },
-    { key: 'php_version', label: 'PHP' },
-    { key: 'laravel_version', label: 'Laravel' },
-    { key: 'recorded_at', label: 'Time' },
-];
 
 const topSectionSkeleton = (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -83,11 +79,12 @@ export default function ExceptionShow({ summary, rows, pagination, graph, stats,
             <Deferred data={['summary']} fallback={<CardSkeleton />}>
                 {summary && <ExceptionCard exception={summaryToOccurrence(summary)} />}
             </Deferred>
-            <Deferred data={['rows']} fallback={<TableSkeleton />}>
-                <section>
-                    <h2 className="mb-2 text-sm font-medium">Occurrences</h2>
-                    <DataTable columns={occurrenceColumns} rows={rows ?? []} pagination={pagination} />
-                </section>
+            <Deferred data={['rows', 'pagination', 'stats']} fallback={<TableSkeleton />}>
+                <ExceptionOccurrenceTable
+                    rows={rows ?? []}
+                    pagination={pagination!}
+                    count={stats?.count ?? 0}
+                />
             </Deferred>
         </AnalyticsLayout>
     );
