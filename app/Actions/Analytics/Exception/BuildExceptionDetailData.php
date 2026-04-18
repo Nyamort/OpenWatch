@@ -2,6 +2,7 @@
 
 namespace App\Actions\Analytics\Exception;
 
+use App\Concerns\PaginatesAnalyticsQuery;
 use App\Services\Analytics\AnalyticsContext;
 use App\Services\Analytics\AnalyticsResponseBuilder;
 use App\Services\Analytics\PeriodResult;
@@ -10,6 +11,8 @@ use Carbon\Carbon;
 
 class BuildExceptionDetailData
 {
+    use PaginatesAnalyticsQuery;
+
     public function __construct(private readonly ClickHouseService $clickhouse) {}
 
     /**
@@ -17,7 +20,7 @@ class BuildExceptionDetailData
      *
      * @return array<string, mixed>
      */
-    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $groupKey): array
+    public function handle(AnalyticsContext $ctx, PeriodResult $period, string $groupKey, int $page = 1): array
     {
         $envId = $ctx->environment->id;
         $start = ClickHouseService::escape($period->start);
@@ -104,6 +107,8 @@ class BuildExceptionDetailData
 
         $total = (int) ($aggregates?->occurrences ?? 0);
 
+        $offset = $this->pageOffset($page);
+
         $occurrences = $this->clickhouse->select("
             SELECT *
             FROM extraction_exceptions
@@ -111,7 +116,7 @@ class BuildExceptionDetailData
               AND group_key = {$escapedKey}
               AND recorded_at BETWEEN {$start} AND {$end}
             ORDER BY recorded_at DESC
-            LIMIT 50
+            LIMIT {$this->analyticsPerPage} OFFSET {$offset}
         ");
 
         $traceId = ClickHouseService::escape($representative->trace_id ?? '');
@@ -136,12 +141,7 @@ class BuildExceptionDetailData
                 'servers' => (int) ($allTimeAggregates?->servers ?? 0),
             ]))
             ->withRows($occurrences->toArray())
-            ->withPagination([
-                'current_page' => 1,
-                'last_page' => (int) ceil($total / 50),
-                'per_page' => 50,
-                'total' => $total,
-            ])
+            ->withPagination($this->buildPaginationMeta($total, $page))
             ->build() + [
                 'graph' => $graph,
                 'stats' => [

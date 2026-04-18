@@ -8,6 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAnalyticsTable } from '@/hooks/use-analytics-table';
 import type { Pagination } from '@/types/analytics';
 
 export interface ExceptionOccurrenceRow {
@@ -31,6 +32,11 @@ export function ExceptionOccurrenceTable({
     pagination,
     count,
 }: ExceptionOccurrenceTableProps) {
+    const { handlePage } = useAnalyticsTable({
+        search: '',
+        only: ['rows', 'pagination'],
+    });
+
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -123,7 +129,7 @@ export function ExceptionOccurrenceTable({
                     )}
                 </TableBody>
             </Table>
-            <TablePagination pagination={pagination} onPage={() => {}} />
+            <TablePagination pagination={pagination} onPage={handlePage} />
         </div>
     );
 }
