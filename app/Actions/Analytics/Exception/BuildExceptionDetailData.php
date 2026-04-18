@@ -114,9 +114,12 @@ class BuildExceptionDetailData
                 e.*,
                 u.username AS user_email
             FROM extraction_exceptions e
-            LEFT JOIN extraction_user_activities u
-                ON u.environment_id = e.environment_id
-                AND u.user_id = e.user
+            ANY LEFT JOIN (
+                SELECT user_id, any(username) AS username
+                FROM extraction_user_activities
+                WHERE environment_id = {$envId}
+                GROUP BY user_id
+            ) u ON u.user_id = e.user
             WHERE e.environment_id = {$envId}
               AND e.group_key = {$escapedKey}
               AND e.recorded_at BETWEEN {$start} AND {$end}
