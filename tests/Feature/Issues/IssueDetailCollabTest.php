@@ -39,7 +39,7 @@ function addDetailMemberWithRole(array $ctx, User $user, string $roleSlug): void
 test('issue detail loads all sections', function () {
     $ctx = issueDetailContext(uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Detail Test Issue',
         'fingerprint' => hash('sha256', 'detail-'.uniqid()),
         'source_type' => 'exception',
@@ -53,7 +53,8 @@ test('issue detail loads all sections', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('issues/show')
         ->has('issue')
-        ->has('comments')
+        ->has('timeline.data')
+        ->has('viewerRole')
         ->where('issue.id', $issue->id)
     );
 });
@@ -63,7 +64,7 @@ test('viewer cannot add comment', function () {
     $viewer = User::factory()->create();
     addDetailMemberWithRole($ctx, $viewer, 'viewer');
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Comment Viewer Test',
         'fingerprint' => hash('sha256', 'viewer-comment-'.uniqid()),
     ]);
@@ -80,14 +81,14 @@ test('viewer cannot add comment', function () {
 test('author can edit own comment', function () {
     $ctx = issueDetailContext(uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Edit Comment Test',
         'fingerprint' => hash('sha256', 'edit-comment-'.uniqid()),
     ]);
 
-    $comment = (new AddComment)->handle($issue, 'Original body', $ctx['user']);
+    $comment = app(AddComment::class)->handle($issue, 'Original body', $ctx['user']);
 
-    (new EditComment)->handle($comment, 'Updated body', $ctx['user']);
+    app(EditComment::class)->handle($comment, 'Updated body', $ctx['user']);
 
     $comment->refresh();
     expect($comment->body)->toBe('Updated body')
@@ -102,17 +103,17 @@ test('admin can delete any comment', function () {
     $commenter = User::factory()->create();
     addDetailMemberWithRole($ctx, $commenter, 'developer');
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Admin Delete Test',
         'fingerprint' => hash('sha256', 'admin-delete-'.uniqid()),
     ]);
 
-    $comment = (new AddComment)->handle($issue, 'Comment by commenter', $commenter);
+    $comment = app(AddComment::class)->handle($issue, 'Comment by commenter', $commenter);
 
     $comment->load('issue');
-    (new DeleteComment(app(\App\Services\Authorization\PermissionResolver::class)))->handle($comment, $admin);
+    app(DeleteComment::class)->handle($comment, $admin);
 
-    $this->assertDatabaseMissing('issue_comments', ['id' => $comment->id]);
+    $this->assertSoftDeleted('issue_comments', ['id' => $comment->id]);
 });
 
 test('non-author non-admin cannot delete comment', function () {
@@ -120,14 +121,14 @@ test('non-author non-admin cannot delete comment', function () {
     $developer = User::factory()->create();
     addDetailMemberWithRole($ctx, $developer, 'developer');
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Delete Permission Test',
         'fingerprint' => hash('sha256', 'delete-perm-'.uniqid()),
     ]);
 
-    $comment = (new AddComment)->handle($issue, 'Owner comment', $ctx['user']);
+    $comment = app(AddComment::class)->handle($issue, 'Owner comment', $ctx['user']);
     $comment->load('issue');
 
-    expect(fn () => (new DeleteComment(app(\App\Services\Authorization\PermissionResolver::class)))->handle($comment, $developer))
+    expect(fn () => app(DeleteComment::class)->handle($comment, $developer))
         ->toThrow(AuthorizationException::class);
 });

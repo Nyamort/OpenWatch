@@ -2,55 +2,54 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class IssueActivity extends Model
+class IssueTimelineEntry extends Model
 {
-    /**
-     * Indicates if the model should be timestamped.
-     */
-    public $timestamps = false;
+    public const UPDATED_AT = null;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
         'issue_id',
         'actor_id',
-        'type',
-        'metadata',
-        'created_at',
+        'eventable_type',
+        'eventable_id',
+        'occurred_at',
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
+            'occurred_at' => 'datetime',
             'created_at' => 'datetime',
         ];
     }
 
-    /**
-     * Get the issue this activity belongs to.
-     */
     public function issue(): BelongsTo
     {
         return $this->belongsTo(Issue::class);
     }
 
-    /**
-     * Get the actor who performed this activity.
-     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    public function eventable(): MorphTo
+    {
+        return $this->morphTo()->withTrashed();
+    }
+
+    public function scopeForIssue(Builder $query, int $issueId): void
+    {
+        $query->where('issue_id', $issueId);
     }
 }

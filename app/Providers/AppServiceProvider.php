@@ -15,7 +15,9 @@ use App\Policies\ProjectPolicy;
 use App\Services\Ingestion\ConcurrencyLimiter;
 use App\Services\Ingestion\RecordHandlerRegistry;
 use App\Services\Ingestion\SessionTokenService;
+use App\Timeline\TimelineEventRegistry;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SessionTokenService::class);
         $this->app->singleton(ConcurrencyLimiter::class);
         $this->app->singleton(RecordHandlerRegistry::class);
+        $this->app->singleton(TimelineEventRegistry::class);
     }
 
     /**
@@ -46,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Issue::class, IssuePolicy::class);
 
         Event::listen(TelemetryBatchIngested::class, HandleExceptionTelemetry::class);
+
+        Relation::morphMap($this->app->make(TimelineEventRegistry::class)->morphMap());
 
         $this->configureDefaults();
     }

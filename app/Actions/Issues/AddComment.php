@@ -3,13 +3,17 @@
 namespace App\Actions\Issues;
 
 use App\Models\Issue;
-use App\Models\IssueActivity;
 use App\Models\IssueComment;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AddComment
 {
+    public function __construct(
+        private readonly RecordIssueTimelineEvent $recordTimelineEvent,
+    ) {}
+
     /**
      * Add a comment to an issue.
      *
@@ -25,20 +29,16 @@ class AddComment
             ]);
         }
 
-        $comment = IssueComment::create([
-            'issue_id' => $issue->id,
-            'author_id' => $author->id,
-            'body' => $body,
-        ]);
+        return DB::transaction(function () use ($issue, $body, $author): IssueComment {
+            $comment = IssueComment::create([
+                'issue_id' => $issue->id,
+                'author_id' => $author->id,
+                'body' => $body,
+            ]);
 
-        IssueActivity::create([
-            'issue_id' => $issue->id,
-            'actor_id' => $author->id,
-            'type' => 'commented',
-            'metadata' => ['comment_id' => $comment->id],
-            'created_at' => now(),
-        ]);
+            $this->recordTimelineEvent->handle($issue, $author, $comment);
 
-        return $comment;
+            return $comment;
+        });
     }
 }

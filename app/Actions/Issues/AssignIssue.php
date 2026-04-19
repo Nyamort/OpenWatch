@@ -3,13 +3,18 @@
 namespace App\Actions\Issues;
 
 use App\Models\Issue;
-use App\Models\IssueActivity;
+use App\Models\IssueAssignmentEvent;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AssignIssue
 {
+    public function __construct(
+        private readonly RecordIssueTimelineEvent $recordTimelineEvent,
+    ) {}
+
     /**
      * Assign an issue to a user who is a member of the organization.
      *
@@ -31,16 +36,24 @@ class AssignIssue
         }
 
         $previousAssigneeId = $issue->assignee_id;
-        $issue->update(['assignee_id' => $assigneeId]);
 
-        IssueActivity::create([
-            'issue_id' => $issue->id,
-            'actor_id' => $actor->id,
-            'type' => 'assigned',
-            'metadata' => ['from' => $previousAssigneeId, 'to' => $assigneeId],
-            'created_at' => now(),
-        ]);
+        if ($previousAssigneeId === $assigneeId) {
+            return $issue;
+        }
 
-        return $issue;
+        return DB::transaction(function () use ($issue, $actor, $previousAssigneeId, $assigneeId): Issue {
+            $issue->update(['assignee_id' => $assigneeId]);
+
+            $this->recordTimelineEvent->handle(
+                $issue,
+                $actor,
+                new IssueAssignmentEvent([
+                    'from_user_id' => $previousAssigneeId,
+                    'to_user_id' => $assigneeId,
+                ]),
+            );
+
+            return $issue;
+        });
     }
 }

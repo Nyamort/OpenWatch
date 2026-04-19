@@ -31,7 +31,7 @@ test('first occurrence creates a new issue', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'test-exception-'.uniqid());
 
-    $action = new CreateIssue;
+    $action = app(CreateIssue::class);
     $issue = $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Test Exception',
         'fingerprint' => $fingerprint,
@@ -55,7 +55,7 @@ test('second occurrence increments count not creates duplicate', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'duplicate-'.uniqid());
 
-    $action = new CreateIssue;
+    $action = app(CreateIssue::class);
     $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Duplicate Exception',
         'fingerprint' => $fingerprint,
@@ -80,7 +80,7 @@ test('issue creation emits IssueCreated event', function () {
 
     $fingerprint = hash('sha256', 'event-'.uniqid());
 
-    (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Event Test',
         'fingerprint' => $fingerprint,
     ]);
@@ -94,7 +94,7 @@ test('issue creation stores source linkage', function () {
     $traceId = 'trace-'.uniqid();
     $groupKey = hash('sha256', 'group-'.uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Source Test',
         'fingerprint' => $fingerprint,
         'source_type' => 'exception',
@@ -115,7 +115,7 @@ test('issue creation stores source linkage', function () {
 test('exception issue tracks unique user count across occurrences', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'user-count-'.uniqid());
-    $action = new CreateIssue;
+    $action = app(CreateIssue::class);
 
     $action->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'User Count Test',
@@ -158,7 +158,7 @@ test('subtitle is stored when provided', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'subtitle-'.uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'App\\Exceptions\\PaymentException',
         'subtitle' => 'Card declined for user 42',
         'fingerprint' => $fingerprint,
@@ -172,7 +172,7 @@ test('subtitle defaults to null when not provided', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'subtitle-null-'.uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Some Issue',
         'fingerprint' => $fingerprint,
     ]);
@@ -184,7 +184,7 @@ test('non-exception issue does not create exception detail', function () {
     $ctx = issueContext(uniqid());
     $fingerprint = hash('sha256', 'perf-'.uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Slow endpoint',
         'fingerprint' => $fingerprint,
         'type' => 'performance',

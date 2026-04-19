@@ -9,7 +9,8 @@ use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
 use App\Enums\IssueStatus;
-use App\Models\IssueActivity;
+use App\Models\IssueStatusChangeEvent;
+use App\Models\IssueTimelineEntry;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -40,7 +41,7 @@ function addMemberWithRole(array $ctx, User $user, string $roleSlug): void
 
 test('issue list is filtered by status', function () {
     $ctx = issueListContext(uniqid());
-    $createIssue = new CreateIssue;
+    $createIssue = app(CreateIssue::class);
 
     $openIssue = $createIssue->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Open Issue',
@@ -52,7 +53,7 @@ test('issue list is filtered by status', function () {
         'fingerprint' => hash('sha256', 'resolved-'.uniqid()),
     ]);
 
-    (new UpdateIssueStatus)->handle($resolvedIssue, IssueStatus::Resolved, $ctx['user']);
+    app(UpdateIssueStatus::class)->handle($resolvedIssue, IssueStatus::Resolved, $ctx['user']);
 
     $baseUrl = "/environments/{$ctx['env']->slug}/issues";
 
@@ -69,39 +70,43 @@ test('issue list is filtered by status', function () {
     );
 });
 
-test('issue status transition open to resolved creates activity', function () {
+test('issue status transition open to resolved creates timeline entry', function () {
     $ctx = issueListContext(uniqid());
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Status Transition Issue',
         'fingerprint' => hash('sha256', 'transition-'.uniqid()),
     ]);
 
-    (new UpdateIssueStatus)->handle($issue, IssueStatus::Resolved, $ctx['user']);
+    app(UpdateIssueStatus::class)->handle($issue, IssueStatus::Resolved, $ctx['user']);
 
-    $activity = IssueActivity::where('issue_id', $issue->id)
-        ->where('type', 'status_changed')
+    $entry = IssueTimelineEntry::query()
+        ->where('issue_id', $issue->id)
+        ->where('eventable_type', (new IssueStatusChangeEvent)->getMorphClass())
+        ->with('eventable')
+        ->latest('id')
         ->first();
 
-    expect($activity)->not->toBeNull()
-        ->and($activity->metadata)->toEqual(['from' => 'open', 'to' => 'resolved']);
+    expect($entry)->not->toBeNull()
+        ->and($entry->eventable->from_status)->toBe(IssueStatus::Open)
+        ->and($entry->eventable->to_status)->toBe(IssueStatus::Resolved);
 });
 
 test('bulk update skips out-of-scope issues', function () {
     $ctxA = issueListContext(uniqid());
     $ctxB = issueListContext(uniqid());
 
-    $issueA = (new CreateIssue)->handle($ctxA['org'], $ctxA['project'], $ctxA['env'], $ctxA['user'], [
+    $issueA = app(CreateIssue::class)->handle($ctxA['org'], $ctxA['project'], $ctxA['env'], $ctxA['user'], [
         'title' => 'Issue in Org A',
         'fingerprint' => hash('sha256', 'bulk-a-'.uniqid()),
     ]);
 
-    $issueB = (new CreateIssue)->handle($ctxB['org'], $ctxB['project'], $ctxB['env'], $ctxB['user'], [
+    $issueB = app(CreateIssue::class)->handle($ctxB['org'], $ctxB['project'], $ctxB['env'], $ctxB['user'], [
         'title' => 'Issue in Org B',
         'fingerprint' => hash('sha256', 'bulk-b-'.uniqid()),
     ]);
 
-    $result = (new BulkUpdateIssues(new UpdateIssueStatus))->handle(
+    $result = app(BulkUpdateIssues::class)->handle(
         $ctxA['org'],
         $ctxA['project'],
         $ctxA['env'],
@@ -126,7 +131,7 @@ test('viewer cannot bulk update issues', function () {
 
     $baseUrl = "/environments/{$ctx['env']->slug}/issues";
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Viewer Test Issue',
         'fingerprint' => hash('sha256', 'viewer-'.uniqid()),
     ]);
@@ -142,7 +147,7 @@ test('viewer cannot bulk update issues', function () {
 test('issue list exposes subtitle in response', function () {
     $ctx = issueListContext(uniqid());
 
-    (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'App\\Exceptions\\SubtitleListTest',
         'subtitle' => 'Something went wrong in the list',
         'fingerprint' => hash('sha256', 'subtitle-list-'.uniqid()),
@@ -161,11 +166,11 @@ test('assigning issue to non-member is rejected', function () {
     $ctx = issueListContext(uniqid());
     $nonMember = User::factory()->create();
 
-    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+    $issue = app(CreateIssue::class)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
         'title' => 'Assign Test',
         'fingerprint' => hash('sha256', 'assign-'.uniqid()),
     ]);
 
-    expect(fn () => (new AssignIssue)->handle($issue, $nonMember->id, $ctx['user']))
+    expect(fn () => app(AssignIssue::class)->handle($issue, $nonMember->id, $ctx['user']))
         ->toThrow(ValidationException::class);
 });

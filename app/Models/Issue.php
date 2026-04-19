@@ -94,11 +94,11 @@ class Issue extends Model
     }
 
     /**
-     * Get the activities for this issue.
+     * Get the timeline entries for this issue.
      */
-    public function activities(): HasMany
+    public function timeline(): HasMany
     {
-        return $this->hasMany(IssueActivity::class);
+        return $this->hasMany(IssueTimelineEntry::class);
     }
 
     /**

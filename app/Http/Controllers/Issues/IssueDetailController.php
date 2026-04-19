@@ -6,6 +6,7 @@ use App\Actions\Issues\BuildIssueDetailData;
 use App\Http\Controllers\Controller;
 use App\Models\Environment;
 use App\Models\Issue;
+use App\Services\Authorization\PermissionResolver;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,18 +19,21 @@ class IssueDetailController extends Controller
         Environment $environment,
         Issue $issue,
         BuildIssueDetailData $action,
+        PermissionResolver $permissionResolver,
     ): Response {
         $project = $environment->project;
         $organization = $project->organization;
 
         $data = $action->handle($issue);
+        $viewerRole = $permissionResolver->getRole(auth()->id(), $organization->id);
 
         return Inertia::render('issues/show', [
             'organization' => $organization,
             'project' => $project,
             'environment' => $environment,
             'issue' => $data['issue'],
-            'comments' => $data['comments'],
+            'timeline' => $data['timeline'],
+            'viewerRole' => $viewerRole,
         ]);
     }
 }

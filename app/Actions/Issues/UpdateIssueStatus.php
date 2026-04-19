@@ -5,8 +5,9 @@ namespace App\Actions\Issues;
 use App\Enums\IssueStatus;
 use App\Events\IssueStatusChanged;
 use App\Models\Issue;
-use App\Models\IssueActivity;
+use App\Models\IssueStatusChangeEvent;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateIssueStatus
@@ -21,6 +22,10 @@ class UpdateIssueStatus
         IssueStatus::Resolved->value => [IssueStatus::Open],
         IssueStatus::Ignored->value => [IssueStatus::Open],
     ];
+
+    public function __construct(
+        private readonly RecordIssueTimelineEvent $recordTimelineEvent,
+    ) {}
 
     /**
      * Update the status of an issue.
@@ -38,15 +43,18 @@ class UpdateIssueStatus
             ]);
         }
 
-        $issue->update(['status' => $newStatus]);
+        DB::transaction(function () use ($issue, $currentStatus, $newStatus, $actor): void {
+            $issue->update(['status' => $newStatus]);
 
-        IssueActivity::create([
-            'issue_id' => $issue->id,
-            'actor_id' => $actor->id,
-            'type' => 'status_changed',
-            'metadata' => ['from' => $currentStatus->value, 'to' => $newStatus->value],
-            'created_at' => now(),
-        ]);
+            $this->recordTimelineEvent->handle(
+                $issue,
+                $actor,
+                new IssueStatusChangeEvent([
+                    'from_status' => $currentStatus,
+                    'to_status' => $newStatus,
+                ]),
+            );
+        });
 
         IssueStatusChanged::dispatch($issue, $currentStatus->value, $newStatus->value, $actor);
 

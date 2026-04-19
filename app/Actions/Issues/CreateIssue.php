@@ -8,7 +8,7 @@ use App\Enums\IssueType;
 use App\Events\IssueCreated;
 use App\Models\Environment;
 use App\Models\Issue;
-use App\Models\IssueActivity;
+use App\Models\IssueCreationEvent;
 use App\Models\IssueExceptionDetail;
 use App\Models\IssueSource;
 use App\Models\Organization;
@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class CreateIssue
 {
+    public function __construct(
+        private readonly RecordIssueTimelineEvent $recordTimelineEvent,
+    ) {}
+
     /**
      * Create or increment an issue for the given fingerprint.
      *
@@ -93,13 +97,7 @@ class CreateIssue
                 'last_seen_at' => now(),
             ]);
 
-            IssueActivity::create([
-                'issue_id' => $issue->id,
-                'actor_id' => $actor?->id,
-                'type' => 'created',
-                'metadata' => null,
-                'created_at' => now(),
-            ]);
+            $this->recordTimelineEvent->handle($issue, $actor, new IssueCreationEvent);
 
             $this->createSource($issue, $data);
 
