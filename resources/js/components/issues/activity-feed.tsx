@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import { marked } from 'marked';
 import { store } from '@/actions/App/Http/Controllers/Issues/IssueCommentController';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownEditor } from '@/components/issues/markdown-editor';
 
 interface Actor {
@@ -157,28 +158,36 @@ export function ActivityFeed({ timeline, environment, issue }: Props) {
     }
 
     return (
-        <div className="overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-            <div className="border-b px-5 py-3">
-                <h2 className="text-sm font-semibold">Activity</h2>
-            </div>
+        <Card className="gap-0 overflow-hidden bg-surface py-0">
+            <CardHeader className="border-b px-5 py-3">
+                <CardTitle className="text-sm font-semibold">
+                    Activity
+                </CardTitle>
+            </CardHeader>
 
-            {timeline.length > 0 && (
-                <div className="relative flex flex-col gap-4 px-5 py-4">
-                    <div className="absolute top-8 bottom-0 left-8 z-0 w-px border-l border-dashed border-neutral-300 dark:border-neutral-700/50" />
-                    {timeline.map((entry) => (
-                        <TimelineEntry key={entry.id} entry={entry} />
-                    ))}
+            <CardContent className="relative flex flex-col px-5 py-4">
+                <div className="relative flex flex-col gap-4 pb-4">
+                    {timeline.length > 0 && (
+                        <>
+                            <div className="absolute top-4 bottom-0 left-3 z-0 w-px border-l border-dashed border-neutral-300 dark:border-neutral-700/50" />
+                            {timeline.map((entry) => (
+                                <TimelineEntry key={entry.id} entry={entry} />
+                            ))}
+                        </>
+                    )}
                 </div>
-            )}
 
-            <div className="px-5">
                 <form onSubmit={submit} className="space-y-3">
                     <MarkdownEditor
                         value={data.body}
                         onChange={(value) => setData('body', value)}
                         placeholder="Leave a comment…"
                     />
-                    {errors.body && <p className="text-sm text-destructive">{errors.body}</p>}
+                    {errors.body && (
+                        <p className="text-sm text-destructive">
+                            {errors.body}
+                        </p>
+                    )}
                     <div className="flex justify-end">
                         <button
                             type="submit"
@@ -189,7 +198,7 @@ export function ActivityFeed({ timeline, environment, issue }: Props) {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 }
