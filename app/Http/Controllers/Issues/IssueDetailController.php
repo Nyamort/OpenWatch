@@ -29,7 +29,8 @@ class IssueDetailController extends Controller
             'project' => $project,
             'environment' => $environment,
             'issue' => $data['issue'],
-            'comments' => $data['comments'],
+            'timeline' => $data['timeline'],
+            'exceptionSummary' => $data['exception_summary'],
         ]);
     }
 }

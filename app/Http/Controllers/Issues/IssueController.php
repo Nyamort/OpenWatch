@@ -6,7 +6,9 @@ use App\Actions\Issues\AssignIssue;
 use App\Actions\Issues\BuildIssueListData;
 use App\Actions\Issues\BulkUpdateIssues;
 use App\Actions\Issues\CreateIssue;
+use App\Actions\Issues\UpdateIssuePriority;
 use App\Actions\Issues\UpdateIssueStatus;
+use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Issues\BulkUpdateIssuesRequest;
@@ -79,6 +81,7 @@ class IssueController extends Controller
         Issue $issue,
         UpdateIssueStatus $updateStatus,
         AssignIssue $assignIssue,
+        UpdateIssuePriority $updatePriority,
     ): RedirectResponse {
         $organization = $environment->project->organization;
 
@@ -95,7 +98,7 @@ class IssueController extends Controller
         }
 
         if (array_key_exists('priority', $validated)) {
-            $issue->update(['priority' => $validated['priority']]);
+            $updatePriority->handle($issue, IssuePriority::from($validated['priority']), auth()->user());
         }
 
         return back();

@@ -3,11 +3,13 @@
 use App\Actions\Issues\AssignIssue;
 use App\Actions\Issues\BulkUpdateIssues;
 use App\Actions\Issues\CreateIssue;
+use App\Actions\Issues\UpdateIssuePriority;
 use App\Actions\Issues\UpdateIssueStatus;
 use App\Actions\Organization\CreateOrganization;
 use App\Actions\Projects\CreateEnvironment;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\GenerateToken;
+use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Models\IssueActivity;
 use App\Models\OrganizationMember;
@@ -85,6 +87,25 @@ test('issue status transition open to resolved creates activity', function () {
 
     expect($activity)->not->toBeNull()
         ->and($activity->metadata)->toEqual(['from' => 'open', 'to' => 'resolved']);
+});
+
+test('changing issue priority creates activity', function () {
+    $ctx = issueListContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Priority Change Issue',
+        'fingerprint' => hash('sha256', 'priority-'.uniqid()),
+    ]);
+
+    (new UpdateIssuePriority)->handle($issue, IssuePriority::High, $ctx['user']);
+
+    $activity = IssueActivity::where('issue_id', $issue->id)
+        ->where('type', 'priority_changed')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->metadata['to'])->toBe('high')
+        ->and($issue->fresh()->priority)->toBe(IssuePriority::High);
 });
 
 test('bulk update skips out-of-scope issues', function () {

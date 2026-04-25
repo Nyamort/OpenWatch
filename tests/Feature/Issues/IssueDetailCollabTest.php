@@ -53,7 +53,7 @@ test('issue detail loads all sections', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('issues/show')
         ->has('issue')
-        ->has('comments')
+        ->has('timeline')
         ->where('issue.id', $issue->id)
     );
 });
