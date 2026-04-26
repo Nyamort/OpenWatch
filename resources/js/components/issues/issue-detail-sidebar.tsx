@@ -112,7 +112,7 @@ export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDet
             <CardHeader className="border-b px-4 py-3">
                 <CardTitle className="text-sm font-medium">Details</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3 px-4 py-4">
+            <CardContent className="flex flex-col gap-3 px-4 pb-4">
                 <SidebarRow label="Status">
                     <StatusPopover
                         environmentSlug={environmentSlug}
