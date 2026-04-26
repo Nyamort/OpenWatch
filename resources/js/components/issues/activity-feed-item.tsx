@@ -1,9 +1,8 @@
 import { router } from '@inertiajs/react';
-import { marked } from 'marked';
 import { CircleCheck, CircleDot, CircleMinus, Pencil, Trash2 } from 'lucide-react';
+import { marked } from 'marked';
 import { useState } from 'react';
 import { update as commentUpdate, destroy as commentDestroy } from '@/actions/App/Http/Controllers/Issues/IssueCommentController';
-import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
