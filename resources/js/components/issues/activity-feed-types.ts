@@ -33,9 +33,9 @@ interface PriorityChangedEntry extends BaseEntry {
 
 export interface CommentedEntry extends BaseEntry {
     kind: 'commented';
-    comment_id: number;
-    body: string;
-    edited_at: string | null;
+    comment_id?: number;
+    body?: string;
+    edited_at?: string | null;
 }
 
 export interface StatusWithCommentEntry extends BaseEntry {

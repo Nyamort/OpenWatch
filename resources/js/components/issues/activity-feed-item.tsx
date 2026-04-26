@@ -63,7 +63,9 @@ export function TimelineEntryItem({
     const isOwnComment = !!actor && actor.email === currentUserEmail && commentId !== undefined;
     const isEdited =
         (entry.kind === 'commented' || entry.kind === 'status_update_comment_updated') && !!entry.edited_at;
-    const isDeleted = entry.kind === 'status_update_comment_deleted';
+    const isDeleted =
+        entry.kind === 'status_update_comment_deleted' ||
+        (entry.kind === 'commented' && !entry.comment_id);
     const hasBody =
         isDeleted ||
         (entry.kind === 'commented' && !!entry.body) ||
