@@ -48,6 +48,8 @@ class IssueController extends Controller
             'issues' => $data->issues,
             'pagination' => $data->pagination,
             'filters' => $data->filters,
+            'filter' => $data->filters['filter'],
+            'filterCounts' => $data->filterCounts,
             'sort' => $data->filters['sort'],
             'direction' => $data->filters['direction'],
             'members' => $members,

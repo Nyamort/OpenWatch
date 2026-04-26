@@ -5,6 +5,7 @@ import { SortableHead } from '@/components/analytics/table/sortable-head';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityBars } from '@/components/issues/priority-bars';
 import { PriorityPopover } from '@/components/issues/priority-popover';
+import { StatusFilter } from '@/components/issues/status-filter';
 import {
     Table,
     TableBody,
@@ -56,6 +57,8 @@ interface Member {
 interface Props {
     issues: Issue[];
     pagination: Pagination;
+    filter: string;
+    filterCounts: Record<string, number>;
     sort: IssueSortKey;
     direction: SortDir;
     members: Member[];
@@ -66,6 +69,8 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Issues', href: '#' }];
 export default function IssuesIndex({
     issues,
     pagination,
+    filter,
+    filterCounts,
     sort,
     direction,
     members,
@@ -77,14 +82,14 @@ export default function IssuesIndex({
 
     const { handleSort } = useAnalyticsTable<IssueSortKey>({
         search: '',
-        only: ['issues', 'pagination', 'sort', 'direction'],
+        only: ['issues', 'pagination', 'filter', 'filterCounts', 'sort', 'direction'],
     });
 
     const onSort = (col: string) =>
         handleSort(col as IssueSortKey, sort, direction);
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} actions={<StatusFilter current={filter} counts={filterCounts} />}>
             <Head title="Issues" />
             <div className="flex flex-col gap-3 p-6">
                 <div className="flex items-center gap-2">

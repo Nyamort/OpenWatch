@@ -16,38 +16,81 @@ class BuildIssueListData
      */
     public function handle(Organization $organization, Project $project, Environment $environment, Request $request): IssueListData
     {
-        $status = $request->input('status', 'open');
+        $filter = $request->input('filter');
         $type = $request->input('type');
-        $assigneeId = $request->input('assignee_id');
         $search = $request->input('search');
         $priority = $request->input('priority');
         $sort = $request->input('sort', 'last_seen_at');
         $direction = $request->input('direction', 'desc');
 
-        $query = Issue::query()
+        $currentUserId = auth()->id();
+
+        // Base scope without status/assignee filter — shared for counts and list
+        $baseQuery = Issue::query()
             ->where('organization_id', $organization->id)
             ->where('project_id', $project->id)
-            ->where('environment_id', $environment->id)
-            ->with(['assignee:id,name,email', 'detail']);
-
-        if ($status) {
-            $query->where('status', $status);
-        }
+            ->where('environment_id', $environment->id);
 
         if ($type) {
-            $query->where('type', $type);
-        }
-
-        if ($assigneeId) {
-            $query->where('assignee_id', $assigneeId);
+            $baseQuery->where('type', $type);
         }
 
         if ($search) {
-            $query->where('title', 'like', '%'.$search.'%');
+            $baseQuery->where('title', 'like', '%'.$search.'%');
         }
 
         if ($priority) {
-            $query->where('priority', $priority);
+            $baseQuery->where('priority', $priority);
+        }
+
+        // Single query to count all filter buckets at once
+        $countsRow = (clone $baseQuery)->selectRaw(
+            "SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_count,
+             SUM(CASE WHEN status = 'open' AND assignee_id IS NULL THEN 1 ELSE 0 END) as unassigned_count,
+             SUM(CASE WHEN assignee_id = ? THEN 1 ELSE 0 END) as mine_count,
+             SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved_count,
+             SUM(CASE WHEN status = 'ignored' THEN 1 ELSE 0 END) as ignored_count",
+            [$currentUserId]
+        )->first();
+
+        $filterCounts = [
+            'open' => (int) ($countsRow->open_count ?? 0),
+            'unassigned' => (int) ($countsRow->unassigned_count ?? 0),
+            'mine' => (int) ($countsRow->mine_count ?? 0),
+            'resolved' => (int) ($countsRow->resolved_count ?? 0),
+            'ignored' => (int) ($countsRow->ignored_count ?? 0),
+        ];
+
+        // Main list query — clone base scope then apply status filter + eager loads
+        $query = (clone $baseQuery)->with(['assignee:id,name,email', 'detail']);
+
+        if ($filter !== null) {
+            match ($filter) {
+                'unassigned' => $query->where('status', 'open')->whereNull('assignee_id'),
+                'mine' => $query->where('assignee_id', $currentUserId),
+                'resolved' => $query->where('status', 'resolved'),
+                'ignored' => $query->where('status', 'ignored'),
+                default => $query->where('status', 'open'),
+            };
+            $activeFilter = $filter;
+        } else {
+            // Legacy support: status and assignee_id query params
+            $status = $request->input('status', 'open');
+            $assigneeId = $request->input('assignee_id');
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            if ($assigneeId) {
+                $query->where('assignee_id', $assigneeId);
+            }
+
+            $activeFilter = match ($status) {
+                'resolved' => 'resolved',
+                'ignored' => 'ignored',
+                default => 'open',
+            };
         }
 
         $allowedSorts = ['id', 'priority', 'last_seen_at', 'occurrence_count', 'first_seen_at'];
@@ -70,14 +113,14 @@ class BuildIssueListData
                 'total' => $paginator->total(),
             ],
             filters: [
-                'status' => $status,
+                'filter' => $activeFilter,
                 'type' => $type,
-                'assignee_id' => $assigneeId,
                 'search' => $search,
                 'priority' => $priority,
                 'sort' => $sort,
                 'direction' => $direction,
             ],
+            filterCounts: $filterCounts,
         );
     }
 }
