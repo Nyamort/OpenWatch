@@ -13,6 +13,7 @@ interface Issue {
     title: string;
     subtitle: string | null;
     type: 'exception' | 'performance' | 'other';
+    status: string;
 }
 
 interface Environment {

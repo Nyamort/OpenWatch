@@ -1,9 +1,10 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { marked } from 'marked';
 import { store } from '@/actions/App/Http/Controllers/Issues/IssueCommentController';
+import { update } from '@/actions/App/Http/Controllers/Issues/IssueController';
+import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MarkdownEditor } from '@/components/issues/markdown-editor';
 
 interface Actor {
     name: string;
@@ -50,7 +51,7 @@ export type TimelineEntry = CreatedEntry | StatusChangedEntry | AssignedEntry | 
 interface Props {
     timeline: TimelineEntry[];
     environment: { slug: string };
-    issue: { id: number };
+    issue: { id: number; status: string };
 }
 
 function initials(name: string): string {
@@ -112,7 +113,7 @@ function ActorAvatar({ actor }: { actor: Actor | null }) {
 
 function TimelineEntry({ entry }: { entry: TimelineEntry }) {
     const actor = entry.kind === 'commented' ? entry.actor : entry.actor;
-    const actorName = actor?.name ?? 'Nightwatch';
+    const actorName = actor?.name ?? 'Openwatch';
 
     return (
         <div className="overflow-x-hidden">
@@ -157,6 +158,10 @@ export function ActivityFeed({ timeline, environment, issue }: Props) {
         });
     }
 
+    function resolve() {
+        router.patch(update.url({ environment, issue: issue.id }), { status: 'resolved' }, { preserveScroll: true });
+    }
+
     return (
         <Card className="gap-0 overflow-hidden bg-surface py-0">
             <CardHeader className="border-b px-5 py-3">
@@ -188,7 +193,16 @@ export function ActivityFeed({ timeline, environment, issue }: Props) {
                             {errors.body}
                         </p>
                     )}
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-end gap-2">
+                        {issue.status !== 'resolved' && (
+                            <button
+                                type="button"
+                                onClick={resolve}
+                                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                            >
+                                Resolve now
+                            </button>
+                        )}
                         <button
                             type="submit"
                             disabled={processing || !data.body.trim()}
