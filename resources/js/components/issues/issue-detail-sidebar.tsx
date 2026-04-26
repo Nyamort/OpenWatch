@@ -1,15 +1,15 @@
 import { router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
+import { ArrowRight, CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityPopover } from '@/components/issues/priority-popover';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { update } from '@/routes/issues';
 
 const STATUSES = [
@@ -17,6 +17,24 @@ const STATUSES = [
     { value: 'resolved', label: 'Resolved' },
     { value: 'ignored', label: 'Ignored' },
 ] as const;
+
+const STATUS_ACTIONS: Record<string, string> = {
+    resolved: 'Resolve issue',
+    ignored: 'Ignore issue',
+    open: 'Reopen issue',
+};
+
+const STATUS_PLACEHOLDERS: Record<string, string> = {
+    resolved: 'Describe what fixed this issue…',
+    ignored: 'Explain why this issue is being ignored…',
+    open: 'Why is this issue being reopened?…',
+};
+
+const STATUS_CONFIRM_CLASS: Record<string, string> = {
+    resolved: 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600',
+    ignored: '',
+    open: 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600',
+};
 
 const PRIORITY_LABELS: Record<string, string> = {
     none: 'No priority',
@@ -76,6 +94,13 @@ function StatusPopover({
         setComment('');
     }
 
+    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+            e.preventDefault();
+            handleConfirm();
+        }
+    }
+
     return (
         <>
             <Popover open={open} onOpenChange={setOpen}>
@@ -100,24 +125,47 @@ function StatusPopover({
             <Dialog open={pendingStatus !== null} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Change status to {pendingLabel}</DialogTitle>
-                        <DialogDescription>Optionally add a comment to explain this status change.</DialogDescription>
+                        <DialogTitle>{pendingStatus ? STATUS_ACTIONS[pendingStatus] : ''}</DialogTitle>
+                        <DialogDescription asChild>
+                            <div className="flex items-center gap-2 pt-1">
+                                <span className="flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium">
+                                    <StatusIcon status={status} />
+                                    {currentLabel}
+                                </span>
+                                <ArrowRight className="size-3.5 text-muted-foreground/60 shrink-0" />
+                                <span className="flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium">
+                                    {pendingStatus && <StatusIcon status={pendingStatus} />}
+                                    {pendingLabel}
+                                </span>
+                            </div>
+                        </DialogDescription>
                     </DialogHeader>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="status-comment">Comment</Label>
+
+                    <div className="flex flex-col gap-1.5">
                         <Textarea
-                            id="status-comment"
-                            placeholder="Add a comment (optional)…"
+                            autoFocus
+                            placeholder={pendingStatus ? STATUS_PLACEHOLDERS[pendingStatus] : ''}
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            rows={3}
+                            onKeyDown={handleKeyDown}
+                            rows={4}
+                            className="resize-none"
                         />
+                        <p className="text-xs text-muted-foreground/60 text-right select-none">
+                            <kbd className="font-sans">⌘</kbd> + <kbd className="font-sans">↵</kbd> to confirm
+                        </p>
                     </div>
+
                     <DialogFooter>
                         <Button variant="outline" onClick={handleCancel}>
                             Cancel
                         </Button>
-                        <Button onClick={handleConfirm}>Confirm</Button>
+                        <Button
+                            onClick={handleConfirm}
+                            className={cn(pendingStatus && STATUS_CONFIRM_CLASS[pendingStatus])}
+                        >
+                            {pendingStatus ? STATUS_ACTIONS[pendingStatus] : 'Confirm'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
