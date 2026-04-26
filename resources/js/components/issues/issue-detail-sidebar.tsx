@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { ArrowRight, CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
+import { ArrowRight, CalendarDays, CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityPopover } from '@/components/issues/priority-popover';
@@ -194,68 +194,74 @@ interface IssueDetailSidebarProps {
 
 function SidebarRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-muted-foreground">{label}</span>
-            <div className="flex items-center">{children}</div>
+        <div className="flex h-8 items-center justify-between gap-2 rounded-md px-2">
+            <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
+            <div className="flex min-w-0 items-center">{children}</div>
         </div>
     );
 }
 
 export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDetailSidebarProps) {
     return (
-        <Card className="py-0">
+        <Card className="overflow-hidden bg-surface py-0">
             <CardHeader className="border-b px-4 py-3">
-                <CardTitle className="text-sm font-medium">Details</CardTitle>
+                <CardTitle className="text-sm font-semibold">Details</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3 px-4 pb-4">
-                <SidebarRow label="Status">
-                    <StatusPopover
-                        environmentSlug={environmentSlug}
-                        issueId={issue.id}
-                        status={issue.status}
-                    />
-                </SidebarRow>
-
-                <SidebarRow label="Priority">
-                    <div className="flex items-center gap-1.5 px-1.5">
-                        <PriorityPopover
+            <CardContent className="p-0">
+                <div className="flex flex-col px-2 py-2">
+                    <SidebarRow label="Status">
+                        <StatusPopover
                             environmentSlug={environmentSlug}
                             issueId={issue.id}
-                            priority={issue.priority}
-                            only={ONLY}
+                            status={issue.status}
                         />
-                        <span className="text-sm">{PRIORITY_LABELS[issue.priority] ?? issue.priority}</span>
-                    </div>
-                </SidebarRow>
+                    </SidebarRow>
 
-                <SidebarRow label="Assignee">
-                    <div className="flex items-center gap-1.5 px-1.5">
-                        <AssigneePopover
-                            environmentSlug={environmentSlug}
-                            issueId={issue.id}
-                            assignee={issue.assignee}
-                            members={members}
-                            only={ONLY}
-                        />
-                        <span className="text-sm">
-                            {issue.assignee ? issue.assignee.name : <span className="text-muted-foreground">Unassigned</span>}
-                        </span>
-                    </div>
-                </SidebarRow>
+                    <SidebarRow label="Priority">
+                        <div className="flex items-center gap-1.5">
+                            <PriorityPopover
+                                environmentSlug={environmentSlug}
+                                issueId={issue.id}
+                                priority={issue.priority}
+                                only={ONLY}
+                            />
+                            <span className="text-sm">{PRIORITY_LABELS[issue.priority] ?? issue.priority}</span>
+                        </div>
+                    </SidebarRow>
 
-                <div className="my-1 border-t" />
+                    <SidebarRow label="Assignee">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <AssigneePopover
+                                environmentSlug={environmentSlug}
+                                issueId={issue.id}
+                                assignee={issue.assignee}
+                                members={members}
+                                only={ONLY}
+                            />
+                            <span className="truncate text-sm">
+                                {issue.assignee ? issue.assignee.name : <span className="text-muted-foreground">Unassigned</span>}
+                            </span>
+                        </div>
+                    </SidebarRow>
+                </div>
 
-                <SidebarRow label="First seen">
-                    <span className="text-sm" title={issue.first_seen_at}>
-                        {format(parseISO(issue.first_seen_at), 'MMM d, yyyy')}
-                    </span>
-                </SidebarRow>
+                <div className="border-t" />
 
-                <SidebarRow label="Last seen">
-                    <span className="text-sm" title={issue.last_seen_at}>
-                        {format(parseISO(issue.last_seen_at), 'MMM d, yyyy')}
-                    </span>
-                </SidebarRow>
+                <div className="flex flex-col px-2 py-2">
+                    <SidebarRow label="First seen">
+                        <div className="flex items-center gap-1.5 text-sm">
+                            <CalendarDays className="size-3.5 text-muted-foreground/50" />
+                            <span title={issue.first_seen_at}>{format(parseISO(issue.first_seen_at), 'MMM d, yyyy')}</span>
+                        </div>
+                    </SidebarRow>
+
+                    <SidebarRow label="Last seen">
+                        <div className="flex items-center gap-1.5 text-sm">
+                            <CalendarDays className="size-3.5 text-muted-foreground/50" />
+                            <span title={issue.last_seen_at}>{format(parseISO(issue.last_seen_at), 'MMM d, yyyy')}</span>
+                        </div>
+                    </SidebarRow>
+                </div>
             </CardContent>
         </Card>
     );
