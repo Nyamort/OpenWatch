@@ -1,6 +1,106 @@
 {
   "version": 1,
   "skills": {
+    "laravel-actions": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "39cf6841378f88b127d384ea22300d41341c7090e96faf398049b20db3900ce9"
+    },
+    "laravel-architecture": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "ae3d027e45a5ba9f35103e27bb668d010d668bf00fecffac60e68ca11310cf22"
+    },
+    "laravel-controllers": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "b1e8ac5340044d6d068aebd349aa47eabdee63f1e8c62a2c4a80e0b61151d3c3"
+    },
+    "laravel-dtos": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "92bc82a488c3815493c326d70e5ca0c785111a3632d07e6e586da756e0b4e270"
+    },
+    "laravel-enums": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "b0cd46f0411b224764529ac381c585091dc79b44ae76aef569be1c5289025336"
+    },
+    "laravel-exceptions": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "e0a09edf216f3a99cc712a6e705a53f81437290b495e078cd3111485212bd6ed"
+    },
+    "laravel-jobs": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "6a62a0f1ad785b0a8ba7fd04164f1489c15ec52eb31904a05bfc2516bdf8210f"
+    },
+    "laravel-models": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "0ce49daef7b6a660a3842a5bb706e9e083c0262e00f8d721b66aa5c70cfcc7e1"
+    },
+    "laravel-multi-tenancy": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "349088b698cc11d0abdcdd89a27756ad622d75dcd4568fbc8a11d3832ce75aa4"
+    },
+    "laravel-packages": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "725b1e637d34051e2ae1ebe520082a48ae4682ea4d5cac58249bb1f52af7ab85"
+    },
+    "laravel-policies": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "7f5e33a71c1d785f933d87a7e1de90b2696775bb2c5e9d006fdca4b0b8c15650"
+    },
+    "laravel-providers": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "01e58d89aefab09534da215977d0524e7fa1e81b1d19e57a9e5553dc894da7a3"
+    },
+    "laravel-quality": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "76fbd2b85885ffbf50bf07ec39d0e2ecef071e35c783faca16a0bcaafacec430"
+    },
+    "laravel-query-builders": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "2e6280f5befa836771434d5db461641038680b72abe7afed15220c93675f2d65"
+    },
+    "laravel-routing": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "58d808743aafd342e2b6dd8a32a5af283f8f0f3b296b8b4c6e24b875e191b9fb"
+    },
+    "laravel-services": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "2be03dbbcb5993aae38465449600abcf1429cfc4c9da75001716bd47820b3e5b"
+    },
+    "laravel-state-machines": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "a3e50a883684faf519e11ca1b512607fc72fa851cbc0bb59270f9a709ea95ef6"
+    },
+    "laravel-testing": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "8d2bdbbf096e41e69b1b28de1f3cdd4c6caac6c31bdb374bc27f2bc0aa1340f3"
+    },
+    "laravel-validation": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "667a7b8947f336009fd6e82e5eb5b9e24733e8a540e061579cd013bde0afb898"
+    },
+    "laravel-value-objects": {
+      "source": "leeovery/agentic-skills",
+      "sourceType": "github",
+      "computedHash": "5ad8dcdd84ed66e08d65ba3816036e1575bbbf3921829f1ada4537c610b45f62"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
