@@ -63,7 +63,9 @@ export function TimelineEntryItem({
     const isOwnComment = !!actor && actor.email === currentUserEmail && commentId !== undefined;
     const isEdited =
         (entry.kind === 'commented' || entry.kind === 'status_update_comment_updated') && !!entry.edited_at;
+    const isDeleted = entry.kind === 'status_update_comment_deleted';
     const hasBody =
+        isDeleted ||
         (entry.kind === 'commented' && !!entry.body) ||
         ((entry.kind === 'status_updated_with_comment' || entry.kind === 'status_update_comment_updated') && !!entry.body);
 
@@ -141,10 +143,16 @@ export function TimelineEntryItem({
                             </button>
                         </div>
                     )}
-                    <div
-                        className="prose prose-sm max-w-none rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-white/2 dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: marked(entry.body ?? '') as string }}
-                    />
+                    {isDeleted ? (
+                        <div className="rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-white/2">
+                            <p className="text-sm text-muted-foreground/60 italic">This comment was deleted.</p>
+                        </div>
+                    ) : (
+                        <div
+                            className="prose prose-sm max-w-none rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-white/2 dark:prose-invert"
+                            dangerouslySetInnerHTML={{ __html: marked(entry.body ?? '') as string }}
+                        />
+                    )}
                 </div>
             )}
 
