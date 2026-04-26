@@ -3,7 +3,6 @@ import { format, parseISO } from 'date-fns';
 import { Circle, CircleCheck, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
-import { PriorityBars } from '@/components/issues/priority-bars';
 import { PriorityPopover } from '@/components/issues/priority-popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

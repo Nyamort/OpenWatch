@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/danger-zone';
 import { AddEnvironmentDialog } from '@/components/environments/add-environment-dialog';
@@ -54,12 +54,6 @@ export default function ApplicationEdit({
     const [addEnvOpen, setAddEnvOpen] = useState(false);
     const [deleteAppOpen, setDeleteAppOpen] = useState(false);
     const [tokenDialogOpen, setTokenDialogOpen] = useState(Boolean(newToken));
-
-    useEffect(() => {
-        if (newToken) {
-            setTokenDialogOpen(true);
-        }
-    }, [newToken]);
 
     const form = useForm<{
         name: string;
