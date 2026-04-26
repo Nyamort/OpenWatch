@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Circle, CircleCheck, CircleMinus } from 'lucide-react';
+import { CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityPopover } from '@/components/issues/priority-popover';
@@ -29,12 +29,12 @@ const ONLY = ['issue', 'timeline'];
 
 function StatusIcon({ status }: { status: string }) {
     if (status === 'resolved') {
-        return <CircleCheck className="size-3.5 text-blue-500" />;
+        return <CircleCheck className="size-3.5 text-green-500" />;
     }
     if (status === 'ignored') {
         return <CircleMinus className="size-3.5 text-muted-foreground" />;
     }
-    return <Circle className="size-3.5 fill-green-500 text-green-500" />;
+    return <CircleDot className="size-3.5 text-blue-500" />;
 }
 
 function StatusPopover({
