@@ -18,8 +18,8 @@ class UpdateIssueStatus
      */
     private const ALLOWED_TRANSITIONS = [
         IssueStatus::Open->value => [IssueStatus::Resolved, IssueStatus::Ignored],
-        IssueStatus::Resolved->value => [IssueStatus::Open],
-        IssueStatus::Ignored->value => [IssueStatus::Open],
+        IssueStatus::Resolved->value => [IssueStatus::Open, IssueStatus::Ignored],
+        IssueStatus::Ignored->value => [IssueStatus::Open, IssueStatus::Resolved],
     ];
 
     /**

@@ -89,6 +89,34 @@ test('issue status transition open to resolved creates activity', function () {
         ->and($activity->metadata)->toEqual(['from' => 'open', 'to' => 'resolved']);
 });
 
+test('issue status transition resolved to ignored is allowed', function () {
+    $ctx = issueListContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Resolved to Ignored Issue',
+        'fingerprint' => hash('sha256', 'transition-resolved-ignored-'.uniqid()),
+    ]);
+
+    (new UpdateIssueStatus)->handle($issue, IssueStatus::Resolved, $ctx['user']);
+    (new UpdateIssueStatus)->handle($issue->fresh(), IssueStatus::Ignored, $ctx['user']);
+
+    expect($issue->fresh()->status)->toBe(IssueStatus::Ignored);
+});
+
+test('issue status transition ignored to resolved is allowed', function () {
+    $ctx = issueListContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Ignored to Resolved Issue',
+        'fingerprint' => hash('sha256', 'transition-ignored-resolved-'.uniqid()),
+    ]);
+
+    (new UpdateIssueStatus)->handle($issue, IssueStatus::Ignored, $ctx['user']);
+    (new UpdateIssueStatus)->handle($issue->fresh(), IssueStatus::Resolved, $ctx['user']);
+
+    expect($issue->fresh()->status)->toBe(IssueStatus::Resolved);
+});
+
 test('changing issue priority creates activity', function () {
     $ctx = issueListContext(uniqid());
 

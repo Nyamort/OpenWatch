@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Check, Circle, CircleCheck, CircleMinus } from 'lucide-react';
+import { Circle, CircleCheck, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityBars } from '@/components/issues/priority-bars';
@@ -62,7 +62,7 @@ function StatusPopover({
                 <span>{currentLabel}</span>
             </PopoverTrigger>
             <PopoverContent className="w-36 p-1" align="start">
-                {STATUSES.map((s) => (
+                {STATUSES.filter((s) => s.value !== status).map((s) => (
                     <button
                         key={s.value}
                         onClick={() => handleSelect(s.value)}
@@ -70,7 +70,6 @@ function StatusPopover({
                     >
                         <StatusIcon status={s.value} />
                         <span className="flex-1 text-left">{s.label}</span>
-                        {status === s.value && <Check className="size-3.5 text-muted-foreground" />}
                     </button>
                 ))}
             </PopoverContent>
