@@ -121,26 +121,26 @@ export function TimelineEntryItem({
                 >
                     {relativeTime(entry.created_at)}
                 </time>
-                {isOwnComment && !editing && (
-                    <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                        <button
-                            onClick={startEdit}
-                            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                        >
-                            <Pencil className="size-3" />
-                        </button>
-                        <button
-                            onClick={deleteComment}
-                            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"
-                        >
-                            <Trash2 className="size-3" />
-                        </button>
-                    </div>
-                )}
             </div>
 
             {hasBody && !editing && (
-                <div className="mt-2 ml-8">
+                <div className="relative mt-2 ml-8">
+                    {isOwnComment && (
+                        <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button
+                                onClick={startEdit}
+                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            >
+                                <Pencil className="size-3" />
+                            </button>
+                            <button
+                                onClick={deleteComment}
+                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"
+                            >
+                                <Trash2 className="size-3" />
+                            </button>
+                        </div>
+                    )}
                     <div
                         className="prose prose-sm max-w-none rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-white/2 dark:prose-invert"
                         dangerouslySetInnerHTML={{ __html: marked(entry.body ?? '') as string }}
