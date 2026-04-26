@@ -158,7 +158,7 @@ export default function IssuesIndex({
                             >
                                 Last Seen
                             </SortableHead>
-                            <TableHead className="h-11 w-px px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
+                            <TableHead className="h-11 w-px px-4 text-center text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase">
                                 Assigned
                             </TableHead>
                             <TableHead className="h-11 w-px pr-5" />
@@ -234,6 +234,7 @@ export default function IssuesIndex({
                                         )}
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
+                                        <div className="flex justify-center">
                                         <AssigneePopover
                                             environmentSlug={
                                                 activeEnvironment.slug
@@ -242,6 +243,7 @@ export default function IssuesIndex({
                                             assignee={issue.assignee}
                                             members={members}
                                         />
+                                        </div>
                                     </TableCell>
                                     <TableCell className="h-11 w-px pr-5">
                                         <div className="flex items-center justify-end">
