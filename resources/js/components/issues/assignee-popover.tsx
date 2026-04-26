@@ -19,6 +19,7 @@ interface AssigneePopoverProps {
     issueId: number;
     assignee: Member | null;
     members: Member[];
+    only?: string[];
 }
 
 export function AssigneePopover({
@@ -26,6 +27,7 @@ export function AssigneePopover({
     issueId,
     assignee,
     members,
+    only = ['issues'],
 }: AssigneePopoverProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -42,7 +44,7 @@ export function AssigneePopover({
         router.patch(
             update.url({ environment: environmentSlug, issue: issueId }),
             { assignee_id: userId },
-            { preserveScroll: true, only: ['issues'] },
+            { preserveScroll: true, only },
         );
     }
 

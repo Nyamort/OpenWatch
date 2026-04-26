@@ -24,6 +24,11 @@ class IssueDetailController extends Controller
 
         $data = $action->handle($issue);
 
+        $members = $organization->members()->with('user:id,name,email')->get()
+            ->map(fn ($member) => $member->user)
+            ->filter()
+            ->values();
+
         return Inertia::render('issues/show', [
             'organization' => $organization,
             'project' => $project,
@@ -31,6 +36,7 @@ class IssueDetailController extends Controller
             'issue' => $data['issue'],
             'timeline' => $data['timeline'],
             'exceptionSummary' => $data['exception_summary'],
+            'members' => $members,
         ]);
     }
 }

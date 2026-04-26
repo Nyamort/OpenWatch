@@ -20,12 +20,14 @@ interface PriorityPopoverProps {
     environmentSlug: string;
     issueId: number;
     priority: string;
+    only?: string[];
 }
 
 export function PriorityPopover({
     environmentSlug,
     issueId,
     priority,
+    only = ['issues'],
 }: PriorityPopoverProps) {
     const [open, setOpen] = useState(false);
 
@@ -34,7 +36,7 @@ export function PriorityPopover({
         router.patch(
             update.url({ environment: environmentSlug, issue: issueId }),
             { priority: value },
-            { preserveScroll: true, only: ['issues'] },
+            { preserveScroll: true, only },
         );
     }
 
