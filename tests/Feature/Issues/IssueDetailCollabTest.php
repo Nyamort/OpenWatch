@@ -115,6 +115,120 @@ test('admin can delete any comment', function () {
     $this->assertDatabaseMissing('issue_comments', ['id' => $comment->id]);
 });
 
+test('updating status with a comment creates a single status_updated_with_comment activity', function () {
+    $ctx = issueDetailContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Status With Comment Test',
+        'fingerprint' => hash('sha256', 'status-comment-'.uniqid()),
+    ]);
+
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
+
+    $this->actingAs($ctx['user'])->patch("{$baseUrl}/{$issue->id}", [
+        'status' => 'resolved',
+        'comment' => 'Fixing this for real.',
+    ]);
+
+    $issue->refresh();
+
+    expect($issue->status->value)->toBe('resolved');
+
+    $this->assertDatabaseHas('issue_comments', [
+        'issue_id' => $issue->id,
+        'author_id' => $ctx['user']->id,
+        'body' => 'Fixing this for real.',
+    ]);
+
+    $this->assertDatabaseHas('issue_activities', [
+        'issue_id' => $issue->id,
+        'type' => 'status_updated_with_comment',
+    ]);
+
+    $this->assertDatabaseMissing('issue_activities', [
+        'issue_id' => $issue->id,
+        'type' => 'commented',
+    ]);
+});
+
+test('editing a status-change comment transitions the activity to status_update_comment_updated', function () {
+    $ctx = issueDetailContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Edit Status Comment Test',
+        'fingerprint' => hash('sha256', 'edit-status-comment-'.uniqid()),
+    ]);
+
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
+
+    $this->actingAs($ctx['user'])->patch("{$baseUrl}/{$issue->id}", [
+        'status' => 'resolved',
+        'comment' => 'First draft.',
+    ]);
+
+    $comment = $issue->comments()->first();
+
+    (new EditComment)->handle($comment, 'Updated draft.', $ctx['user']);
+
+    $this->assertDatabaseHas('issue_activities', [
+        'issue_id' => $issue->id,
+        'type' => 'status_update_comment_updated',
+    ]);
+
+    $this->assertDatabaseMissing('issue_activities', [
+        'issue_id' => $issue->id,
+        'type' => 'status_updated_with_comment',
+    ]);
+});
+
+test('deleting a status-change comment transitions the activity to status_update_comment_deleted', function () {
+    $ctx = issueDetailContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Delete Status Comment Test',
+        'fingerprint' => hash('sha256', 'delete-status-comment-'.uniqid()),
+    ]);
+
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
+
+    $this->actingAs($ctx['user'])->patch("{$baseUrl}/{$issue->id}", [
+        'status' => 'resolved',
+        'comment' => 'Will be deleted.',
+    ]);
+
+    $comment = $issue->comments()->first();
+    $comment->load('issue');
+
+    (new DeleteComment(app(\App\Services\Authorization\PermissionResolver::class)))->handle($comment, $ctx['user']);
+
+    $this->assertDatabaseHas('issue_activities', [
+        'issue_id' => $issue->id,
+        'type' => 'status_update_comment_deleted',
+    ]);
+
+    $this->assertDatabaseMissing('issue_comments', ['id' => $comment->id]);
+});
+
+test('updating status without a comment does not create a comment', function () {
+    $ctx = issueDetailContext(uniqid());
+
+    $issue = (new CreateIssue)->handle($ctx['org'], $ctx['project'], $ctx['env'], $ctx['user'], [
+        'title' => 'Status No Comment Test',
+        'fingerprint' => hash('sha256', 'status-no-comment-'.uniqid()),
+    ]);
+
+    $baseUrl = "/environments/{$ctx['env']->slug}/issues";
+
+    $this->actingAs($ctx['user'])->patch("{$baseUrl}/{$issue->id}", [
+        'status' => 'resolved',
+    ]);
+
+    $issue->refresh();
+
+    expect($issue->status->value)->toBe('resolved');
+    $this->assertDatabaseMissing('issue_comments', ['issue_id' => $issue->id]);
+});
+
 test('non-author non-admin cannot delete comment', function () {
     $ctx = issueDetailContext(uniqid());
     $developer = User::factory()->create();

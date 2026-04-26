@@ -6,6 +6,7 @@ use App\Enums\IssueStatus;
 use App\Events\IssueStatusChanged;
 use App\Models\Issue;
 use App\Models\IssueActivity;
+use App\Models\IssueComment;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
@@ -27,7 +28,7 @@ class UpdateIssueStatus
      *
      * @throws ValidationException
      */
-    public function handle(Issue $issue, IssueStatus $newStatus, User $actor): Issue
+    public function handle(Issue $issue, IssueStatus $newStatus, User $actor, ?IssueComment $comment = null): Issue
     {
         $currentStatus = $issue->status;
         $allowed = self::ALLOWED_TRANSITIONS[$currentStatus->value] ?? [];
@@ -40,11 +41,17 @@ class UpdateIssueStatus
 
         $issue->update(['status' => $newStatus]);
 
+        $metadata = ['from' => $currentStatus->value, 'to' => $newStatus->value];
+
+        if ($comment !== null) {
+            $metadata['comment_id'] = $comment->id;
+        }
+
         IssueActivity::create([
             'issue_id' => $issue->id,
             'actor_id' => $actor->id,
-            'type' => 'status_changed',
-            'metadata' => ['from' => $currentStatus->value, 'to' => $newStatus->value],
+            'type' => $comment !== null ? 'status_updated_with_comment' : 'status_changed',
+            'metadata' => $metadata,
             'created_at' => now(),
         ]);
 

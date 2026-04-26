@@ -4,8 +4,12 @@ import { Circle, CircleCheck, CircleMinus } from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityPopover } from '@/components/issues/priority-popover';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { update } from '@/routes/issues';
 
 const STATUSES = [
@@ -43,36 +47,81 @@ function StatusPopover({
     status: string;
 }) {
     const [open, setOpen] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+    const [comment, setComment] = useState('');
     const currentLabel = STATUSES.find((s) => s.value === status)?.label ?? status;
+    const pendingLabel = STATUSES.find((s) => s.value === pendingStatus)?.label ?? pendingStatus;
 
     function handleSelect(value: string) {
         setOpen(false);
+        setPendingStatus(value);
+        setComment('');
+    }
+
+    function handleConfirm() {
+        if (!pendingStatus) {
+            return;
+        }
         router.patch(
             update.url({ environment: environmentSlug, issue: issueId }),
-            { status: value },
+            { status: pendingStatus, ...(comment.trim() ? { comment: comment.trim() } : {}) },
             { preserveScroll: true, only: ONLY },
         );
+        setPendingStatus(null);
+        setComment('');
+    }
+
+    function handleCancel() {
+        setPendingStatus(null);
+        setComment('');
     }
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger className="flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 text-sm hover:bg-muted">
-                <StatusIcon status={status} />
-                <span>{currentLabel}</span>
-            </PopoverTrigger>
-            <PopoverContent className="w-36 p-1" align="start">
-                {STATUSES.filter((s) => s.value !== status).map((s) => (
-                    <button
-                        key={s.value}
-                        onClick={() => handleSelect(s.value)}
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted"
-                    >
-                        <StatusIcon status={s.value} />
-                        <span className="flex-1 text-left">{s.label}</span>
-                    </button>
-                ))}
-            </PopoverContent>
-        </Popover>
+        <>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger className="flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 text-sm hover:bg-muted">
+                    <StatusIcon status={status} />
+                    <span>{currentLabel}</span>
+                </PopoverTrigger>
+                <PopoverContent className="w-36 p-1" align="start">
+                    {STATUSES.filter((s) => s.value !== status).map((s) => (
+                        <button
+                            key={s.value}
+                            onClick={() => handleSelect(s.value)}
+                            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted"
+                        >
+                            <StatusIcon status={s.value} />
+                            <span className="flex-1 text-left">{s.label}</span>
+                        </button>
+                    ))}
+                </PopoverContent>
+            </Popover>
+
+            <Dialog open={pendingStatus !== null} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Change status to {pendingLabel}</DialogTitle>
+                        <DialogDescription>Optionally add a comment to explain this status change.</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="status-comment">Comment</Label>
+                        <Textarea
+                            id="status-comment"
+                            placeholder="Add a comment (optional)…"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            rows={3}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirm}>Confirm</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 

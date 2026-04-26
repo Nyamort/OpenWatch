@@ -102,6 +102,15 @@ class BuildIssueDetailData
                     $entry['edited_at'] = $comment->edited_at;
                     $entry['actor'] = ['name' => $comment->author->name, 'email' => $comment->author->email];
                 }
+            } elseif (in_array($activity->type, ['status_updated_with_comment', 'status_update_comment_updated', 'status_update_comment_deleted'])) {
+                $entry['new_status'] = $activity->metadata['to'] ?? null;
+                $commentId = $activity->metadata['comment_id'] ?? null;
+                $comment = $commentId ? $commentsById->get($commentId) : null;
+                if ($comment) {
+                    $entry['comment_id'] = $comment->id;
+                    $entry['body'] = $comment->body;
+                    $entry['edited_at'] = $comment->edited_at;
+                }
             } elseif ($activity->type === 'status_changed') {
                 $entry['from'] = $activity->metadata['from'] ?? null;
                 $entry['to'] = $activity->metadata['to'] ?? null;

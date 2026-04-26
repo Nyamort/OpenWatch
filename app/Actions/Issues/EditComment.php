@@ -2,6 +2,7 @@
 
 namespace App\Actions\Issues;
 
+use App\Models\IssueActivity;
 use App\Models\IssueComment;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -33,6 +34,12 @@ class EditComment
             'body' => $body,
             'edited_at' => now(),
         ]);
+
+        IssueActivity::query()
+            ->where('issue_id', $comment->issue_id)
+            ->whereIn('type', ['status_updated_with_comment', 'status_update_comment_updated'])
+            ->whereJsonContains('metadata->comment_id', $comment->id)
+            ->update(['type' => 'status_update_comment_updated']);
 
         return $comment;
     }

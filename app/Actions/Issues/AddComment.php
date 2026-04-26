@@ -15,7 +15,7 @@ class AddComment
      *
      * @throws ValidationException
      */
-    public function handle(Issue $issue, string $body, User $author): IssueComment
+    public function handle(Issue $issue, string $body, User $author, bool $createActivity = true): IssueComment
     {
         $body = trim($body);
 
@@ -31,13 +31,15 @@ class AddComment
             'body' => $body,
         ]);
 
-        IssueActivity::create([
-            'issue_id' => $issue->id,
-            'actor_id' => $author->id,
-            'type' => 'commented',
-            'metadata' => ['comment_id' => $comment->id],
-            'created_at' => now(),
-        ]);
+        if ($createActivity) {
+            IssueActivity::create([
+                'issue_id' => $issue->id,
+                'actor_id' => $author->id,
+                'type' => 'commented',
+                'metadata' => ['comment_id' => $comment->id],
+                'created_at' => now(),
+            ]);
+        }
 
         return $comment;
     }

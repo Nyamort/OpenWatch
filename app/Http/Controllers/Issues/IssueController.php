@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Issues;
 
+use App\Actions\Issues\AddComment;
 use App\Actions\Issues\AssignIssue;
 use App\Actions\Issues\BuildIssueListData;
 use App\Actions\Issues\BulkUpdateIssues;
@@ -84,6 +85,7 @@ class IssueController extends Controller
         UpdateIssueStatus $updateStatus,
         AssignIssue $assignIssue,
         UpdateIssuePriority $updatePriority,
+        AddComment $addComment,
     ): RedirectResponse {
         $organization = $environment->project->organization;
 
@@ -92,7 +94,11 @@ class IssueController extends Controller
         $validated = $request->validated();
 
         if (array_key_exists('status', $validated)) {
-            $updateStatus->handle($issue, IssueStatus::from($validated['status']), auth()->user());
+            $comment = ! empty($validated['comment'])
+                ? $addComment->handle($issue, $validated['comment'], auth()->user(), createActivity: false)
+                : null;
+
+            $updateStatus->handle($issue, IssueStatus::from($validated['status']), auth()->user(), $comment);
         }
 
         if (array_key_exists('assignee_id', $validated)) {

@@ -26,6 +26,7 @@ class UpdateIssueRequest extends FormRequest
     {
         return [
             'status' => ['sometimes', Rule::enum(IssueStatus::class)],
+            'comment' => ['sometimes', 'nullable', 'string', 'max:65535'],
             'assignee_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
             'priority' => ['sometimes', Rule::enum(IssuePriority::class)],
         ];

@@ -46,7 +46,15 @@ interface CommentedEntry extends BaseEntry {
     edited_at: string | null;
 }
 
-export type TimelineEntry = CreatedEntry | StatusChangedEntry | AssignedEntry | PriorityChangedEntry | CommentedEntry;
+interface StatusWithCommentEntry extends BaseEntry {
+    kind: 'status_updated_with_comment' | 'status_update_comment_updated' | 'status_update_comment_deleted';
+    new_status: string;
+    comment_id?: number;
+    body?: string;
+    edited_at?: string | null;
+}
+
+export type TimelineEntry = CreatedEntry | StatusChangedEntry | AssignedEntry | PriorityChangedEntry | CommentedEntry | StatusWithCommentEntry;
 
 interface Props {
     timeline: TimelineEntry[];
@@ -76,6 +84,7 @@ function relativeTime(dateStr: string): string {
 }
 
 const STATUS_LABELS: Record<string, string> = { open: 'Open', resolved: 'Resolved', ignored: 'Ignored' };
+const STATUS_VERBS: Record<string, string> = { open: 'reopened', resolved: 'resolved', ignored: 'ignored' };
 const PRIORITY_LABELS: Record<string, string> = { none: 'None', low: 'Low', medium: 'Medium', high: 'High' };
 
 function actionText(entry: TimelineEntry): string {
@@ -93,6 +102,10 @@ function actionText(entry: TimelineEntry): string {
             return `assigned the issue to ${entry.to_user.name}`;
         case 'commented':
             return 'added a comment';
+        case 'status_updated_with_comment':
+        case 'status_update_comment_updated':
+        case 'status_update_comment_deleted':
+            return `added a comment and ${STATUS_VERBS[entry.new_status] ?? entry.new_status} the issue`;
     }
 }
 
@@ -130,13 +143,15 @@ function TimelineEntry({ entry }: { entry: TimelineEntry }) {
                     >
                         {relativeTime(entry.created_at)}
                     </time>
-                    {entry.kind === 'commented' && entry.edited_at && (
+                    {(entry.kind === 'commented' || entry.kind === 'status_update_comment_updated') && entry.edited_at && (
                         <span className="ml-1 font-light text-muted-foreground/60 italic">(edited)</span>
                     )}
                 </div>
             </div>
 
-            {entry.kind === 'commented' && (
+            {(entry.kind === 'commented' ||
+                ((entry.kind === 'status_updated_with_comment' || entry.kind === 'status_update_comment_updated') &&
+                    entry.body)) && (
                 <div className="mt-2 ml-10">
                     <div
                         className="prose prose-sm max-w-none rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-white/2 dark:prose-invert"
