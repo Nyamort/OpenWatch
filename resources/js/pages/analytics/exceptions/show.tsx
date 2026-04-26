@@ -5,12 +5,12 @@ import { ExceptionCharts } from '@/components/exceptions/exception-charts';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { index as exceptionsIndex } from '@/routes/analytics/exceptions';
-import type { ExceptionGraphBucket, ExceptionStats, ExceptionSummary, Pagination } from './types';
 import { ExceptionDetailStats } from './partials/exception-detail-stats';
 import {
     ExceptionOccurrenceTable,
     type ExceptionOccurrenceRow,
 } from './partials/exception-occurrence-table';
+import type { ExceptionGraphBucket, ExceptionStats, ExceptionSummary, Pagination } from './types';
 
 interface Props {
     summary?: ExceptionSummary;

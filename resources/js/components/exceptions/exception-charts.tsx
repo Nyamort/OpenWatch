@@ -5,12 +5,12 @@ import {
     tooltipProps,
 } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
+import type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
 import {
     ChartLegend,
     ChartTooltip,
     type ChartConfig,
 } from '@/components/ui/chart';
-import type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
 
 const chartConfig = {
     handled: { label: 'Handled', color: 'oklch(0.50 0 0)' },

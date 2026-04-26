@@ -3,8 +3,8 @@ import {
     ChartsSkeleton,
     TableWithSearchSkeleton,
 } from '@/components/analytics/skeletons';
-import AnalyticsLayout from '@/layouts/analytics-layout';
 import { ExceptionCharts } from '@/components/exceptions/exception-charts';
+import AnalyticsLayout from '@/layouts/analytics-layout';
 import { ExceptionTable } from './partials/exception-table';
 import type {
     ExceptionGraphBucket,

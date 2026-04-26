@@ -1,9 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import { ActivityFeed, type TimelineEntry } from '@/components/issues/activity-feed';
-import { IssueDetailSidebar } from '@/components/issues/issue-detail-sidebar';
 import ExceptionCard from '@/components/exceptions/exception-card';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
+import { ActivityFeed, type TimelineEntry } from '@/components/issues/activity-feed';
+import { IssueDetailSidebar } from '@/components/issues/issue-detail-sidebar';
 import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import AppLayout from '@/layouts/app-layout';
 import { index, show } from '@/routes/issues';
