@@ -8,6 +8,7 @@ use App\Models\AlertRule;
 use App\Models\Issue;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\User;
 use App\Policies\AlertRulePolicy;
 use App\Policies\IssuePolicy;
 use App\Policies\OrganizationPolicy;
@@ -44,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(AlertRule::class, AlertRulePolicy::class);
         Gate::policy(Issue::class, IssuePolicy::class);
+
+        Gate::define('super-admin', fn (User $user): bool => $user->isSuperAdmin());
 
         Event::listen(TelemetryBatchIngested::class, HandleExceptionTelemetry::class);
 

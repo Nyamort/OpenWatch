@@ -23,6 +23,8 @@ class SetupController extends Controller
     {
         $user = $createNewUser->create($request->all());
 
+        $user->forceFill(['is_super_admin' => true])->save();
+
         file_put_contents(storage_path('app/.installed'), now()->toIso8601String());
 
         auth()->login($user);

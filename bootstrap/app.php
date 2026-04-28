@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'organization.member' => EnsureOrganizationMember::class,
             'not.installed' => \App\Http\Middleware\EnsureNotInstalled::class,
+            'super.admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
 
         $middleware->web(

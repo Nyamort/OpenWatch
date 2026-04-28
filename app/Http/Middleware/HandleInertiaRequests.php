@@ -92,6 +92,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'timezone' => $user?->timezone,
                 'locale' => $user?->locale,
+                'is_super_admin' => (bool) $user?->isSuperAdmin(),
             ],
             'activeOrganization' => $activeOrg,
             'activeProject' => $activeProject,

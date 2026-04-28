@@ -28,6 +28,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_super_admin',
         'timezone',
         'locale',
         'display_preferences',
@@ -58,6 +59,7 @@ class User extends Authenticatable
             'active_environment_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_admin' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
             'display_preferences' => 'array',
         ];
@@ -125,5 +127,10 @@ class User extends Authenticatable
     public function notificationPreferences(): HasMany
     {
         return $this->hasMany(UserNotificationPreference::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return (bool) $this->is_super_admin;
     }
 }
