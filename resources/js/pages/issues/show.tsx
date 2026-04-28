@@ -2,7 +2,10 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import ExceptionCard from '@/components/exceptions/exception-card';
 import type { ExceptionOccurrence } from '@/components/exceptions/types';
-import { ActivityFeed, type TimelineEntry } from '@/components/issues/activity-feed';
+import {
+    ActivityFeed,
+    type TimelineEntry,
+} from '@/components/issues/activity-feed';
 import { IssueDetailSidebar } from '@/components/issues/issue-detail-sidebar';
 import { MarkdownEditor } from '@/components/issues/markdown-editor';
 import AppLayout from '@/layouts/app-layout';
@@ -80,7 +83,13 @@ function summaryToOccurrence(summary: ExceptionSummary): ExceptionOccurrence {
     };
 }
 
-export default function IssueShow({ environment, issue, timeline, exceptionSummary, members }: Props) {
+export default function IssueShow({
+    environment,
+    issue,
+    timeline,
+    exceptionSummary,
+    members,
+}: Props) {
     const baseUrl = index.url(environment);
     const issueUrl = show.url({ environment, issue: issue.id });
     const [body, setBody] = useState('');
@@ -102,11 +111,17 @@ export default function IssueShow({ environment, issue, timeline, exceptionSumma
                     </h1>
                     <MarkdownEditor value={body} onChange={setBody} />
                     {issue.type === 'exception' && exceptionSummary && (
-                        <ExceptionCard exception={summaryToOccurrence(exceptionSummary)} />
+                        <ExceptionCard
+                            exception={summaryToOccurrence(exceptionSummary)}
+                        />
                     )}
-                    <ActivityFeed timeline={timeline} environment={environment} issue={issue} />
+                    <ActivityFeed
+                        timeline={timeline}
+                        environment={environment}
+                        issue={issue}
+                    />
                 </div>
-                <div className="w-64 shrink-0 sticky top-20">
+                <div className="sticky top-20 w-64 shrink-0">
                     <IssueDetailSidebar
                         environmentSlug={environment.slug}
                         issue={issue}

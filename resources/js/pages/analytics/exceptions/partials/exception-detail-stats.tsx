@@ -16,7 +16,13 @@ function formatDatetime(value: string | null | undefined): string {
     });
 }
 
-function OccurrenceBreakdown({ count7d, count24h }: { count7d: number; count24h: number }) {
+function OccurrenceBreakdown({
+    count7d,
+    count24h,
+}: {
+    count7d: number;
+    count24h: number;
+}) {
     return (
         <div className="flex gap-4 text-muted-foreground uppercase">
             {(
@@ -45,8 +51,14 @@ export function ExceptionDetailStats({ summary }: ExceptionDetailStatsProps) {
         <Card className="gap-0 bg-surface py-0">
             <CardContent className="py-6">
                 <Section>
-                    <InfoRow label="Last Seen" value={formatDatetime(summary.last_seen)} />
-                    <InfoRow label="First Seen" value={formatDatetime(summary.first_seen)} />
+                    <InfoRow
+                        label="Last Seen"
+                        value={formatDatetime(summary.last_seen)}
+                    />
+                    <InfoRow
+                        label="First Seen"
+                        value={formatDatetime(summary.first_seen)}
+                    />
                     <InfoRow
                         label="First Reported In"
                         value={summary.first_reported_in ?? '—'}
@@ -64,7 +76,10 @@ export function ExceptionDetailStats({ summary }: ExceptionDetailStatsProps) {
                             />
                         }
                     />
-                    <InfoRow label="Servers" value={summary.servers.toLocaleString()} />
+                    <InfoRow
+                        label="Servers"
+                        value={summary.servers.toLocaleString()}
+                    />
                 </Section>
             </CardContent>
         </Card>

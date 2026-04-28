@@ -42,7 +42,11 @@ export default function ExceptionsIndex({
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
             <Deferred data={['graph', 'stats']} fallback={<ChartsSkeleton />}>
-                <ExceptionCharts graph={graph!} stats={stats!} syncId="exceptions" />
+                <ExceptionCharts
+                    graph={graph!}
+                    stats={stats!}
+                    syncId="exceptions"
+                />
             </Deferred>
             <Deferred
                 data={['exceptions', 'pagination']}

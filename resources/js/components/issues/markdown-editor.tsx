@@ -10,7 +10,11 @@ interface Props {
 
 type Tab = 'write' | 'preview';
 
-export function MarkdownEditor({ value, onChange, placeholder = 'Enter a description…' }: Props) {
+export function MarkdownEditor({
+    value,
+    onChange,
+    placeholder = 'Enter a description…',
+}: Props) {
     const [tab, setTab] = useState<Tab>('write');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 

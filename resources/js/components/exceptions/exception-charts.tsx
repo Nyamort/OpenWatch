@@ -5,7 +5,10 @@ import {
     tooltipProps,
 } from '@/components/analytics/chart-panel';
 import { AnalyticsTooltip } from '@/components/analytics/chart-tooltip';
-import type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
+import type {
+    ExceptionGraphBucket,
+    ExceptionStats,
+} from '@/components/exceptions/types';
 import {
     ChartLegend,
     ChartTooltip,
@@ -23,7 +26,11 @@ interface ExceptionChartsProps {
     syncId?: string;
 }
 
-export function ExceptionCharts({ graph, stats, syncId }: ExceptionChartsProps) {
+export function ExceptionCharts({
+    graph,
+    stats,
+    syncId,
+}: ExceptionChartsProps) {
     const legendStats = (
         <div className="flex gap-4 text-sm">
             {(['handled', 'unhandled'] as const).map((key) => (

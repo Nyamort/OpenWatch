@@ -25,11 +25,15 @@ export function StatusFilter({ current, counts }: StatusFilterProps) {
         urlObj.searchParams.delete('page');
         urlObj.searchParams.delete('status');
         urlObj.searchParams.delete('assignee_id');
-        router.get(urlObj.pathname + urlObj.search, {}, {
-            preserveScroll: true,
-            preserveState: true,
-            only: ['issues', 'pagination', 'filter', 'filterCounts'],
-        });
+        router.get(
+            urlObj.pathname + urlObj.search,
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['issues', 'pagination', 'filter', 'filterCounts'],
+            },
+        );
     }
 
     return (

@@ -1,13 +1,30 @@
 import { router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { ArrowRight, CalendarDays, CircleCheck, CircleDot, CircleMinus } from 'lucide-react';
+import {
+    ArrowRight,
+    CalendarDays,
+    CircleCheck,
+    CircleDot,
+    CircleMinus,
+} from 'lucide-react';
 import { useState } from 'react';
 import { AssigneePopover } from '@/components/issues/assignee-popover';
 import { PriorityPopover } from '@/components/issues/priority-popover';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { update } from '@/routes/issues';
@@ -31,7 +48,8 @@ const STATUS_PLACEHOLDERS: Record<string, string> = {
 };
 
 const STATUS_CONFIRM_CLASS: Record<string, string> = {
-    resolved: 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600',
+    resolved:
+        'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600',
     ignored: '',
     open: 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600',
 };
@@ -67,8 +85,10 @@ function StatusPopover({
     const [open, setOpen] = useState(false);
     const [pendingStatus, setPendingStatus] = useState<string | null>(null);
     const [comment, setComment] = useState('');
-    const currentLabel = STATUSES.find((s) => s.value === status)?.label ?? status;
-    const pendingLabel = STATUSES.find((s) => s.value === pendingStatus)?.label ?? pendingStatus;
+    const currentLabel =
+        STATUSES.find((s) => s.value === status)?.label ?? status;
+    const pendingLabel =
+        STATUSES.find((s) => s.value === pendingStatus)?.label ?? pendingStatus;
 
     function handleSelect(value: string) {
         setOpen(false);
@@ -82,7 +102,10 @@ function StatusPopover({
         }
         router.patch(
             update.url({ environment: environmentSlug, issue: issueId }),
-            { status: pendingStatus, ...(comment.trim() ? { comment: comment.trim() } : {}) },
+            {
+                status: pendingStatus,
+                ...(comment.trim() ? { comment: comment.trim() } : {}),
+            },
             { preserveScroll: true, only: ONLY },
         );
         setPendingStatus(null);
@@ -122,19 +145,26 @@ function StatusPopover({
                 </PopoverContent>
             </Popover>
 
-            <Dialog open={pendingStatus !== null} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
+            <Dialog
+                open={pendingStatus !== null}
+                onOpenChange={(isOpen) => !isOpen && handleCancel()}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{pendingStatus ? STATUS_ACTIONS[pendingStatus] : ''}</DialogTitle>
+                        <DialogTitle>
+                            {pendingStatus ? STATUS_ACTIONS[pendingStatus] : ''}
+                        </DialogTitle>
                         <DialogDescription asChild>
                             <div className="flex items-center gap-2 pt-1">
                                 <span className="flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium">
                                     <StatusIcon status={status} />
                                     {currentLabel}
                                 </span>
-                                <ArrowRight className="size-3.5 text-muted-foreground/60 shrink-0" />
+                                <ArrowRight className="size-3.5 shrink-0 text-muted-foreground/60" />
                                 <span className="flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium">
-                                    {pendingStatus && <StatusIcon status={pendingStatus} />}
+                                    {pendingStatus && (
+                                        <StatusIcon status={pendingStatus} />
+                                    )}
                                     {pendingLabel}
                                 </span>
                             </div>
@@ -144,15 +174,20 @@ function StatusPopover({
                     <div className="flex flex-col gap-1.5">
                         <Textarea
                             autoFocus
-                            placeholder={pendingStatus ? STATUS_PLACEHOLDERS[pendingStatus] : ''}
+                            placeholder={
+                                pendingStatus
+                                    ? STATUS_PLACEHOLDERS[pendingStatus]
+                                    : ''
+                            }
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             onKeyDown={handleKeyDown}
                             rows={4}
                             className="resize-none"
                         />
-                        <p className="text-xs text-muted-foreground/60 text-right select-none">
-                            <kbd className="font-sans">⌘</kbd> + <kbd className="font-sans">↵</kbd> to confirm
+                        <p className="text-right text-xs text-muted-foreground/60 select-none">
+                            <kbd className="font-sans">⌘</kbd> +{' '}
+                            <kbd className="font-sans">↵</kbd> to confirm
                         </p>
                     </div>
 
@@ -162,9 +197,14 @@ function StatusPopover({
                         </Button>
                         <Button
                             onClick={handleConfirm}
-                            className={cn(pendingStatus && STATUS_CONFIRM_CLASS[pendingStatus])}
+                            className={cn(
+                                pendingStatus &&
+                                    STATUS_CONFIRM_CLASS[pendingStatus],
+                            )}
                         >
-                            {pendingStatus ? STATUS_ACTIONS[pendingStatus] : 'Confirm'}
+                            {pendingStatus
+                                ? STATUS_ACTIONS[pendingStatus]
+                                : 'Confirm'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -192,16 +232,28 @@ interface IssueDetailSidebarProps {
     members: Member[];
 }
 
-function SidebarRow({ label, children }: { label: string; children: React.ReactNode }) {
+function SidebarRow({
+    label,
+    children,
+}: {
+    label: string;
+    children: React.ReactNode;
+}) {
     return (
         <div className="flex h-8 items-center justify-between gap-2 rounded-md px-2">
-            <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+                {label}
+            </span>
             <div className="flex min-w-0 items-center">{children}</div>
         </div>
     );
 }
 
-export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDetailSidebarProps) {
+export function IssueDetailSidebar({
+    environmentSlug,
+    issue,
+    members,
+}: IssueDetailSidebarProps) {
     return (
         <Card className="overflow-hidden bg-surface py-0">
             <CardHeader className="border-b px-4 py-3">
@@ -225,7 +277,10 @@ export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDet
                                 priority={issue.priority}
                                 only={ONLY}
                             />
-                            <span className="text-sm">{PRIORITY_LABELS[issue.priority] ?? issue.priority}</span>
+                            <span className="text-sm">
+                                {PRIORITY_LABELS[issue.priority] ??
+                                    issue.priority}
+                            </span>
                         </div>
                     </SidebarRow>
 
@@ -239,7 +294,13 @@ export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDet
                                 only={ONLY}
                             />
                             <span className="truncate text-sm">
-                                {issue.assignee ? issue.assignee.name : <span className="text-muted-foreground">Unassigned</span>}
+                                {issue.assignee ? (
+                                    issue.assignee.name
+                                ) : (
+                                    <span className="text-muted-foreground">
+                                        Unassigned
+                                    </span>
+                                )}
                             </span>
                         </div>
                     </SidebarRow>
@@ -251,14 +312,24 @@ export function IssueDetailSidebar({ environmentSlug, issue, members }: IssueDet
                     <SidebarRow label="First seen">
                         <div className="flex items-center gap-1.5 text-sm">
                             <CalendarDays className="size-3.5 text-muted-foreground/50" />
-                            <span title={issue.first_seen_at}>{format(parseISO(issue.first_seen_at), 'MMM d, yyyy')}</span>
+                            <span title={issue.first_seen_at}>
+                                {format(
+                                    parseISO(issue.first_seen_at),
+                                    'MMM d, yyyy',
+                                )}
+                            </span>
                         </div>
                     </SidebarRow>
 
                     <SidebarRow label="Last seen">
                         <div className="flex items-center gap-1.5 text-sm">
                             <CalendarDays className="size-3.5 text-muted-foreground/50" />
-                            <span title={issue.last_seen_at}>{format(parseISO(issue.last_seen_at), 'MMM d, yyyy')}</span>
+                            <span title={issue.last_seen_at}>
+                                {format(
+                                    parseISO(issue.last_seen_at),
+                                    'MMM d, yyyy',
+                                )}
+                            </span>
                         </div>
                     </SidebarRow>
                 </div>

@@ -1,4 +1,7 @@
-export type { ExceptionGraphBucket, ExceptionStats } from '@/components/exceptions/types';
+export type {
+    ExceptionGraphBucket,
+    ExceptionStats,
+} from '@/components/exceptions/types';
 
 export interface ExceptionRow {
     group_key: string;

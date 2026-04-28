@@ -39,7 +39,10 @@ export interface CommentedEntry extends BaseEntry {
 }
 
 export interface StatusWithCommentEntry extends BaseEntry {
-    kind: 'status_updated_with_comment' | 'status_update_comment_updated' | 'status_update_comment_deleted';
+    kind:
+        | 'status_updated_with_comment'
+        | 'status_update_comment_updated'
+        | 'status_update_comment_deleted';
     new_status: string;
     comment_id?: number;
     body?: string;
@@ -61,11 +64,26 @@ export const COMMENT_KINDS = new Set([
     'status_update_comment_deleted',
 ]);
 
-export const STATUS_LABELS: Record<string, string> = { open: 'Open', resolved: 'Resolved', ignored: 'Ignored' };
-export const STATUS_VERBS: Record<string, string> = { open: 'reopened', resolved: 'resolved', ignored: 'ignored' };
-export const PRIORITY_LABELS: Record<string, string> = { none: 'None', low: 'Low', medium: 'Medium', high: 'High' };
+export const STATUS_LABELS: Record<string, string> = {
+    open: 'Open',
+    resolved: 'Resolved',
+    ignored: 'Ignored',
+};
+export const STATUS_VERBS: Record<string, string> = {
+    open: 'reopened',
+    resolved: 'resolved',
+    ignored: 'ignored',
+};
+export const PRIORITY_LABELS: Record<string, string> = {
+    none: 'None',
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+};
 
-export function isCommentEntry(entry: TimelineEntry): entry is CommentedEntry | StatusWithCommentEntry {
+export function isCommentEntry(
+    entry: TimelineEntry,
+): entry is CommentedEntry | StatusWithCommentEntry {
     return COMMENT_KINDS.has(entry.kind);
 }
 
@@ -87,7 +105,11 @@ export function relativeTime(dateStr: string): string {
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     if (days < 30) return `${days}d ago`;
-    return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
 }
 
 export function actionText(entry: TimelineEntry): string {

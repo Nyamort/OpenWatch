@@ -220,7 +220,8 @@ export function QueryTable({
                                     router.visit(
                                         analyticsHref(
                                             show.url({
-                                                environment: activeEnvironment.slug,
+                                                environment:
+                                                    activeEnvironment.slug,
                                                 query: row.sql_hash,
                                             }),
                                         ),

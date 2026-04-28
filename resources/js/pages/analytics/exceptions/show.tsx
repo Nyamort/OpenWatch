@@ -10,7 +10,12 @@ import {
     ExceptionOccurrenceTable,
     type ExceptionOccurrenceRow,
 } from './partials/exception-occurrence-table';
-import type { ExceptionGraphBucket, ExceptionStats, ExceptionSummary, Pagination } from './types';
+import type {
+    ExceptionGraphBucket,
+    ExceptionStats,
+    ExceptionSummary,
+    Pagination,
+} from './types';
 
 interface Props {
     summary?: ExceptionSummary;
@@ -51,7 +56,14 @@ function summaryToOccurrence(summary: ExceptionSummary): ExceptionOccurrence {
     };
 }
 
-export default function ExceptionShow({ summary, rows, pagination, graph, stats, period }: Props) {
+export default function ExceptionShow({
+    summary,
+    rows,
+    pagination,
+    graph,
+    stats,
+    period,
+}: Props) {
     const { props } = usePage();
     const { activeEnvironment } = props as {
         activeEnvironment?: { slug: string } | null;
@@ -70,16 +82,24 @@ export default function ExceptionShow({ summary, rows, pagination, graph, stats,
     return (
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head />
-            <Deferred data={['graph', 'stats', 'summary']} fallback={topSectionSkeleton}>
+            <Deferred
+                data={['graph', 'stats', 'summary']}
+                fallback={topSectionSkeleton}
+            >
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <ExceptionDetailStats summary={summary!} />
                     <ExceptionCharts graph={graph!} stats={stats!} />
                 </div>
             </Deferred>
             <Deferred data={['summary']} fallback={<CardSkeleton />}>
-                {summary && <ExceptionCard exception={summaryToOccurrence(summary)} />}
+                {summary && (
+                    <ExceptionCard exception={summaryToOccurrence(summary)} />
+                )}
             </Deferred>
-            <Deferred data={['rows', 'pagination', 'stats']} fallback={<TableSkeleton />}>
+            <Deferred
+                data={['rows', 'pagination', 'stats']}
+                fallback={<TableSkeleton />}
+            >
                 <ExceptionOccurrenceTable
                     rows={rows ?? []}
                     pagination={pagination!}

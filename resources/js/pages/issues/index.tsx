@@ -82,14 +82,24 @@ export default function IssuesIndex({
 
     const { handleSort } = useAnalyticsTable<IssueSortKey>({
         search: '',
-        only: ['issues', 'pagination', 'filter', 'filterCounts', 'sort', 'direction'],
+        only: [
+            'issues',
+            'pagination',
+            'filter',
+            'filterCounts',
+            'sort',
+            'direction',
+        ],
     });
 
     const onSort = (col: string) =>
         handleSort(col as IssueSortKey, sort, direction);
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} actions={<StatusFilter current={filter} counts={filterCounts} />}>
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            actions={<StatusFilter current={filter} counts={filterCounts} />}
+        >
             <Head title="Issues" />
             <div className="flex flex-col gap-3 p-6">
                 <div className="flex items-center gap-2">
@@ -235,14 +245,14 @@ export default function IssuesIndex({
                                     </TableCell>
                                     <TableCell className="h-11 w-px px-4">
                                         <div className="flex justify-center">
-                                        <AssigneePopover
-                                            environmentSlug={
-                                                activeEnvironment.slug
-                                            }
-                                            issueId={issue.id}
-                                            assignee={issue.assignee}
-                                            members={members}
-                                        />
+                                            <AssigneePopover
+                                                environmentSlug={
+                                                    activeEnvironment.slug
+                                                }
+                                                issueId={issue.id}
+                                                assignee={issue.assignee}
+                                                members={members}
+                                            />
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-11 w-px pr-5">

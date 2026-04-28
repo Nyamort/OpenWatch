@@ -5,10 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { JobCharts } from '@/pages/analytics/jobs/partials/job-charts';
-import type {
-    JobGraphBucket,
-    JobStats,
-} from '@/pages/analytics/jobs/types';
+import type { JobGraphBucket, JobStats } from '@/pages/analytics/jobs/types';
 import { RequestCharts } from '@/pages/analytics/requests/partials/request-charts';
 import type {
     GraphBucket as RequestGraphBucket,
@@ -105,10 +102,7 @@ export default function Dashboard({
                             data={['jobGraph', 'jobStats']}
                             fallback={<ChartsSkeleton />}
                         >
-                            <JobCharts
-                                graph={jobGraph!}
-                                stats={jobStats!}
-                            />
+                            <JobCharts graph={jobGraph!} stats={jobStats!} />
                         </Deferred>
                     </section>
 
@@ -132,10 +126,7 @@ export default function Dashboard({
                             data={['userGraph', 'userStats']}
                             fallback={<ChartsSkeleton />}
                         >
-                            <UserCharts
-                                graph={userGraph!}
-                                stats={userStats!}
-                            />
+                            <UserCharts graph={userGraph!} stats={userStats!} />
                         </Deferred>
                     </section>
                 </>

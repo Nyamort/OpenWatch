@@ -128,7 +128,8 @@ export function ExceptionTable({
                                     router.visit(
                                         analyticsHref(
                                             show.url({
-                                                environment: activeEnvironment.slug,
+                                                environment:
+                                                    activeEnvironment.slug,
                                                 group: row.group_key,
                                             }),
                                         ),

@@ -7,11 +7,11 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
-import { dashboard as adminDashboard } from '@/routes/admin';
 import { dashboard as appDashboard } from '@/routes';
+import { dashboard as adminDashboard } from '@/routes/admin';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 
