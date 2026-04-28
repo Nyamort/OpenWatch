@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Analytics\Job\BuildJobsIndexData;
 use App\Actions\Analytics\Request\BuildRequestIndexData;
+use App\Actions\Analytics\User\BuildUserIndexData;
 use App\Services\Analytics\AnalyticsContextResolver;
 use App\Services\Analytics\PeriodService;
 use Illuminate\Http\Request;
@@ -13,6 +15,8 @@ class DashboardController extends Controller
 {
     public function __construct(
         private readonly BuildRequestIndexData $buildRequestData,
+        private readonly BuildJobsIndexData $buildJobsData,
+        private readonly BuildUserIndexData $buildUserData,
         private readonly AnalyticsContextResolver $contextResolver,
         private readonly PeriodService $periodService,
     ) {}
@@ -50,9 +54,19 @@ class DashboardController extends Controller
             ]);
         }
 
-        $data = null;
-        $resolve = function () use (&$data, $ctx, $period): array {
-            return $data ??= $this->buildRequestData->handle(ctx: $ctx, period: $period);
+        $requestData = null;
+        $resolveRequest = function () use (&$requestData, $ctx, $period): array {
+            return $requestData ??= $this->buildRequestData->handle(ctx: $ctx, period: $period);
+        };
+
+        $jobsData = null;
+        $resolveJobs = function () use (&$jobsData, $ctx, $period): array {
+            return $jobsData ??= $this->buildJobsData->handle(ctx: $ctx, period: $period);
+        };
+
+        $userData = null;
+        $resolveUser = function () use (&$userData, $ctx, $period): array {
+            return $userData ??= $this->buildUserData->handle(ctx: $ctx, period: $period);
         };
 
         return Inertia::render('dashboard', [
@@ -63,8 +77,12 @@ class DashboardController extends Controller
                 'project' => $ctx->project->slug,
                 'env' => $ctx->environment->slug,
             ],
-            'graph' => Inertia::defer(fn () => $resolve()['graph']),
-            'stats' => Inertia::defer(fn () => $resolve()['stats']),
+            'requestGraph' => Inertia::defer(fn () => $resolveRequest()['graph']),
+            'requestStats' => Inertia::defer(fn () => $resolveRequest()['stats']),
+            'jobGraph' => Inertia::defer(fn () => $resolveJobs()['graph']),
+            'jobStats' => Inertia::defer(fn () => $resolveJobs()['stats']),
+            'userGraph' => Inertia::defer(fn () => $resolveUser()['graph']),
+            'userStats' => Inertia::defer(fn () => $resolveUser()['stats']),
         ]);
     }
 }
