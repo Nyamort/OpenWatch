@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Dashboard\BuildActiveAlertsSummary;
-use App\Actions\Dashboard\BuildDashboardData;
-use App\Actions\Dashboard\BuildRecentIssuesSummary;
+use App\Actions\Analytics\Request\BuildRequestIndexData;
 use App\Services\Analytics\AnalyticsContextResolver;
 use App\Services\Analytics\PeriodService;
 use Illuminate\Http\Request;
@@ -14,9 +12,7 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     public function __construct(
-        private readonly BuildDashboardData $buildDashboardData,
-        private readonly BuildActiveAlertsSummary $buildAlertsSummary,
-        private readonly BuildRecentIssuesSummary $buildIssuesSummary,
+        private readonly BuildRequestIndexData $buildRequestData,
         private readonly AnalyticsContextResolver $contextResolver,
         private readonly PeriodService $periodService,
     ) {}
@@ -26,48 +22,21 @@ class DashboardController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $orgSlug = $request->query('org');
-        $projectSlug = $request->query('project');
         $envSlug = $request->query('env');
-        $periodStr = $request->query('period', '24h');
+        $periodStr = (string) $request->query('period', '24h');
 
-        // If no context provided, try to resolve from user's active org
-        if (! $orgSlug) {
+        if (! $envSlug) {
             $activeOrg = $user->activeOrganization;
-            if (! $activeOrg) {
-                return Inertia::render('dashboard', [
-                    'hasContext' => false,
-                    'metrics' => null,
-                    'alerts' => null,
-                    'recentIssues' => null,
-                    'period' => $periodStr,
-                ]);
-            }
+            $firstProject = $activeOrg?->projects()->first();
+            $firstEnv = $firstProject?->environments()->first();
 
-            $firstProject = $activeOrg->projects()->first();
-            if (! $firstProject) {
-                return Inertia::render('dashboard', [
-                    'hasContext' => false,
-                    'metrics' => null,
-                    'alerts' => null,
-                    'recentIssues' => null,
-                    'period' => $periodStr,
-                ]);
-            }
-
-            $firstEnv = $firstProject->environments()->first();
             if (! $firstEnv) {
                 return Inertia::render('dashboard', [
                     'hasContext' => false,
-                    'metrics' => null,
-                    'alerts' => null,
-                    'recentIssues' => null,
                     'period' => $periodStr,
                 ]);
             }
 
-            $orgSlug = $activeOrg->slug;
-            $projectSlug = $firstProject->slug;
             $envSlug = $firstEnv->slug;
         }
 
@@ -77,12 +46,14 @@ class DashboardController extends Controller
         } catch (\Throwable) {
             return Inertia::render('dashboard', [
                 'hasContext' => false,
-                'metrics' => null,
-                'alerts' => null,
-                'recentIssues' => null,
                 'period' => $periodStr,
             ]);
         }
+
+        $data = null;
+        $resolve = function () use (&$data, $ctx, $period): array {
+            return $data ??= $this->buildRequestData->handle(ctx: $ctx, period: $period);
+        };
 
         return Inertia::render('dashboard', [
             'hasContext' => true,
@@ -92,13 +63,8 @@ class DashboardController extends Controller
                 'project' => $ctx->project->slug,
                 'env' => $ctx->environment->slug,
             ],
-            'metrics' => Inertia::defer(fn () => $this->buildDashboardData->handle($ctx, $period)),
-            'alerts' => Inertia::defer(fn () => $this->buildAlertsSummary->handle(
-                $ctx->organization->id, $ctx->project->id, $ctx->environment->id
-            )),
-            'recentIssues' => Inertia::defer(fn () => $this->buildIssuesSummary->handle(
-                $ctx->organization->id, $ctx->project->id, $ctx->environment->id
-            )),
+            'graph' => Inertia::defer(fn () => $resolve()['graph']),
+            'stats' => Inertia::defer(fn () => $resolve()['stats']),
         ]);
     }
 }
