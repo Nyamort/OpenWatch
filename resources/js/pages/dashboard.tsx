@@ -2,6 +2,7 @@ import { Deferred, Head, Link } from '@inertiajs/react';
 import { BriefcaseBusiness, Globe, Users } from 'lucide-react';
 import { ChartsSkeleton } from '@/components/analytics/skeletons';
 import { Button } from '@/components/ui/button';
+import { useAnalyticsHref } from '@/hooks/use-analytics-href';
 import AnalyticsLayout from '@/layouts/analytics-layout';
 import { JobCharts } from '@/pages/analytics/jobs/partials/job-charts';
 import type {
@@ -50,6 +51,8 @@ export default function Dashboard({
     userGraph,
     userStats,
 }: Props) {
+    const analyticsHref = useAnalyticsHref();
+
     return (
         <AnalyticsLayout period={period} breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -61,7 +64,11 @@ export default function Dashboard({
                                 Activity
                             </h2>
                             <Button asChild size="sm" variant="outline">
-                                <Link href={requestsIndex.url(context.env)}>
+                                <Link
+                                    href={analyticsHref(
+                                        requestsIndex.url(context.env),
+                                    )}
+                                >
                                     <Globe />
                                     Requests
                                 </Link>
@@ -84,7 +91,11 @@ export default function Dashboard({
                                 Application
                             </h2>
                             <Button asChild size="sm" variant="outline">
-                                <Link href={jobsIndex.url(context.env)}>
+                                <Link
+                                    href={analyticsHref(
+                                        jobsIndex.url(context.env),
+                                    )}
+                                >
                                     <BriefcaseBusiness />
                                     Jobs
                                 </Link>
@@ -107,7 +118,11 @@ export default function Dashboard({
                                 Users
                             </h2>
                             <Button asChild size="sm" variant="outline">
-                                <Link href={usersIndex.url(context.env)}>
+                                <Link
+                                    href={analyticsHref(
+                                        usersIndex.url(context.env),
+                                    )}
+                                >
                                     <Users />
                                     Users
                                 </Link>

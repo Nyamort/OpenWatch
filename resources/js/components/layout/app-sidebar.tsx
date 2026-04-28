@@ -65,7 +65,7 @@ export function AppSidebar() {
             items: [
                 {
                     title: 'Dashboard',
-                    href: dashboard(),
+                    href: analyticsHref(dashboard.url()),
                     icon: LayoutGrid,
                 },
                 ...(hasContext
