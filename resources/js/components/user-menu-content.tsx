@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, LogOut, Settings, ShieldCheck } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -8,8 +8,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 import { logout } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
+import { dashboard as appDashboard } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 
@@ -19,6 +21,8 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const { currentUrl } = useCurrentUrl();
+    const isInAdmin = currentUrl.startsWith('/admin');
 
     const handleLogout = () => {
         cleanup();
@@ -49,12 +53,21 @@ export function UserMenuContent({ user }: Props) {
                     <DropdownMenuItem asChild>
                         <Link
                             className="block w-full cursor-pointer"
-                            href={adminDashboard()}
+                            href={isInAdmin ? appDashboard() : adminDashboard()}
                             prefetch
                             onClick={cleanup}
                         >
-                            <ShieldCheck className="mr-2" />
-                            Super Admin
+                            {isInAdmin ? (
+                                <>
+                                    <ArrowLeft className="mr-2" />
+                                    Back to app
+                                </>
+                            ) : (
+                                <>
+                                    <ShieldCheck className="mr-2" />
+                                    Super Admin
+                                </>
+                            )}
                         </Link>
                     </DropdownMenuItem>
                 )}
