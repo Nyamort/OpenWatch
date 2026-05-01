@@ -48,7 +48,7 @@ interface ExceptionDetailStatsProps {
 
 export function ExceptionDetailStats({ summary }: ExceptionDetailStatsProps) {
     return (
-        <Card className="gap-0 bg-surface py-0">
+        <Card className="gap-0 bg-card py-0">
             <CardContent className="py-6">
                 <Section>
                     <InfoRow

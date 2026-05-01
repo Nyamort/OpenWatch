@@ -79,7 +79,7 @@ export default function QueryShow({
                 data={['stats', 'runs', 'pagination']}
                 fallback={<CardSkeleton />}
             >
-                <Card className="gap-0 bg-surface py-0">
+                <Card className="gap-0 bg-card py-0">
                     <CardHeader className="border-b py-4">
                         <span className="text-sm font-medium">Query</span>
                     </CardHeader>

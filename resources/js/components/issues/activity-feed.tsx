@@ -62,7 +62,7 @@ export function ActivityFeed({ timeline, environment, issue }: Props) {
 
     return (
         <>
-            <Card className="gap-0 overflow-hidden bg-surface py-0">
+            <Card className="gap-0 overflow-hidden bg-card py-0">
                 <CardHeader className="border-b px-5 py-3">
                     <CardTitle className="text-sm font-semibold">
                         Activity

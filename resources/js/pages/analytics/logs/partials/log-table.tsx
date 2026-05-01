@@ -104,7 +104,7 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                                 <TableRow
                                     key={row.id}
                                     onClick={() => setSelected(row)}
-                                    className="cursor-pointer border-0 bg-surface shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-surface [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
+                                    className="cursor-pointer border-0 bg-card shadow-sm shadow-black/4 hover:bg-transparent [&_td]:border-y [&_td]:border-border [&_td]:bg-card [&_td]:transition-colors [&_td]:duration-150 hover:[&_td]:bg-muted/50 dark:hover:[&_td]:bg-muted/70 [&_td:first-child]:rounded-l-lg [&_td:first-child]:border-l [&_td:last-child]:rounded-r-lg [&_td:last-child]:border-r"
                                 >
                                     <TableCell className="h-11 w-px px-5 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
                                         {row.recorded_at}
@@ -178,7 +178,7 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                                 </div>
                             </SheetHeader>
                             <div className="flex flex-col gap-3 px-4 pb-4">
-                                <Card className="gap-0 bg-surface py-0">
+                                <Card className="gap-0 bg-card py-0">
                                     <CardHeader className="border-b py-4">
                                         <span className="text-sm font-semibold">
                                             Source
@@ -192,7 +192,7 @@ export function LogTable({ logs, pagination, search }: LogTableProps) {
                                         </span>
                                     </CardContent>
                                 </Card>
-                                <Card className="gap-0 bg-surface py-0">
+                                <Card className="gap-0 bg-card py-0">
                                     <CardHeader className="border-b py-4">
                                         <span className="text-sm font-semibold">
                                             Log Context

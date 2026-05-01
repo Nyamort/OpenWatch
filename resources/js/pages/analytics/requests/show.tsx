@@ -83,7 +83,7 @@ function HeadersCard({ headers }: { headers: string }) {
 
     return (
         <Collapsible open={open} onOpenChange={setOpen}>
-            <Card className="gap-0 bg-surface py-0">
+            <Card className="gap-0 bg-card py-0">
                 <CollapsibleTrigger asChild>
                     <CardHeader className="flex cursor-pointer flex-row items-center justify-between border-b py-4 select-none data-[state=closed]:border-b-0">
                         <span className="text-base font-semibold text-foreground">
@@ -151,7 +151,7 @@ export default function RequestShow({ analytics }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head />
             <div className="flex flex-col gap-6 p-6">
-                <Card className="gap-0 bg-surface py-0">
+                <Card className="gap-0 bg-card py-0">
                     <CardHeader className="flex flex-row items-center gap-3 border-b py-4">
                         <span className="font-mono text-sm font-bold text-foreground">
                             {summary.method}

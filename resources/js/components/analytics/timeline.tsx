@@ -322,7 +322,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
     return (
         <div
             className={cn(
-                'overflow-clip rounded-lg border border-white/10 bg-surface font-mono text-xs contain-inline-size',
+                'overflow-clip rounded-lg border border-white/10 bg-card font-mono text-xs contain-inline-size',
                 className,
             )}
         >
@@ -340,7 +340,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                     <div
                         className={cn(
                             STICKY,
-                            'flex shrink-0 items-center border-b border-white/10 bg-surface px-3',
+                            'flex shrink-0 items-center border-b border-white/10 bg-card px-3',
                             ROW_HEIGHT,
                         )}
                     >
@@ -370,7 +370,7 @@ export function Timeline({ totalDurationUs, spans, className }: TimelineProps) {
                         <div
                             className={cn(
                                 STICKY,
-                                'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-surface px-3 select-none',
+                                'shrink-0 cursor-ew-resize overflow-hidden border-b border-white/10 bg-card px-3 select-none',
                                 ROW_HEIGHT,
                             )}
                             onMouseDown={handleTicksMouseDown}

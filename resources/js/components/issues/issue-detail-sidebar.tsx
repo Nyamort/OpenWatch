@@ -255,7 +255,7 @@ export function IssueDetailSidebar({
     members,
 }: IssueDetailSidebarProps) {
     return (
-        <Card className="overflow-hidden bg-surface py-0">
+        <Card className="overflow-hidden bg-card py-0">
             <CardHeader className="border-b px-4 py-3">
                 <CardTitle className="text-sm font-semibold">Details</CardTitle>
             </CardHeader>

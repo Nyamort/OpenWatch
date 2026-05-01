@@ -106,7 +106,7 @@ export function ChartPanel({
     );
 
     return (
-        <div className="flex flex-col rounded-xl border bg-surface p-5">
+        <div className="flex flex-col rounded-xl border bg-card p-5">
             <div ref={wrapperRef}>
                 <ChartContainer
                     config={config}

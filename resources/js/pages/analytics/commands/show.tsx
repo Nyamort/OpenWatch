@@ -87,7 +87,7 @@ export default function CommandShow({ analytics }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head />
             <div className="flex flex-col gap-6 p-6">
-                <Card className="gap-0 bg-surface py-0">
+                <Card className="gap-0 bg-card py-0">
                     <CardHeader className="flex flex-row items-center gap-3 border-b py-4">
                         <span className="truncate font-mono text-sm font-medium">
                             {summary.command ?? summary.name}
